@@ -4,7 +4,7 @@ package hr.tjakopan.yarl
  * The captured outcome of executing an individual function.
  */
 sealed class DelegateResult<TResult> {
-  fun <T> fold(ifResult: (TResult) -> T, ifException: (Throwable) -> T) = when (this) {
+  fun <T> fold(ifResult: (TResult) -> T, ifException: (Throwable) -> T): T = when (this) {
     is Result -> ifResult(result)
     is Exception -> ifException(exception)
   }
