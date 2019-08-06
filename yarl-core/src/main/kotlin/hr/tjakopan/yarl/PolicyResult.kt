@@ -1,5 +1,10 @@
 package hr.tjakopan.yarl
 
+typealias PolicySuccessWithResult<TResult> = PolicyResult.SuccessWithResult<TResult>
+typealias PolicySuccessWithoutResult = PolicyResult.SuccessWithoutResult
+typealias PolicyFailureWithException = PolicyResult.FailureWithException
+typealias PolicyFailureWithResult<TResult> = PolicyResult.FailureWithResult<TResult>
+
 /**
  * The captured result of executing a policy.
  *
