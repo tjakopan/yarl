@@ -12,7 +12,7 @@ package hr.tjakopan.yarl
  * @property message The message that describes the error.
  * @property cause The cause of the exception.
  */
-class ExecutionRejectedException(message: String?, cause: Throwable?) : Throwable(message, cause) {
+sealed class ExecutionRejectedException(message: String?, cause: Throwable?) : Throwable(message, cause) {
   /**
    * Initializes a new instance of the [ExecutionRejectedException] class.
    * @param message The message that describes the error.
