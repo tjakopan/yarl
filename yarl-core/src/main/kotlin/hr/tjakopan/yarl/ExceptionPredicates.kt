@@ -14,6 +14,7 @@ class ExceptionPredicates(private val predicates: MutableList<ExceptionPredicate
 
   constructor() : this(mutableListOf())
 
+  @JvmSynthetic
   internal fun add(predicate: ExceptionPredicate) {
     predicates += predicate
   }

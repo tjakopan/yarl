@@ -14,6 +14,7 @@ class ResultPredicates<TResult>(private val predicates: MutableList<ResultPredic
 
   constructor() : this(mutableListOf())
 
+  @JvmSynthetic
   internal fun add(predicate: ResultPredicate<TResult>) {
     predicates += predicate
   }

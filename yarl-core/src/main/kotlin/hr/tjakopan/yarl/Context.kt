@@ -29,7 +29,9 @@ class Context(val operationKey: String?, private val contextData: MutableMap<Str
    */
 
   companion object {
+    @JvmSynthetic
     internal val none = Context()
+      @JvmSynthetic get
   }
 
   /**
@@ -47,11 +49,14 @@ class Context(val operationKey: String?, private val contextData: MutableMap<Str
    *
    */
   var policyWrapKey: String? = null
+    @JvmSynthetic
     internal set
+
   /**
    * The [PolicyBase.policyKey] of the policy instance executing the current delegate.
    */
   var policyKey: String? = null
+    @JvmSynthetic
     internal set
 
   /**
@@ -66,4 +71,6 @@ class Context(val operationKey: String?, private val contextData: MutableMap<Str
    */
   constructor() : this(null, mutableMapOf()) {
   }
+
+  internal constructor(contextData: MutableMap<String, Any>) : this(null, contextData)
 }
