@@ -24,16 +24,16 @@
         <artifactId>kotlin-stdlib-jdk8</artifactId>
         <version>${kotlin.version}</version>
       </dependency>
-      <dependency>
-        <groupId>io.arrow-kt</groupId>
-        <artifactId>arrow-core-data</artifactId>
-        <version>${arrow.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.arrow-kt</groupId>
-        <artifactId>arrow-core-extensions</artifactId>
-        <version>${arrow.version}</version>
-      </dependency>
+<!--      <dependency>-->
+<!--        <groupId>io.arrow-kt</groupId>-->
+<!--        <artifactId>arrow-core-data</artifactId>-->
+<!--        <version>${arrow.version}</version>-->
+<!--      </dependency>-->
+<!--      <dependency>-->
+<!--        <groupId>io.arrow-kt</groupId>-->
+<!--        <artifactId>arrow-core-extensions</artifactId>-->
+<!--        <version>${arrow.version}</version>-->
+<!--      </dependency>-->
 
       <dependency>
         <groupId>org.jetbrains.kotlin</groupId>

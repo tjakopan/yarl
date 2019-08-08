@@ -3,7 +3,7 @@ package hr.tjakopan.yarl
 /**
  * A collection of predicates used to define whether a policy handles a given [Throwable].
  */
-class ExceptionPredicates(private val predicates: MutableList<ExceptionPredicate>) {
+class ExceptionPredicates(private val predicates: MutableList<ExceptionPredicate> = mutableListOf()) {
   companion object {
     /**
      * Specifies that no exception handling filters are applied or are required.
@@ -11,8 +11,6 @@ class ExceptionPredicates(private val predicates: MutableList<ExceptionPredicate
     @JvmStatic
     val NONE = ExceptionPredicates()
   }
-
-  constructor() : this(mutableListOf())
 
   @JvmSynthetic
   internal fun add(predicate: ExceptionPredicate) {

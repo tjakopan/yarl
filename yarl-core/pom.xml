@@ -16,14 +16,14 @@
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-stdlib-jdk8</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.arrow-kt</groupId>
-      <artifactId>arrow-core-data</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.arrow-kt</groupId>
-      <artifactId>arrow-core-extensions</artifactId>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>io.arrow-kt</groupId>-->
+<!--      <artifactId>arrow-core-data</artifactId>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <groupId>io.arrow-kt</groupId>-->
+<!--      <artifactId>arrow-core-extensions</artifactId>-->
+<!--    </dependency>-->
 
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
