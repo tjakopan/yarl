@@ -4,7 +4,7 @@ import java.util.*
 
 /**
  * Context that carries with a single execution through a policy. Commonly used properties are directly on the class.
- * Backed by a mutable map of string key / any value pairs, to which user defined values may be added.
+ * Backed by a mutable map of string key / [Any] value pairs, to which user defined values may be added.
  *
  * Do not re-use an instance of Context across more than one call through .execute(...) or executeAsync(...).
  *
@@ -20,7 +20,7 @@ import java.util.*
  *
  * The value is set by using Context(String) constructor taking an operationKey parameter.
  */
-class Context(val operationKey: String?, private val contextData: MutableMap<String, Any>) :
+class Context(val operationKey: String? = null, private val contextData: MutableMap<String, Any> = mutableMapOf()) :
   MutableMap<String, Any> by contextData {
   /* For an individual execution through a policy or policywrap, it is expected that all execution steps (for example
    * executing the user delegate, invoking policy-activity delegates such as onRetry, onBreak, onTimeout etc) execute
@@ -28,7 +28,7 @@ class Context(val operationKey: String?, private val contextData: MutableMap<Str
    * multiple threads.
    */
 
-  companion object {
+  internal companion object {
     @JvmSynthetic
     internal val none = Context()
       @JvmSynthetic get

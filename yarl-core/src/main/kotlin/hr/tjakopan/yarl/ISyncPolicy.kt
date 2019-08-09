@@ -1,40 +1,40 @@
 package hr.tjakopan.yarl
 
 /**
- * An interface defining all executions available on a synchronous policy generic-typed for executions returning results
- * of type [TResult].
- *
- * @param TResult The type of the result of functions executed through the policy.
+ * An interface defining all executions available on a non-generic, synchronous policy.
  */
-internal interface ISyncPolicy<TResult> : IsPolicy {
+interface ISyncPolicy : IsPolicy {
   /**
-   * Executes the specified action within the policy and returns the result.
+   * Sets the PolicyKey for this [Policy] instance.
    *
-   * @param action The action to perform.
-   * @return The value returned by the action.
+   * Must be called before the policy is first used. Can only be set once.
+   *
+   * @param policyKey The unique, used-definable key to assign to this [PolicyGeneric] instance.
    */
-  @JvmDefault
-  fun execute(action: () -> TResult?): TResult? = execute(Context()) { action() }
+  fun withPolicyKey(policyKey: String): ISyncPolicy
 
   /**
-   * Executes the specified action within the policy and returns the result.
+   * Executes the specified action within the policy.
+   *
+   * @param action The action to perform.
+   */
+  fun execute(action: () -> Unit)
+
+  /**
+   * Executes the specified action within the policy.
    *
    * @param contextData Arbitrary data that is passed to the exception policy.
    * @param action The action to perform.
-   * @return The value returned by the action.
    */
-  @JvmDefault
-  fun execute(contextData: MutableMap<String, Any>, action: (Context) -> TResult?): TResult? =
-    execute(Context(contextData)) { action(it) }
+  fun execute(contextData: Map<String, Any>, action: (Context) -> Unit)
 
   /**
-   * Executes the specified action within the policy and returns the result.
+   * Executes the specified action within the policy.
    *
    * @param context Context data that is passed to the exception policy.
    * @param action The action to perform.
-   * @return The value returned by the action.
    */
-  fun execute(context: Context, action: (Context) -> TResult?): TResult?
+  fun execute(context: Context, action: (Context) -> Unit)
 
   /**
    * Executes the specified action within the policy and returns the captured result.
@@ -42,8 +42,7 @@ internal interface ISyncPolicy<TResult> : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  @JvmDefault
-  fun executeAndCapture(action: () -> TResult?): PolicyResult<TResult> = executeAndCapture(Context()) { action() }
+  fun executeAndCapture(action: () -> Unit): PolicyResult
 
   /**
    * Executes the specified action within the policy and returns the captured result.
@@ -52,9 +51,7 @@ internal interface ISyncPolicy<TResult> : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  @JvmDefault
-  fun executeAndCapture(contextData: MutableMap<String, Any>, action: (Context) -> TResult?): PolicyResult<TResult> =
-    executeAndCapture(Context(contextData)) { action(it) }
+  fun executeAndCapture(contextData: Map<String, Any>, action: (Context) -> Unit): PolicyResult
 
   /**
    * Executes the specified action within the policy and returns the captured result.
@@ -63,5 +60,5 @@ internal interface ISyncPolicy<TResult> : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  fun executeAndCapture(context: Context, action: (Context) -> TResult?): PolicyResult<TResult>
+  fun executeAndCapture(context: Context, action: (Context) -> Unit): PolicyResult
 }

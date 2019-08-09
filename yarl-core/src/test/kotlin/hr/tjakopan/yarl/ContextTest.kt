@@ -11,7 +11,7 @@ class ContextTest {
     val context = Context("SomeKey")
 
     assertEquals("SomeKey", context.operationKey)
-    assertEquals(0, context.keys.count())
+    assertEquals(0, context.keys.size)
   }
 
   @Test
