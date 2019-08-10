@@ -4,6 +4,14 @@ package hr.tjakopan.yarl
  * A collection of predicates used to define whether a policy handles a given TResult value.
  */
 class ResultPredicates<TResult>(private val predicates: MutableList<ResultPredicate<TResult>> = mutableListOf()) {
+  companion object {
+    /**
+     * Specifies that no result-handling filters are applied or are required.
+     */
+    @JvmStatic
+    fun <TResult> none() = ResultPredicates<TResult>()
+  }
+
   constructor() : this(mutableListOf())
 
   @JvmSynthetic
@@ -16,5 +24,5 @@ class ResultPredicates<TResult>(private val predicates: MutableList<ResultPredic
    *
    * @param result The TResult value to assess against the predicates.
    */
-  fun anyMatch(result: TResult) = predicates.any { it(result) }
+  fun anyMatch(result: TResult?) = predicates.any { it(result) }
 }

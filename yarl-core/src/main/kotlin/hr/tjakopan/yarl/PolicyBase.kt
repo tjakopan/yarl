@@ -7,6 +7,14 @@ internal val policyKeyMustBeImmutableException =
   IllegalArgumentException("policyKey cannot be changed once set; or (when using the default value after the policyKey property has been accessed.")
   @JvmSynthetic get
 
+@JvmSynthetic
+internal fun getExceptionType(exceptionPredicates: ExceptionPredicates, exception: Throwable): ExceptionType {
+  return when (exceptionPredicates.firstMatchOrNull(exception) != null) {
+    true -> ExceptionType.HANDLED_BY_THIS_POLICY
+    false -> ExceptionType.UNHANDLED
+  }
+}
+
 /**
  * Implements elements common to both non-generic and generic policies, and sync and async policies.
  *
@@ -37,7 +45,7 @@ abstract class PolicyBase internal constructor(exceptionPredicates: ExceptionPre
    * Predicates indicating which exceptions the policy handles.
    */
   @JvmSynthetic
-  internal val exceptionPredicates = exceptionPredicates ?: ExceptionPredicates.Companion.NONE
+  internal val exceptionPredicates = exceptionPredicates ?: ExceptionPredicates.NONE
     @JvmSynthetic get
 
   /**
@@ -92,7 +100,7 @@ abstract class PolicyBaseGeneric<TResult> internal constructor(
    * Predicates indicating which results the policy handles.
    */
   @JvmSynthetic
-  internal val resultPredicates: ResultPredicates<TResult> = resultPredicates ?: ResultPredicates()
+  internal val resultPredicates: ResultPredicates<TResult> = resultPredicates ?: ResultPredicates.none()
     @JvmSynthetic get
 
   /**

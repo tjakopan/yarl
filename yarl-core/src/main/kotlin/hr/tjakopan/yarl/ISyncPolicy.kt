@@ -37,6 +37,35 @@ interface ISyncPolicy : IsPolicy {
   fun execute(context: Context, action: (Context) -> Unit)
 
   /**
+   * Executes the specified action within the policy and returns the result.
+   *
+   * @param TResult The type of the result.
+   * @param action The action to perform.
+   * @return The value returned by the action.
+   */
+  fun <TResult> execute(action: () -> TResult?): TResult?
+
+  /**
+   * Executes the specified action within the policy and returns the result.
+   *
+   * @param TResult The type of the result.
+   * @param contextData Arbitrary data that is passed to the exception policy.
+   * @param action The action to perform.
+   * @return The value returned by the action.
+   */
+  fun <TResult> execute(contextData: Map<String, Any>, action: (Context) -> TResult?): TResult?
+
+  /**
+   * Executes the specified action within the policy and returns the result.
+   *
+   * @param TResult The type of the result.
+   * @param context Context data that is passed to the exception policy.
+   * @param action The action to perform.
+   * @return The value returned by the action.
+   */
+  fun <TResult> execute(context: Context, action: (Context) -> TResult?): TResult?
+
+  /**
    * Executes the specified action within the policy and returns the captured result.
    *
    * @param action The action to perform.
@@ -61,4 +90,33 @@ interface ISyncPolicy : IsPolicy {
    * @return The captured result.
    */
   fun executeAndCapture(context: Context, action: (Context) -> Unit): PolicyResult
+
+  /**
+   * Executes the specified action within the policy and returns the captured result.
+   *
+   * @param action The action to perform.
+   * @return The captured result.
+   */
+  fun <TResult> executeAndCapture(action: () -> TResult?): PolicyResultGeneric<TResult>
+
+  /**
+   * Executes the specified action within the policy and returns the captured result.
+   *
+   * @param contextData Arbitrary data that is passed to the exception policy.
+   * @param action The action to perform.
+   * @return The captured result.
+   */
+  fun <TResult> executeAndCapture(
+    contextData: Map<String, Any>,
+    action: (Context) -> TResult?
+  ): PolicyResultGeneric<TResult>
+
+  /**
+   * Executes the specified action within the policy and returns the captured result.
+   *
+   * @param context Context data that is passed to the exception policy.
+   * @param action The action to perform.
+   * @return The captured result.
+   */
+  fun <TResult> executeAndCapture(context: Context, action: (Context) -> TResult?): PolicyResultGeneric<TResult>
 }
