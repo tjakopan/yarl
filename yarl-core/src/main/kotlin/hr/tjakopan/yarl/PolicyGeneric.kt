@@ -1,5 +1,7 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.wrap.PolicyWrapGeneric
+
 /**
  * Transient fault handling policies that can be applied to delegates returning results of type [TResult].
  *
@@ -74,6 +76,20 @@ abstract class PolicyGeneric<TResult> internal constructor(
    * @return A [TResult] result of the execution.
    */
   protected abstract fun implementation(context: Context, action: (Context) -> TResult?): TResult?
+
+  /**
+   * Wraps the specified inner policy.
+   *
+   * @param innerPolicy The inner policy.
+   */
+  fun wrap(innerPolicy: ISyncPolicy) = PolicyWrapGeneric(this, innerPolicy)
+
+  /**
+   * Wraps the specified inner policy.
+   *
+   * @param innerPolicy The inner policy.
+   */
+  fun wrap(innerPolicy: ISyncPolicyGeneric<TResult>) = PolicyWrapGeneric(this, innerPolicy)
 
   companion object {
     /**

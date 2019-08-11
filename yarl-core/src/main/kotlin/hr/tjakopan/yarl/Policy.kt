@@ -1,5 +1,8 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.wrap.PolicyWrap
+import hr.tjakopan.yarl.wrap.PolicyWrapGeneric
+
 /**
  * Transient exception handling policies that can be applied to synchronous delegates.
  *
@@ -94,7 +97,7 @@ abstract class Policy internal constructor(exceptionPredicates: ExceptionPredica
    * @param context The policy execution context.
    * @param action The action passed by calling code to execute through the policy.
    */
-  protected open fun implementation(context: Context, action: (Context) -> Unit) = implementation<Unit>(context, action)
+  protected abstract fun implementation(context: Context, action: (Context) -> Unit)
 
   /**
    * Defines the implementation of a policy for synchronous executions returning [TResult].
@@ -105,6 +108,21 @@ abstract class Policy internal constructor(exceptionPredicates: ExceptionPredica
    * @return A [TResult] result of the execution.
    */
   protected abstract fun <TResult> implementation(context: Context, action: (Context) -> TResult?): TResult?
+
+  /**
+   * Wraps the specified inner policy.
+   *
+   * @param innerPolicy The inner policy.
+   */
+  fun wrap(innerPolicy: ISyncPolicy) = PolicyWrap(this, innerPolicy)
+
+  /**
+   * Wraps the specified inner policy.
+   *
+   * @param TResult The return type of delegates which may be executed through the policy.
+   * @param innerPolicy The inner policy.
+   */
+  fun <TResult> wrap(innerPolicy: ISyncPolicyGeneric<TResult>) = PolicyWrapGeneric(this, innerPolicy)
 
   companion object {
     /**
@@ -194,5 +212,38 @@ abstract class Policy internal constructor(exceptionPredicates: ExceptionPredica
      */
     @JvmStatic
     fun <TResult> handleResult(result: TResult?): PolicyBuilderGeneric<TResult> = handleResult { it == result }
+
+    /**
+     * Creates a [PolicyWrap] of the given policies.
+     *
+     * @param policies The policies to place in the wrap, outermost (at left) to innermost (at right).
+     * @return The PolicyWrap.
+     * @throws IllegalArgumentException The enumerable of policies to form the wrap must contain at least two policies.
+     */
+    @JvmStatic
+    fun wrap(vararg policies: ISyncPolicy): PolicyWrap {
+      return when (policies.size) {
+        0, 1 -> throw IllegalArgumentException("The array of policies to form the wrap must contain at least two policies.")
+        2 -> PolicyWrap(policies[0] as Policy, policies[1])
+        else -> wrap(policies[0], wrap(*policies.drop(1).toTypedArray()))
+      }
+    }
+
+    /**
+     * Creates a [PolicyWrapGeneric] of the given policies governing delegates returning values of type [TResult].
+     *
+     * @param TResult The return type of delegates which may be executed through the policy.
+     * @param policies The policies to place in the wrap, outermost (at left) to innermost (at right).
+     * @return The PolicyWrapGeneric.
+     * @throws IllegalArgumentException The enumerable of policies to form the wrap must contain at least two policies.
+     */
+    @JvmStatic
+    fun <TResult> wrap(vararg policies: ISyncPolicyGeneric<TResult>): PolicyWrapGeneric<TResult> {
+      return when (policies.size) {
+        0, 1 -> throw IllegalArgumentException("The array of policies to form the wrap must contain at least two policies.")
+        2 -> PolicyWrapGeneric(policies[0] as PolicyGeneric<TResult>, policies[1])
+        else -> wrap(policies[0], wrap(*policies.drop(1).toTypedArray()))
+      }
+    }
   }
 }

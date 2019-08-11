@@ -34,7 +34,7 @@ interface IAsyncPolicyGeneric<TResult> : IsPolicy {
    * @param action The action to perform.
    * @return The value returned by the action.
    */
-  fun executeAsync(executor: Executor, action: () -> CompletionStage<TResult?>): CompletionStage<TResult?>
+  fun executeAsync(executor: Executor, action: (Executor) -> CompletionStage<TResult?>): CompletionStage<TResult?>
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -59,7 +59,7 @@ interface IAsyncPolicyGeneric<TResult> : IsPolicy {
   fun executeAsync(
     contextData: Map<String, Any>,
     executor: Executor,
-    action: (Context) -> CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult?>
   ): CompletionStage<TResult?>
 
   /**
@@ -82,7 +82,7 @@ interface IAsyncPolicyGeneric<TResult> : IsPolicy {
   fun executeAsync(
     context: Context,
     executor: Executor,
-    action: (Context) -> CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult?>
   ): CompletionStage<TResult?>
 
   /**
@@ -102,7 +102,7 @@ interface IAsyncPolicyGeneric<TResult> : IsPolicy {
    */
   fun executeAndCaptureAsync(
     executor: Executor,
-    action: () -> CompletionStage<TResult?>
+    action: (Executor) -> CompletionStage<TResult?>
   ): CompletionStage<PolicyResultGeneric<TResult?>>
 
   /**
@@ -128,7 +128,7 @@ interface IAsyncPolicyGeneric<TResult> : IsPolicy {
   fun executeAndCaptureAsync(
     contextData: Map<String, Any>,
     executor: Executor,
-    action: (Context) -> CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult?>
   ): CompletionStage<PolicyResultGeneric<TResult?>>
 
   /**
@@ -154,6 +154,6 @@ interface IAsyncPolicyGeneric<TResult> : IsPolicy {
   fun executeAndCaptureAsync(
     context: Context,
     executor: Executor,
-    action: (Context) -> CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult?>
   ): CompletionStage<PolicyResultGeneric<TResult?>>
 }

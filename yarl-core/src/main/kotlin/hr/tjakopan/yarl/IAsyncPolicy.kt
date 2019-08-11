@@ -29,7 +29,7 @@ interface IAsyncPolicy : IsPolicy {
    * @param executor The executor to use for asynchronous execution.
    * @param action The action to perform.
    */
-  fun executeAsync(executor: Executor, action: () -> CompletionStage<Unit>): CompletionStage<Unit>
+  fun executeAsync(executor: Executor, action: (Executor) -> CompletionStage<Unit>): CompletionStage<Unit>
 
   /**
    * Executes the specified asynchronous action within the policy.
@@ -49,7 +49,7 @@ interface IAsyncPolicy : IsPolicy {
   fun executeAsync(
     contextData: Map<String, Any>,
     executor: Executor,
-    action: (Context) -> CompletionStage<Unit>
+    action: (Context, Executor) -> CompletionStage<Unit>
   ): CompletionStage<Unit>
 
   /**
@@ -70,7 +70,7 @@ interface IAsyncPolicy : IsPolicy {
   fun executeAsync(
     context: Context,
     executor: Executor,
-    action: (Context) -> CompletionStage<Unit>
+    action: (Context, Executor) -> CompletionStage<Unit>
   ): CompletionStage<Unit>
 
   /**
@@ -92,7 +92,7 @@ interface IAsyncPolicy : IsPolicy {
    */
   fun <TResult> executeAsyncGeneric(
     executor: Executor,
-    action: () -> CompletionStage<TResult?>
+    action: (Executor) -> CompletionStage<TResult?>
   ): CompletionStage<TResult?>
 
   /**
@@ -120,7 +120,7 @@ interface IAsyncPolicy : IsPolicy {
   fun <TResult> executeAsyncGeneric(
     contextData: Map<String, Any>,
     executor: Executor,
-    action: (Context) -> CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult?>
   ): CompletionStage<TResult?>
 
   /**
@@ -148,7 +148,7 @@ interface IAsyncPolicy : IsPolicy {
   fun <TResult> executeAsyncGeneric(
     context: Context,
     executor: Executor,
-    action: (Context) -> CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult?>
   ): CompletionStage<TResult?>
 
   /**
@@ -166,7 +166,7 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  fun executeAndCaptureAsync(executor: Executor, action: () -> CompletionStage<Unit>): CompletionStage<PolicyResult>
+  fun executeAndCaptureAsync(executor: Executor, action: (Executor) -> CompletionStage<Unit>): CompletionStage<PolicyResult>
 
   /**
    * Executes the specified asynchronous action within the policy and returns the captured result.
@@ -191,7 +191,7 @@ interface IAsyncPolicy : IsPolicy {
   fun executeAndCaptureAsync(
     contextData: Map<String, Any>,
     executor: Executor,
-    action: (Context) -> CompletionStage<Unit>
+    action: (Context, Executor) -> CompletionStage<Unit>
   ): CompletionStage<PolicyResult>
 
   /**
@@ -217,7 +217,7 @@ interface IAsyncPolicy : IsPolicy {
   fun executeAndCaptureAsync(
     context: Context,
     executor: Executor,
-    action: (Context) -> CompletionStage<Unit>
+    action: (Context, Executor) -> CompletionStage<Unit>
   ): CompletionStage<PolicyResult>
 
   /**
@@ -239,7 +239,7 @@ interface IAsyncPolicy : IsPolicy {
    */
   fun <TResult> executeAndCaptureAsyncGeneric(
     executor: Executor,
-    action: () -> CompletionStage<TResult?>
+    action: (Executor) -> CompletionStage<TResult?>
   ): CompletionStage<PolicyResultGeneric<TResult?>>
 
   /**
@@ -267,7 +267,7 @@ interface IAsyncPolicy : IsPolicy {
   fun <TResult> executeAndCaptureAsyncGeneric(
     contextData: Map<String, Any>,
     executor: Executor,
-    action: (Context) -> CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult?>
   ): CompletionStage<PolicyResultGeneric<TResult?>>
 
   /**
@@ -295,6 +295,6 @@ interface IAsyncPolicy : IsPolicy {
   fun <TResult> executeAndCaptureAsyncGeneric(
     context: Context,
     executor: Executor,
-    action: (Context) -> CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult?>
   ): CompletionStage<PolicyResultGeneric<TResult?>>
 }
