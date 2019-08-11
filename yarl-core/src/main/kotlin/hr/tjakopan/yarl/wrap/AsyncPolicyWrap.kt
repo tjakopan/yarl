@@ -9,16 +9,16 @@ import java.util.concurrent.Executor
 
 /**
  * A policy that allows two (and by recursion more) async Polly policies to wrap executions of async delegates.
+ *
+ * @param TResult The return type of delegates which may be executed through the policy.
  */
-class AsyncPolicyWrap internal constructor(outer: AsyncPolicy, inner: IAsyncPolicy) :
-  AsyncPolicy(outer.exceptionPredicates), IPolicyWrap {
-  private val _outer: IAsyncPolicy = outer
-  private val _inner: IAsyncPolicy = inner
+class AsyncPolicyWrap<TResult> internal constructor(outer: AsyncPolicy<TResult>, inner: IAsyncPolicy<TResult>) :
+  AsyncPolicy<TResult>(outer.exceptionPredicates, outer.resultPredicates), IPolicyWrap {
+  private val _outer: IAsyncPolicy<TResult> = outer
+  private val _inner: IAsyncPolicy<TResult> = inner
 
-  override val outer: IsPolicy
-    get() = _outer
-  override val inner: IsPolicy
-    get() = _inner
+  override val outer: IsPolicy = _outer
+  override val inner: IsPolicy = _inner
 
   override fun setPolicyContext(executionContext: Context): Pair<String?, String?> {
     val priorPolicyKeys = Pair(executionContext.policyWrapKey, executionContext.policyKey)
@@ -30,24 +30,11 @@ class AsyncPolicyWrap internal constructor(outer: AsyncPolicy, inner: IAsyncPoli
 
   override fun implementationAsync(
     context: Context,
-    action: (Context) -> CompletionStage<Unit>
-  ): CompletionStage<Unit> =
-    AsyncPolicyWrapEngine.implementationAsync(context, _outer, _inner, action)
-
-  override fun implementationAsync(
-    context: Context,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<Unit> =
-    AsyncPolicyWrapEngine.implementationAsync(context, executor, _outer, _inner, action)
-
-  override fun <TResult> implementationAsyncGeneric(
-    context: Context,
     action: (Context) -> CompletionStage<TResult?>
   ): CompletionStage<TResult?> =
     AsyncPolicyWrapEngine.implementationAsyncGeneric(context, _outer, _inner, action)
 
-  override fun <TResult> implementationAsyncGeneric(
+  override fun implementationAsync(
     context: Context,
     executor: Executor,
     action: (Context, Executor) -> CompletionStage<TResult?>

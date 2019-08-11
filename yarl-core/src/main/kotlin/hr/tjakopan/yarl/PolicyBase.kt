@@ -16,12 +16,16 @@ internal fun getExceptionType(exceptionPredicates: ExceptionPredicates, exceptio
 }
 
 /**
- * Implements elements common to both non-generic and generic policies, and sync and async policies.
+ * Implements elements common to sync and async policies.
  *
- * @constructor Constructs a new instance of a derived type of [PolicyBase] with the passed [exceptionPredicates].
+ * @constructor Constructs a new instance of a derived type of [PolicyBase].
  * @param exceptionPredicates Predicates indicating which exceptions the policy should handle.
+ * @param resultPredicates Predicates indicating which results the policy should handle.
  */
-abstract class PolicyBase internal constructor(exceptionPredicates: ExceptionPredicates? = null) {
+abstract class PolicyBase<TResult> internal constructor(
+  exceptionPredicates: ExceptionPredicates? = null,
+  resultPredicates: ResultPredicates<TResult>? = null
+) {
   /**
    * A key intended to be unique to each [IsPolicy] instance.
    */
@@ -49,11 +53,21 @@ abstract class PolicyBase internal constructor(exceptionPredicates: ExceptionPre
     @JvmSynthetic get
 
   /**
-   * Constructs a new instance of a derived type of [PolicyBase] with the passed [policyBuilder].
+   * Predicates indicating which results the policy handles.
+   */
+  @JvmSynthetic
+  internal val resultPredicates: ResultPredicates<TResult> = resultPredicates ?: ResultPredicates.none()
+    @JvmSynthetic get
+
+  /**
+   * Constructs a new instance of a derived type of [PolicyBuilder] with the passed [policyBuilder].
    *
    * @param policyBuilder A [PolicyBuilder] indicating which exceptions the policy should handle.
    */
-  protected constructor(policyBuilder: PolicyBuilder?) : this(policyBuilder?.exceptionPredicates)
+  protected constructor(policyBuilder: PolicyBuilder<TResult>?) : this(
+    policyBuilder?.exceptionPredicates,
+    policyBuilder?.resultPredicates
+  )
 
   /**
    * Updates the execution [Context] with context from the executing policy.
@@ -83,33 +97,4 @@ abstract class PolicyBase internal constructor(exceptionPredicates: ExceptionPre
     executionContext.policyWrapKey = priorPolicyWrapKey
     executionContext.policyKey = priorPolicyKey
   }
-}
-
-/**
- * Implements elements common to sync and async generic policies.
- *
- * @constructor Constructs a new instance of a derived type of [PolicyBaseGeneric].
- * @param exceptionPredicates Predicates indicating which exceptions the policy should handle.
- * @param resultPredicates Predicates indicating which results the policy should handle.
- */
-abstract class PolicyBaseGeneric<TResult> internal constructor(
-  exceptionPredicates: ExceptionPredicates?,
-  resultPredicates: ResultPredicates<TResult>?
-) : PolicyBase(exceptionPredicates) {
-  /**
-   * Predicates indicating which results the policy handles.
-   */
-  @JvmSynthetic
-  internal val resultPredicates: ResultPredicates<TResult> = resultPredicates ?: ResultPredicates.none()
-    @JvmSynthetic get
-
-  /**
-   * Constructs a new instance of a derived type of [PolicyBuilderGeneric] with the passed [policyBuilder].
-   *
-   * @param policyBuilder A [PolicyBuilderGeneric] indicating which exceptions the policy should handle.
-   */
-  protected constructor(policyBuilder: PolicyBuilderGeneric<TResult>?) : this(
-    policyBuilder?.exceptionPredicates,
-    policyBuilder?.resultPredicates
-  )
 }

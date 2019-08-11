@@ -1,50 +1,15 @@
 package hr.tjakopan.yarl
 
-typealias PolicySuccess = PolicyResult.Success
-typealias PolicyFailure = PolicyResult.Failure
-typealias PolicyGenericSuccess<TResult> = PolicyResultGeneric.Success<TResult>
-typealias PolicyGenericFailureWithException<TResult> = PolicyResultGeneric.Failure.FailureWithException<TResult>
-typealias PolicyGenericFailureWithResult<TResult> = PolicyResultGeneric.Failure.FailureWithResult<TResult>
+typealias PolicySuccess<TResult> = PolicyResult.Success<TResult>
+typealias PolicyFailureWithException<TResult> = PolicyResult.Failure.FailureWithException<TResult>
+typealias PolicyFailureWithResult<TResult> = PolicyResult.Failure.FailureWithResult<TResult>
 
 /**
  * The captured result of executing a policy.
  *
  * @property context The context for this execution.
  */
-sealed class PolicyResult(val context: Context) {
-  fun <T> fold(ifSuccess: (Context) -> T, ifFailure: (finalException: Throwable, ExceptionType, Context) -> T): T =
-    when (this) {
-      is Success -> ifSuccess(context)
-      is Failure -> ifFailure(finalException, exceptionType, context)
-    }
-
-  /**
-   * A [PolicyResult] representing a successful execution through the policy.
-   *
-   * @constructor Builds a [PolicyResult] representing a successful execution through the policy.
-   * @param context The policy execution context.
-   */
-  class Success(context: Context) : PolicyResult(context)
-
-  /**
-   * A [PolicyResult] representing a failed execution through the policy.
-   *
-   * @constructor Builds a [PolicyResult] representing a failed execution through the policy.
-   * @param finalException The exception.
-   * @param exceptionType The exception type.
-   * @param context The policy execution context.
-   *
-   * @property finalException The final exception captured.
-   * @property exceptionType The exception type of the final exception captured.
-   */
-  class Failure(val finalException: Throwable, val exceptionType: ExceptionType, context: Context) :
-    PolicyResult(context)
-}
-
-/**
- * The captured result of executing a policy.
- */
-sealed class PolicyResultGeneric<TResult>(val context: Context) {
+sealed class PolicyResult<TResult>(val context: Context) {
   fun <T> fold(
     ifSuccess: (TResult?, Context) -> T,
     ifFailureWithException: (finalException: Throwable, ExceptionType, FaultType, Context) -> T,
@@ -56,24 +21,31 @@ sealed class PolicyResultGeneric<TResult>(val context: Context) {
   }
 
   /**
-   * A [PolicyResultGeneric] representing a successful execution through the policy.
+   * A [PolicyResult] representing a successful execution through the policy.
    *
-   * @constructor Builds a [PolicyResultGeneric] representing a successful execution through the policy.
+   * @constructor Builds a [PolicyResult] representing a successful execution through the policy.
    * @param result The result returned by execution through the policy.
    * @param context The policy execution context.
    *
    * @property result The result of executing the policy.
    */
-  class Success<TResult>(val result: TResult?, context: Context) : PolicyResultGeneric<TResult>(context)
+  class Success<TResult>(val result: TResult?, context: Context) : PolicyResult<TResult>(context) {
+    /**
+     * Builds a [PolicyResult] representing a successful execution through the policy.
+     *
+     * @param context The policy execution context.
+     */
+    constructor(context: Context) : this(null, context)
+  }
 
   /**
    * @param faultType The fault type of the final fault captured.
    */
-  sealed class Failure<TResult>(val faultType: FaultType, context: Context) : PolicyResultGeneric<TResult>(context) {
+  sealed class Failure<TResult>(val faultType: FaultType, context: Context) : PolicyResult<TResult>(context) {
     /**
-     * A [PolicyResultGeneric] representing a failed execution through the policy.
+     * A [PolicyResult] representing a failed execution through the policy.
      *
-     * @constructor Builds a [PolicyResultGeneric] representing a failed execution through the policy.
+     * @constructor Builds a [PolicyResult] representing a failed execution through the policy.
      * @param finalException The exception.
      * @param exceptionType The exception type.
      * @param context The policy execution context.
@@ -94,9 +66,9 @@ sealed class PolicyResultGeneric<TResult>(val context: Context) {
       )
 
     /**
-     * A [PolicyResultGeneric] representing a failed execution through the policy.
+     * A [PolicyResult] representing a failed execution through the policy.
      *
-     * @constructor Builds a [PolicyResultGeneric] representing a failed execution through the policy.
+     * @constructor Builds a [PolicyResult] representing a failed execution through the policy.
      * @param finalHandledResult The result returned by execution through the policy, which was treated as a handled
      * failure.
      * @param context The policy execution context.
