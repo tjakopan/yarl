@@ -207,7 +207,7 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
     return executeAsyncGeneric(context, action)
       .handleAsync { result, exception ->
         when {
-          exception != null -> return@handleAsync PolicyGenericFailureWithException<TResult?>(
+          exception != null -> return@handleAsync PolicyGenericFailureWithException(
             exception,
             getExceptionType(exceptionPredicates, exception),
             context
