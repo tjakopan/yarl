@@ -6,14 +6,14 @@ import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executor
 
 internal object AsyncPolicyWrapEngine {
-  internal fun <TResult> implementationAsyncGeneric(
+  internal fun <TResult> implementationAsync(
     context: Context,
     outerPolicy: IAsyncPolicy<TResult>,
     innerPolicy: IAsyncPolicy<TResult>,
     func: (Context) -> CompletionStage<TResult?>
   ): CompletionStage<TResult?> = outerPolicy.executeAsync(context) { innerPolicy.executeAsync(it, func) }
 
-  internal fun <TResult> implementationAsyncGeneric(
+  internal fun <TResult> implementationAsync(
     context: Context,
     executor: Executor,
     outerPolicy: IAsyncPolicy<TResult>,

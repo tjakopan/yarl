@@ -32,12 +32,12 @@ class AsyncPolicyWrap<TResult> internal constructor(outer: AsyncPolicy<TResult>,
     context: Context,
     action: (Context) -> CompletionStage<TResult?>
   ): CompletionStage<TResult?> =
-    AsyncPolicyWrapEngine.implementationAsyncGeneric(context, _outer, _inner, action)
+    AsyncPolicyWrapEngine.implementationAsync(context, _outer, _inner, action)
 
   override fun implementationAsync(
     context: Context,
     executor: Executor,
     action: (Context, Executor) -> CompletionStage<TResult?>
   ): CompletionStage<TResult?> =
-    AsyncPolicyWrapEngine.implementationAsyncGeneric(context, executor, _outer, _inner, action)
+    AsyncPolicyWrapEngine.implementationAsync(context, executor, _outer, _inner, action)
 }
