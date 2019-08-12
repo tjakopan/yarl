@@ -3,7 +3,7 @@ package hr.tjakopan.yarl
 /**
  * The captured outcome of executing an individual function.
  */
-sealed class DelegateResult<TResult> {
+sealed class DelegateResult<out TResult> {
   fun <T> fold(ifResult: (TResult?) -> T, ifException: (Throwable) -> T): T = when (this) {
     is Result -> ifResult(result)
     is Exception -> ifException(exception)
@@ -15,7 +15,7 @@ sealed class DelegateResult<TResult> {
    * @constructor Create an instance of [DelegateResult] representing an execution which returned [result].
    * @param result The result.
    */
-  class Result<TResult>(val result: TResult?) : DelegateResult<TResult>()
+  class Result<out TResult>(val result: TResult?) : DelegateResult<TResult>()
 
   /**
    * @property exception Any exception thrown while executing the delegate.

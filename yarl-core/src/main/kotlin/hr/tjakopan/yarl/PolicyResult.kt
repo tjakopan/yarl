@@ -1,7 +1,7 @@
 package hr.tjakopan.yarl
 
 typealias PolicySuccess<TResult> = PolicyResult.Success<TResult>
-typealias PolicyFailureWithException<TResult> = PolicyResult.Failure.FailureWithException<TResult>
+typealias PolicyFailureWithException = PolicyResult.Failure.FailureWithException
 typealias PolicyFailureWithResult<TResult> = PolicyResult.Failure.FailureWithResult<TResult>
 
 /**
@@ -9,7 +9,7 @@ typealias PolicyFailureWithResult<TResult> = PolicyResult.Failure.FailureWithRes
  *
  * @property context The context for this execution.
  */
-sealed class PolicyResult<TResult>(val context: Context) {
+sealed class PolicyResult<out TResult>(val context: Context) {
   fun <T> fold(
     ifSuccess: (TResult?, Context) -> T,
     ifFailureWithException: (finalException: Throwable, ExceptionType, FaultType, Context) -> T,
@@ -29,7 +29,7 @@ sealed class PolicyResult<TResult>(val context: Context) {
    *
    * @property result The result of executing the policy.
    */
-  class Success<TResult>(val result: TResult?, context: Context) : PolicyResult<TResult>(context) {
+  class Success<out TResult>(val result: TResult?, context: Context) : PolicyResult<TResult>(context) {
     /**
      * Builds a [PolicyResult] representing a successful execution through the policy.
      *
@@ -41,7 +41,7 @@ sealed class PolicyResult<TResult>(val context: Context) {
   /**
    * @param faultType The fault type of the final fault captured.
    */
-  sealed class Failure<TResult>(val faultType: FaultType, context: Context) : PolicyResult<TResult>(context) {
+  sealed class Failure<out TResult>(val faultType: FaultType, context: Context) : PolicyResult<TResult>(context) {
     /**
      * A [PolicyResult] representing a failed execution through the policy.
      *
@@ -53,12 +53,12 @@ sealed class PolicyResult<TResult>(val context: Context) {
      * @property finalException The final exception captured.
      * @property exceptionType The exception type of the final exception captured.
      */
-    class FailureWithException<TResult>(
+    class FailureWithException(
       val finalException: Throwable,
       val exceptionType: ExceptionType,
       context: Context
     ) :
-      Failure<TResult>(
+      Failure<Nothing>(
         when (exceptionType) {
           ExceptionType.HANDLED_BY_THIS_POLICY -> FaultType.EXCEPTION_HANDLED_BY_THIS_POLICY
           else -> FaultType.UNHANDLED_EXCEPTION
@@ -75,7 +75,7 @@ sealed class PolicyResult<TResult>(val context: Context) {
      *
      * @property finalHandledResult The final handled result captured.
      */
-    class FailureWithResult<TResult>(val finalHandledResult: TResult?, context: Context) :
+    class FailureWithResult<out TResult>(val finalHandledResult: TResult?, context: Context) :
       Failure<TResult>(FaultType.RESULT_HANDLED_BY_THIS_POLICY, context)
   }
 }

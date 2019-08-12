@@ -116,7 +116,7 @@ abstract class AsyncPolicy<TResult> internal constructor(
     return executeAsync(context, action)
       .handleAsync { result, exception ->
         when {
-          exception != null -> return@handleAsync PolicyFailureWithException<TResult?>(
+          exception != null -> return@handleAsync PolicyFailureWithException(
             exception,
             getExceptionType(exceptionPredicates, exception),
             context
