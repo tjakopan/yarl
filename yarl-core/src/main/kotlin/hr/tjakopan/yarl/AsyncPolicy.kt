@@ -29,25 +29,6 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
     return this
   }
 
-  override fun executeAsync(action: () -> CompletionStage<Unit>): CompletionStage<Unit> =
-    executeAsync(Context()) { action() }
-
-  override fun executeAsync(executor: Executor, action: (Executor) -> CompletionStage<Unit>): CompletionStage<Unit> =
-    executeAsync(Context(), executor) { _, ex -> action(ex) }
-
-  override fun executeAsync(
-    contextData: Map<String, Any>,
-    action: (Context) -> CompletionStage<Unit>
-  ): CompletionStage<Unit> =
-    executeAsync(Context(contextData.toMutableMap())) { action(it) }
-
-  override fun executeAsync(
-    contextData: Map<String, Any>,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<Unit> =
-    executeAsync(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
-
   override fun executeAsync(context: Context, action: (Context) -> CompletionStage<Unit>): CompletionStage<Unit> {
     val priorPolicyKeys = setPolicyContext(context)
     val priorPolicyWrapKey = priorPolicyKeys.first
@@ -72,32 +53,10 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
       }, executor)
   }
 
-  override fun <TResult> executeAsyncGeneric(action: () -> CompletionStage<TResult?>): CompletionStage<TResult?> =
-    executeAsyncGeneric(Context()) { action() }
-
-  override fun <TResult> executeAsyncGeneric(
-    executor: Executor,
-    action: (Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> =
-    executeAsyncGeneric(Context(), executor) { _, ex -> action(ex) }
-
-  override fun <TResult> executeAsyncGeneric(
-    contextData: Map<String, Any>,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> =
-    executeAsyncGeneric(Context(contextData.toMutableMap())) { action(it) }
-
-  override fun <TResult> executeAsyncGeneric(
-    contextData: Map<String, Any>,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> =
-    executeAsyncGeneric(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
-
   override fun <TResult> executeAsyncGeneric(
     context: Context,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> {
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> {
     val priorPolicyKeys = setPolicyContext(context)
     val priorPolicyWrapKey = priorPolicyKeys.first
     val priorPolicyKey = priorPolicyKeys.second
@@ -110,8 +69,8 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
   override fun <TResult> executeAsyncGeneric(
     context: Context,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> {
+    action: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> {
     val priorPolicyKeys = setPolicyContext(context)
     val priorPolicyWrapKey = priorPolicyKeys.first
     val priorPolicyKey = priorPolicyKeys.second
@@ -120,28 +79,6 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
         restorePolicyContext(context, priorPolicyWrapKey, priorPolicyKey)
       }, executor)
   }
-
-  override fun executeAndCaptureAsync(action: () -> CompletionStage<Unit>): CompletionStage<PolicyResult> =
-    executeAndCaptureAsync(Context()) { action() }
-
-  override fun executeAndCaptureAsync(
-    executor: Executor,
-    action: (Executor) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult> =
-    executeAndCaptureAsync(Context(), executor) { _, ex -> action(ex) }
-
-  override fun executeAndCaptureAsync(
-    contextData: Map<String, Any>,
-    action: (Context) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult> =
-    executeAndCaptureAsync(Context(contextData.toMutableMap())) { action(it) }
-
-  override fun executeAndCaptureAsync(
-    contextData: Map<String, Any>,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult> =
-    executeAndCaptureAsync(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
 
   override fun executeAndCaptureAsync(
     context: Context,
@@ -178,32 +115,10 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
       }, executor)
   }
 
-  override fun <TResult> executeAndCaptureAsyncGeneric(action: () -> CompletionStage<TResult?>): CompletionStage<PolicyResultGeneric<TResult?>> =
-    executeAndCaptureAsyncGeneric(Context()) { action() }
-
-  override fun <TResult> executeAndCaptureAsyncGeneric(
-    executor: Executor,
-    action: (Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<PolicyResultGeneric<TResult?>> =
-    executeAndCaptureAsyncGeneric(Context(), executor) { _, ex -> action(ex) }
-
-  override fun <TResult> executeAndCaptureAsyncGeneric(
-    contextData: Map<String, Any>,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<PolicyResultGeneric<TResult?>> =
-    executeAndCaptureAsyncGeneric(Context(contextData.toMutableMap())) { action(it) }
-
-  override fun <TResult> executeAndCaptureAsyncGeneric(
-    contextData: Map<String, Any>,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<PolicyResultGeneric<TResult?>> =
-    executeAndCaptureAsyncGeneric(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
-
   override fun <TResult> executeAndCaptureAsyncGeneric(
     context: Context,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<PolicyResultGeneric<TResult?>> {
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<PolicyResultGeneric<TResult>> {
     return executeAsyncGeneric(context, action)
       .handleAsync { result, exception ->
         when {
@@ -212,7 +127,7 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
             getExceptionType(exceptionPredicates, exception),
             context
           )
-          else -> return@handleAsync PolicyGenericSuccess<TResult?>(result, context)
+          else -> return@handleAsync PolicyGenericSuccess(result, context)
         }
       }
   }
@@ -220,8 +135,8 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
   override fun <TResult> executeAndCaptureAsyncGeneric(
     context: Context,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<PolicyResultGeneric<TResult?>> {
+    action: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<PolicyResultGeneric<TResult>> {
     return executeAsyncGeneric(context, executor, action)
       .handleAsync(BiFunction { result, exception ->
         when {
@@ -242,10 +157,11 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
    * @param action The action passed by calling code to execute through the policy.
    * @return A [CompletionStage] representing the result of the execution.
    */
-  protected abstract fun implementationAsync(
+  protected open fun implementationAsync(
     context: Context,
     action: (Context) -> CompletionStage<Unit>
-  ): CompletionStage<Unit>
+  ): CompletionStage<Unit> =
+    implementationAsyncGeneric(context, action)
 
   /**
    * Defines the implementation of a policy for async executions with no return value.
@@ -255,11 +171,12 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
    * @param action The action passed by calling code to execute through the policy.
    * @return A [CompletionStage] representing the result of the execution.
    */
-  protected abstract fun implementationAsync(
+  protected open fun implementationAsync(
     context: Context,
     executor: Executor,
     action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<Unit>
+  ): CompletionStage<Unit> =
+    implementationAsyncGeneric(context, executor, action)
 
   /**
    * Defines the implementation of a policy for async executions returning [TResult].
@@ -271,8 +188,8 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
    */
   protected abstract fun <TResult> implementationAsyncGeneric(
     context: Context,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?>
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult>
 
   /**
    * Defines the implementation of a policy for async executions returning [TResult].
@@ -286,8 +203,8 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
   protected abstract fun <TResult> implementationAsyncGeneric(
     context: Context,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult>
 
   /**
    * Wraps the specified inner policy.

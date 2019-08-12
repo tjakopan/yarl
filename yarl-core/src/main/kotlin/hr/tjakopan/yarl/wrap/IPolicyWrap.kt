@@ -16,3 +16,9 @@ interface IPolicyWrap : IsPolicy {
    */
   val inner: IsPolicy
 }
+
+/**
+ * Defines properties and methods common to all PolicyWrap policies generic-typed for executions returning results of
+ * type [TResult].
+ */
+interface IPolicyWrapGeneric<TResult> : IPolicyWrap

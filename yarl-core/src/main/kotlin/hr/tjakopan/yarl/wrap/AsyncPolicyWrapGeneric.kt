@@ -18,10 +18,8 @@ class AsyncPolicyWrapGeneric<TResult> private constructor(
   private var outerGeneric: IAsyncPolicyGeneric<TResult>? = null
   private var innerGeneric: IAsyncPolicyGeneric<TResult>? = null
 
-  override val outer: IsPolicy
-    get() = (outerGeneric ?: outerNonGeneric) as IsPolicy
-  override val inner: IsPolicy
-    get() = (innerGeneric ?: innerNonGeneric) as IsPolicy
+  override val outer: IsPolicy = (outerGeneric ?: outerNonGeneric) as IsPolicy
+  override val inner: IsPolicy = (innerGeneric ?: innerNonGeneric) as IsPolicy
 
   internal constructor(outer: AsyncPolicy, inner: IAsyncPolicyGeneric<TResult>) : this(
     outer.exceptionPredicates,
@@ -57,8 +55,8 @@ class AsyncPolicyWrapGeneric<TResult> private constructor(
 
   override fun implementationAsync(
     context: Context,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> {
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> {
     return when {
       outerNonGeneric != null -> when {
         innerNonGeneric != null -> AsyncPolicyWrapEngine.implementationAsyncGeneric(
@@ -97,8 +95,8 @@ class AsyncPolicyWrapGeneric<TResult> private constructor(
   override fun implementationAsync(
     context: Context,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> {
+    action: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> {
     return when {
       outerNonGeneric != null -> when {
         innerNonGeneric != null -> AsyncPolicyWrapEngine.implementationAsyncGeneric(

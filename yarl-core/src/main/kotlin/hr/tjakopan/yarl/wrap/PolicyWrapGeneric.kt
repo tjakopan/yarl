@@ -10,7 +10,7 @@ import hr.tjakopan.yarl.*
 class PolicyWrapGeneric<TResult> private constructor(
   exceptionPredicates: ExceptionPredicates?,
   resultPredicates: ResultPredicates<TResult>?
-) : PolicyGeneric<TResult>(exceptionPredicates, resultPredicates), IPolicyWrap {
+) : PolicyGeneric<TResult>(exceptionPredicates, resultPredicates), IPolicyWrapGeneric<TResult> {
   private var outerNonGeneric: ISyncPolicy? = null
   private var innerNonGeneric: ISyncPolicy? = null
   private var outerGeneric: ISyncPolicyGeneric<TResult>? = null

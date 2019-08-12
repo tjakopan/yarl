@@ -21,7 +21,9 @@ interface IAsyncPolicy : IsPolicy {
    *
    * @param action The action to perform.
    */
-  fun executeAsync(action: () -> CompletionStage<Unit>): CompletionStage<Unit>
+  @JvmDefault
+  fun executeAsync(action: () -> CompletionStage<Unit>): CompletionStage<Unit> =
+    executeAsync(Context()) { action() }
 
   /**
    * Executes the specified asynchronous action within the policy.
@@ -29,7 +31,9 @@ interface IAsyncPolicy : IsPolicy {
    * @param executor The executor to use for asynchronous execution.
    * @param action The action to perform.
    */
-  fun executeAsync(executor: Executor, action: (Executor) -> CompletionStage<Unit>): CompletionStage<Unit>
+  @JvmDefault
+  fun executeAsync(executor: Executor, action: (Executor) -> CompletionStage<Unit>): CompletionStage<Unit> =
+    executeAsync(Context(), executor) { _, ex -> action(ex) }
 
   /**
    * Executes the specified asynchronous action within the policy.
@@ -37,7 +41,9 @@ interface IAsyncPolicy : IsPolicy {
    * @param contextData Arbitrary data that is passed to the exception policy.
    * @param action The action to perform.
    */
-  fun executeAsync(contextData: Map<String, Any>, action: (Context) -> CompletionStage<Unit>): CompletionStage<Unit>
+  @JvmDefault
+  fun executeAsync(contextData: Map<String, Any>, action: (Context) -> CompletionStage<Unit>): CompletionStage<Unit> =
+    executeAsync(Context(contextData.toMutableMap())) { action(it) }
 
   /**
    * Executes the specified asynchronous action within the policy.
@@ -46,11 +52,13 @@ interface IAsyncPolicy : IsPolicy {
    * @param executor The executor to use for asynchronous execution.
    * @param action The action to perform.
    */
+  @JvmDefault
   fun executeAsync(
     contextData: Map<String, Any>,
     executor: Executor,
     action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<Unit>
+  ): CompletionStage<Unit> =
+    executeAsync(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
 
   /**
    * Executes the specified asynchronous action within the policy.
@@ -80,7 +88,9 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The value returned by the action.
    */
-  fun <TResult> executeAsyncGeneric(action: () -> CompletionStage<TResult?>): CompletionStage<TResult?>
+  @JvmDefault
+  fun <TResult> executeAsyncGeneric(action: () -> CompletionStage<TResult>): CompletionStage<TResult> =
+    executeAsyncGeneric(Context()) { action() }
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -90,10 +100,12 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The value returned by the action.
    */
+  @JvmDefault
   fun <TResult> executeAsyncGeneric(
     executor: Executor,
-    action: (Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?>
+    action: (Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
+    executeAsyncGeneric(Context(), executor) { _, ex -> action(ex) }
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -103,10 +115,12 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The value returned by the action.
    */
+  @JvmDefault
   fun <TResult> executeAsyncGeneric(
     contextData: Map<String, Any>,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?>
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
+    executeAsyncGeneric(Context(contextData.toMutableMap())) { action(it) }
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -117,11 +131,13 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The value returned by the action.
    */
+  @JvmDefault
   fun <TResult> executeAsyncGeneric(
     contextData: Map<String, Any>,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
+    executeAsyncGeneric(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -133,8 +149,8 @@ interface IAsyncPolicy : IsPolicy {
    */
   fun <TResult> executeAsyncGeneric(
     context: Context,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?>
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult>
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -148,8 +164,8 @@ interface IAsyncPolicy : IsPolicy {
   fun <TResult> executeAsyncGeneric(
     context: Context,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?>
+    action: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult>
 
   /**
    * Executes the specified asynchronous action within the policy and returns the captured result.
@@ -157,7 +173,9 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  fun executeAndCaptureAsync(action: () -> CompletionStage<Unit>): CompletionStage<PolicyResult>
+  @JvmDefault
+  fun executeAndCaptureAsync(action: () -> CompletionStage<Unit>): CompletionStage<PolicyResult> =
+    executeAndCaptureAsync(Context()) { action() }
 
   /**
    * Executes the specified asynchronous action within the policy and returns the captured result.
@@ -166,49 +184,58 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  fun executeAndCaptureAsync(executor: Executor, action: (Executor) -> CompletionStage<Unit>): CompletionStage<PolicyResult>
+  @JvmDefault
+  fun executeAndCaptureAsync(
+    executor: Executor,
+    action: (Executor) -> CompletionStage<Unit>
+  ): CompletionStage<PolicyResult> =
+    executeAndCaptureAsync(Context(), executor) { _, ex -> action(ex) }
 
   /**
    * Executes the specified asynchronous action within the policy and returns the captured result.
    *
    * @param contextData Arbitrary data that is passed to the exception policy.
+   * @param action The action to perform.
+   * @return The captured result.
+   */
+  @JvmDefault
+  fun executeAndCaptureAsync(
+    contextData: Map<String, Any>,
+    action: (Context) -> CompletionStage<Unit>
+  ): CompletionStage<PolicyResult> =
+    executeAndCaptureAsync(Context(contextData.toMutableMap())) { action(it) }
+
+  /**
+   * Executes the specified asynchronous action within the policy and returns the captured result.
+   *
+   * @param contextData Arbitrary data that is passed to the exception policy.
+   * @param executor The executor to use for asynchronous execution.
+   * @param action The action to perform.
+   * @return The captured result.
+   */
+  @JvmDefault
+  fun executeAndCaptureAsync(
+    contextData: Map<String, Any>,
+    executor: Executor,
+    action: (Context, Executor) -> CompletionStage<Unit>
+  ): CompletionStage<PolicyResult> =
+    executeAndCaptureAsync(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
+
+  /**
+   * Executes the specified asynchronous action within the policy and returns the captured result.
+   *
+   * @param context Context data that is passed to the exception policy.
    * @param action The action to perform.
    * @return The captured result.
    */
   fun executeAndCaptureAsync(
-    contextData: Map<String, Any>,
+    context: Context,
     action: (Context) -> CompletionStage<Unit>
   ): CompletionStage<PolicyResult>
 
   /**
    * Executes the specified asynchronous action within the policy and returns the captured result.
    *
-   * @param contextData Arbitrary data that is passed to the exception policy.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
-  fun executeAndCaptureAsync(
-    contextData: Map<String, Any>,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult>
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the captured result.
-   *
-   * @param context Context data that is passed to the exception policy.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
-  fun executeAndCaptureAsync(
-    context: Context,
-    action: (Context) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult>
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the captured result.
-   *
    * @param context Context data that is passed to the exception policy.
    * @param executor The executor to use for asynchronous execution.
    * @param action The action to perform.
@@ -227,7 +254,9 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  fun <TResult> executeAndCaptureAsyncGeneric(action: () -> CompletionStage<TResult?>): CompletionStage<PolicyResultGeneric<TResult?>>
+  @JvmDefault
+  fun <TResult> executeAndCaptureAsyncGeneric(action: () -> CompletionStage<TResult>): CompletionStage<PolicyResultGeneric<TResult>> =
+    executeAndCaptureAsyncGeneric(Context()) { action() }
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -237,10 +266,12 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
+  @JvmDefault
   fun <TResult> executeAndCaptureAsyncGeneric(
     executor: Executor,
-    action: (Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<PolicyResultGeneric<TResult?>>
+    action: (Executor) -> CompletionStage<TResult>
+  ): CompletionStage<PolicyResultGeneric<TResult>> =
+    executeAndCaptureAsyncGeneric(Context(), executor) { _, ex -> action(ex) }
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -250,10 +281,12 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
+  @JvmDefault
   fun <TResult> executeAndCaptureAsyncGeneric(
     contextData: Map<String, Any>,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<PolicyResultGeneric<TResult?>>
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<PolicyResultGeneric<TResult>> =
+    executeAndCaptureAsyncGeneric(Context(contextData.toMutableMap())) { action(it) }
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -264,11 +297,13 @@ interface IAsyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
+  @JvmDefault
   fun <TResult> executeAndCaptureAsyncGeneric(
     contextData: Map<String, Any>,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<PolicyResultGeneric<TResult?>>
+    action: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<PolicyResultGeneric<TResult>> =
+    executeAndCaptureAsyncGeneric(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -280,8 +315,8 @@ interface IAsyncPolicy : IsPolicy {
    */
   fun <TResult> executeAndCaptureAsyncGeneric(
     context: Context,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<PolicyResultGeneric<TResult?>>
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<PolicyResultGeneric<TResult>>
 
   /**
    * Executes the specified asynchronous action within the policy and returns the result.
@@ -295,6 +330,6 @@ interface IAsyncPolicy : IsPolicy {
   fun <TResult> executeAndCaptureAsyncGeneric(
     context: Context,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<PolicyResultGeneric<TResult?>>
+    action: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<PolicyResultGeneric<TResult>>
 }

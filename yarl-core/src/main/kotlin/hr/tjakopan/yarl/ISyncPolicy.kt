@@ -18,7 +18,8 @@ interface ISyncPolicy : IsPolicy {
    *
    * @param action The action to perform.
    */
-  fun execute(action: () -> Unit)
+  @JvmDefault
+  fun execute(action: () -> Unit) = execute(Context()) { action() }
 
   /**
    * Executes the specified action within the policy.
@@ -26,7 +27,9 @@ interface ISyncPolicy : IsPolicy {
    * @param contextData Arbitrary data that is passed to the exception policy.
    * @param action The action to perform.
    */
-  fun execute(contextData: Map<String, Any>, action: (Context) -> Unit)
+  @JvmDefault
+  fun execute(contextData: Map<String, Any>, action: (Context) -> Unit) =
+    execute(Context(contextData.toMutableMap())) { action(it) }
 
   /**
    * Executes the specified action within the policy.
@@ -43,7 +46,8 @@ interface ISyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The value returned by the action.
    */
-  fun <TResult> execute(action: () -> TResult?): TResult?
+  @JvmDefault
+  fun <TResult> execute(action: () -> TResult): TResult? = execute<TResult>(Context()) { action() }
 
   /**
    * Executes the specified action within the policy and returns the result.
@@ -53,7 +57,9 @@ interface ISyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The value returned by the action.
    */
-  fun <TResult> execute(contextData: Map<String, Any>, action: (Context) -> TResult?): TResult?
+  @JvmDefault
+  fun <TResult> execute(contextData: Map<String, Any>, action: (Context) -> TResult?): TResult? =
+    execute<TResult>(Context(contextData.toMutableMap())) { action(it) }
 
   /**
    * Executes the specified action within the policy and returns the result.
@@ -71,7 +77,8 @@ interface ISyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  fun executeAndCapture(action: () -> Unit): PolicyResult
+  @JvmDefault
+  fun executeAndCapture(action: () -> Unit): PolicyResult = executeAndCapture(Context()) { action() }
 
   /**
    * Executes the specified action within the policy and returns the captured result.
@@ -80,7 +87,9 @@ interface ISyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  fun executeAndCapture(contextData: Map<String, Any>, action: (Context) -> Unit): PolicyResult
+  @JvmDefault
+  fun executeAndCapture(contextData: Map<String, Any>, action: (Context) -> Unit): PolicyResult =
+    executeAndCapture(Context(contextData.toMutableMap())) { action(it) }
 
   /**
    * Executes the specified action within the policy and returns the captured result.
@@ -97,7 +106,9 @@ interface ISyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  fun <TResult> executeAndCapture(action: () -> TResult?): PolicyResultGeneric<TResult>
+  @JvmDefault
+  fun <TResult> executeAndCapture(action: () -> TResult?): PolicyResultGeneric<TResult> =
+    executeAndCapture<TResult>(Context()) { action() }
 
   /**
    * Executes the specified action within the policy and returns the captured result.
@@ -106,10 +117,12 @@ interface ISyncPolicy : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
+  @JvmDefault
   fun <TResult> executeAndCapture(
     contextData: Map<String, Any>,
     action: (Context) -> TResult?
-  ): PolicyResultGeneric<TResult>
+  ): PolicyResultGeneric<TResult> =
+    executeAndCapture<TResult>(Context(contextData.toMutableMap())) { action(it) }
 
   /**
    * Executes the specified action within the policy and returns the captured result.

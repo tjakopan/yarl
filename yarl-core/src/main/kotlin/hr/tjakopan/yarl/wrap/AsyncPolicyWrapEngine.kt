@@ -11,56 +11,56 @@ internal object AsyncPolicyWrapEngine {
     context: Context,
     outerPolicy: IAsyncPolicyGeneric<TResult>,
     innerPolicy: IAsyncPolicyGeneric<TResult>,
-    func: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> = outerPolicy.executeAsync(context) { innerPolicy.executeAsync(it, func) }
+    func: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> = outerPolicy.executeAsync(context) { innerPolicy.executeAsync(it, func) }
 
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     executor: Executor,
     outerPolicy: IAsyncPolicyGeneric<TResult>,
     innerPolicy: IAsyncPolicyGeneric<TResult>,
-    func: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> =
+    func: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
     outerPolicy.executeAsync(context, executor) { ctx, exe -> innerPolicy.executeAsync(ctx, exe, func) }
 
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     outerPolicy: IAsyncPolicyGeneric<TResult>,
     innerPolicy: IAsyncPolicy,
-    func: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> = outerPolicy.executeAsync(context) { innerPolicy.executeAsyncGeneric(it, func) }
+    func: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> = outerPolicy.executeAsync(context) { innerPolicy.executeAsyncGeneric(it, func) }
 
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     executor: Executor,
     outerPolicy: IAsyncPolicyGeneric<TResult>,
     innerPolicy: IAsyncPolicy,
-    func: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> =
+    func: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
     outerPolicy.executeAsync(context, executor) { ctx, exe -> innerPolicy.executeAsyncGeneric(ctx, exe, func) }
 
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     outerPolicy: IAsyncPolicy,
     innerPolicy: IAsyncPolicyGeneric<TResult>,
-    func: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> = outerPolicy.executeAsyncGeneric(context) { innerPolicy.executeAsync(it, func) }
+    func: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> = outerPolicy.executeAsyncGeneric(context) { innerPolicy.executeAsync(it, func) }
 
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     executor: Executor,
     outerPolicy: IAsyncPolicy,
     innerPolicy: IAsyncPolicyGeneric<TResult>,
-    func: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> =
+    func: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
     outerPolicy.executeAsyncGeneric(context, executor) { ctx, exe -> innerPolicy.executeAsync(ctx, exe, func) }
 
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     outerPolicy: IAsyncPolicy,
     innerPolicy: IAsyncPolicy,
-    func: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> =
+    func: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
     outerPolicy.executeAsyncGeneric(context) { innerPolicy.executeAsyncGeneric(it, func) }
 
   internal fun <TResult> implementationAsyncGeneric(
@@ -68,8 +68,8 @@ internal object AsyncPolicyWrapEngine {
     executor: Executor,
     outerPolicy: IAsyncPolicy,
     innerPolicy: IAsyncPolicy,
-    func: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> =
+    func: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
     outerPolicy.executeAsyncGeneric(context, executor) { ctx, exe -> innerPolicy.executeAsyncGeneric(ctx, exe, func) }
 
   internal fun implementationAsync(

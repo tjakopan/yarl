@@ -25,11 +25,6 @@ abstract class Policy internal constructor(exceptionPredicates: ExceptionPredica
     return this
   }
 
-  override fun execute(action: () -> Unit) = execute(Context()) { action() }
-
-  override fun execute(contextData: Map<String, Any>, action: (Context) -> Unit) =
-    execute(Context(contextData.toMutableMap())) { action(it) }
-
   override fun execute(context: Context, action: (Context) -> Unit) {
     val priorPolicyKeys = setPolicyContext(context)
     val priorPolicyWrapKey = priorPolicyKeys.first
@@ -40,11 +35,6 @@ abstract class Policy internal constructor(exceptionPredicates: ExceptionPredica
       restorePolicyContext(context, priorPolicyWrapKey, priorPolicyKey)
     }
   }
-
-  override fun <TResult> execute(action: () -> TResult?): TResult? = execute<TResult>(Context()) { action() }
-
-  override fun <TResult> execute(contextData: Map<String, Any>, action: (Context) -> TResult?): TResult? =
-    execute<TResult>(Context(contextData.toMutableMap())) { action(it) }
 
   override fun <TResult> execute(context: Context, action: (Context) -> TResult?): TResult? {
     val priorPolicyKeys = setPolicyContext(context)
@@ -57,11 +47,6 @@ abstract class Policy internal constructor(exceptionPredicates: ExceptionPredica
     }
   }
 
-  override fun executeAndCapture(action: () -> Unit): PolicyResult = executeAndCapture(Context()) { action() }
-
-  override fun executeAndCapture(contextData: Map<String, Any>, action: (Context) -> Unit): PolicyResult =
-    executeAndCapture(Context(contextData.toMutableMap())) { action(it) }
-
   override fun executeAndCapture(context: Context, action: (Context) -> Unit): PolicyResult {
     return try {
       execute(context, action)
@@ -70,15 +55,6 @@ abstract class Policy internal constructor(exceptionPredicates: ExceptionPredica
       PolicyFailure(exception, getExceptionType(exceptionPredicates, exception), context)
     }
   }
-
-  override fun <TResult> executeAndCapture(action: () -> TResult?): PolicyResultGeneric<TResult> =
-    executeAndCapture<TResult>(Context()) { action() }
-
-  override fun <TResult> executeAndCapture(
-    contextData: Map<String, Any>,
-    action: (Context) -> TResult?
-  ): PolicyResultGeneric<TResult> =
-    executeAndCapture<TResult>(Context(contextData.toMutableMap())) { action(it) }
 
   override fun <TResult> executeAndCapture(
     context: Context,
@@ -97,7 +73,8 @@ abstract class Policy internal constructor(exceptionPredicates: ExceptionPredica
    * @param context The policy execution context.
    * @param action The action passed by calling code to execute through the policy.
    */
-  protected abstract fun implementation(context: Context, action: (Context) -> Unit)
+  protected open fun implementation(context: Context, action: (Context) -> Unit): Unit =
+    implementation<Unit>(context, action)!!
 
   /**
    * Defines the implementation of a policy for synchronous executions returning [TResult].

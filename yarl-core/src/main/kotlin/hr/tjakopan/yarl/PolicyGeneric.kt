@@ -32,11 +32,6 @@ abstract class PolicyGeneric<TResult> internal constructor(
     return this
   }
 
-  override fun execute(action: () -> TResult?): TResult? = execute(Context()) { action() }
-
-  override fun execute(contextData: Map<String, Any>, action: (Context) -> TResult?): TResult? =
-    execute(Context(contextData.toMutableMap())) { action(it) }
-
   override fun execute(context: Context, action: (Context) -> TResult?): TResult? {
     val priorPolicyKeys = setPolicyContext(context)
     val priorPolicyWrapKey = priorPolicyKeys.first
@@ -47,14 +42,6 @@ abstract class PolicyGeneric<TResult> internal constructor(
       restorePolicyContext(context, priorPolicyWrapKey, priorPolicyKey)
     }
   }
-
-  override fun executeAndCapture(action: () -> TResult?): PolicyResultGeneric<TResult> =
-    executeAndCapture(Context()) { action() }
-
-  override fun executeAndCapture(
-    contextData: Map<String, Any>,
-    action: (Context) -> TResult?
-  ): PolicyResultGeneric<TResult> = executeAndCapture(Context(contextData.toMutableMap())) { action(it) }
 
   override fun executeAndCapture(context: Context, action: (Context) -> TResult?): PolicyResultGeneric<TResult> {
     return try {

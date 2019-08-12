@@ -15,10 +15,8 @@ class AsyncPolicyWrap internal constructor(outer: AsyncPolicy, inner: IAsyncPoli
   private val _outer: IAsyncPolicy = outer
   private val _inner: IAsyncPolicy = inner
 
-  override val outer: IsPolicy
-    get() = _outer
-  override val inner: IsPolicy
-    get() = _inner
+  override val outer: IsPolicy = _outer
+  override val inner: IsPolicy = _inner
 
   override fun setPolicyContext(executionContext: Context): Pair<String?, String?> {
     val priorPolicyKeys = Pair(executionContext.policyWrapKey, executionContext.policyKey)
@@ -43,14 +41,14 @@ class AsyncPolicyWrap internal constructor(outer: AsyncPolicy, inner: IAsyncPoli
 
   override fun <TResult> implementationAsyncGeneric(
     context: Context,
-    action: (Context) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> =
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
     AsyncPolicyWrapEngine.implementationAsyncGeneric(context, _outer, _inner, action)
 
   override fun <TResult> implementationAsyncGeneric(
     context: Context,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult?>
-  ): CompletionStage<TResult?> =
+    action: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
     AsyncPolicyWrapEngine.implementationAsyncGeneric(context, executor, _outer, _inner, action)
 }
