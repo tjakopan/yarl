@@ -1,5 +1,6 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.noop.NoOpPolicy
 import hr.tjakopan.yarl.wrap.PolicyWrap
 import hr.tjakopan.yarl.wrap.PolicyWrapGeneric
 
@@ -189,6 +190,14 @@ abstract class Policy internal constructor(exceptionPredicates: ExceptionPredica
      */
     @JvmStatic
     fun <TResult> handleResult(result: TResult?): PolicyBuilderGeneric<TResult> = handleResult { it == result }
+
+    /**
+     * Builds a NoOp [Policy] that will execute without any custom behavior.
+     *
+     * @return The policy instance.
+     */
+    @JvmStatic
+    fun noOp() = NoOpPolicy()
 
     /**
      * Creates a [PolicyWrap] of the given policies.

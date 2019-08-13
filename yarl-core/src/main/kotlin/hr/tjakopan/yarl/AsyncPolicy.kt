@@ -1,5 +1,6 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.noop.AsyncNoOpPolicy
 import hr.tjakopan.yarl.wrap.AsyncPolicyWrap
 import hr.tjakopan.yarl.wrap.AsyncPolicyWrapGeneric
 import java.util.concurrent.CompletionStage
@@ -255,5 +256,13 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
         else -> wrapAsync(policies[0], wrapAsync(*policies.drop(1).toTypedArray()))
       }
     }
+
+    /**
+     * Builds a NoOp [AsyncPolicy] that will execute without any custom behavior.
+     *
+     * @return The policy instance.
+     */
+    @JvmStatic
+    fun noOpAsync() = AsyncNoOpPolicy()
   }
 }

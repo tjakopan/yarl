@@ -1,5 +1,6 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.noop.AsyncNoOpPolicyGeneric
 import hr.tjakopan.yarl.wrap.AsyncPolicyWrapGeneric
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executor
@@ -144,4 +145,15 @@ abstract class AsyncPolicyGeneric<TResult> internal constructor(
    * @param innerPolicy The inner policy
    */
   fun wrapAsync(innerPolicy: IAsyncPolicyGeneric<TResult>) = AsyncPolicyWrapGeneric(this, innerPolicy)
+
+  companion object {
+    /**
+     * Builds a NoOp [AsyncPolicyGeneric] that will execute without any custom behavior.
+     *
+     * @param TResult The type of return values this policy will handle.
+     * @return The policy instance.
+     */
+    @JvmStatic
+    fun <TResult> noOpAsync() = AsyncNoOpPolicyGeneric<TResult>()
+  }
 }

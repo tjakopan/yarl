@@ -13,4 +13,4 @@ import hr.tjakopan.yarl.wrap.wrapAsync
  * @return A generic [IAsyncPolicyGeneric] version of the supplied non-generic [IAsyncPolicy].
  */
 fun <TResult> IAsyncPolicy.asGenericAsyncPolicy(): IAsyncPolicyGeneric<TResult> =
-  this.wrapAsync(AsyncNoOpPolicyGeneric.noOpAsync())
+  this.wrapAsync(AsyncPolicyGeneric.noOpAsync())

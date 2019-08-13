@@ -1,6 +1,5 @@
 package hr.tjakopan.yarl
 
-import hr.tjakopan.yarl.noop.NoOpPolicyGeneric
 import hr.tjakopan.yarl.wrap.wrap
 
 /**
@@ -13,4 +12,4 @@ import hr.tjakopan.yarl.wrap.wrap
  * @return A generic [ISyncPolicyGeneric] version of the supplied non-generic [ISyncPolicy].
  */
 fun <TResult> ISyncPolicy.asGenericPolicy(): ISyncPolicyGeneric<TResult> =
-  this.wrap(NoOpPolicyGeneric.noOp())
+  this.wrap(PolicyGeneric.noOp())

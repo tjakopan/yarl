@@ -22,16 +22,6 @@ class AsyncNoOpPolicy internal constructor() : AsyncPolicy(), INoOpPolicy {
     action: (Context, Executor) -> CompletionStage<TResult>
   ): CompletionStage<TResult> =
     NoOpEngine.implementationAsync(context, executor, action)
-
-  companion object {
-    /**
-     * Builds a NoOp [AsyncPolicy] that will execute without any custom behavior.
-     *
-     * @return The policy instance.
-     */
-    @JvmStatic
-    fun noOpAsync() = AsyncNoOpPolicy()
-  }
 }
 
 /**
@@ -51,15 +41,4 @@ class AsyncNoOpPolicyGeneric<TResult> internal constructor() : AsyncPolicyGeneri
     action: (Context, Executor) -> CompletionStage<TResult>
   ): CompletionStage<TResult> =
     NoOpEngine.implementationAsync(context, executor, action)
-
-  companion object {
-    /**
-     * Builds a NoOp [AsyncPolicyGeneric] that will execute without any custom behavior.
-     *
-     * @param TResult The type of return values this policy will handle.
-     * @return The policy instance.
-     */
-    @JvmStatic
-    fun <TResult> noOpAsync() = AsyncNoOpPolicyGeneric<TResult>()
-  }
 }

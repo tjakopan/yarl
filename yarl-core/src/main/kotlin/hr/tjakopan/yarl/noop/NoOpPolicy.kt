@@ -10,16 +10,6 @@ import hr.tjakopan.yarl.PolicyGeneric
 class NoOpPolicy internal constructor() : Policy(), INoOpPolicy {
   override fun <TResult> implementation(context: Context, action: (Context) -> TResult?): TResult? =
     NoOpEngine.implementation(context, action)
-
-  companion object {
-    /**
-     * Builds a NoOp [Policy] that will execute without any custom behavior.
-     *
-     * @return The policy instance.
-     */
-    @JvmStatic
-    fun noOp() = NoOpPolicy()
-  }
 }
 
 /**
@@ -30,15 +20,4 @@ class NoOpPolicy internal constructor() : Policy(), INoOpPolicy {
 class NoOpPolicyGeneric<TResult> internal constructor() : PolicyGeneric<TResult>(), INoOpPolicyGeneric<TResult> {
   override fun implementation(context: Context, action: (Context) -> TResult?): TResult? =
     NoOpEngine.implementation(context, action)
-
-  companion object {
-    /**
-     * Builds a NoOp [PolicyGeneric] that will execute without any custom behavior.
-     *
-     * @param TResult The type of return values this policy will handle.
-     * @return The policy instance.
-     */
-    @JvmStatic
-    fun <TResult> noOp() = NoOpPolicyGeneric<TResult>()
-  }
 }
