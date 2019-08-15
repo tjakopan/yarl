@@ -5,6 +5,7 @@ import hr.tjakopan.yarl.ISyncPolicy
 import hr.tjakopan.yarl.ISyncPolicyGeneric
 
 internal object PolicyWrapEngine {
+  @JvmSynthetic
   internal fun <TResult> implementation(
     context: Context,
     outerPolicy: ISyncPolicyGeneric<TResult>,
@@ -13,6 +14,7 @@ internal object PolicyWrapEngine {
   ): TResult? =
     outerPolicy.execute(context) { innerPolicy.execute(it, func) }
 
+  @JvmSynthetic
   internal fun <TResult> implementation(
     context: Context,
     outerPolicy: ISyncPolicyGeneric<TResult>,
@@ -21,6 +23,7 @@ internal object PolicyWrapEngine {
   ): TResult? =
     outerPolicy.execute(context) { innerPolicy.execute<TResult>(it, func) }
 
+  @JvmSynthetic
   internal fun <TResult> implementation(
     context: Context,
     outerPolicy: ISyncPolicy,
@@ -29,6 +32,7 @@ internal object PolicyWrapEngine {
   ): TResult? =
     outerPolicy.execute<TResult>(context) { innerPolicy.execute(it, func) }
 
+  @JvmSynthetic
   internal fun <TResult> implementation(
     context: Context,
     outerPolicy: ISyncPolicy,
@@ -37,6 +41,7 @@ internal object PolicyWrapEngine {
   ): TResult? =
     outerPolicy.execute<TResult>(context) { innerPolicy.execute<TResult>(it, func) }
 
+  @JvmSynthetic
   internal fun implementation(
     context: Context,
     outerPolicy: ISyncPolicy,

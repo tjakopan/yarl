@@ -7,6 +7,7 @@ import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executor
 
 internal object AsyncPolicyWrapEngine {
+  @JvmSynthetic
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     outerPolicy: IAsyncPolicyGeneric<TResult>,
@@ -14,6 +15,7 @@ internal object AsyncPolicyWrapEngine {
     func: (Context) -> CompletionStage<TResult>
   ): CompletionStage<TResult> = outerPolicy.executeAsync(context) { innerPolicy.executeAsync(it, func) }
 
+  @JvmSynthetic
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     executor: Executor,
@@ -23,6 +25,7 @@ internal object AsyncPolicyWrapEngine {
   ): CompletionStage<TResult> =
     outerPolicy.executeAsync(context, executor) { ctx, exe -> innerPolicy.executeAsync(ctx, exe, func) }
 
+  @JvmSynthetic
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     outerPolicy: IAsyncPolicyGeneric<TResult>,
@@ -30,6 +33,7 @@ internal object AsyncPolicyWrapEngine {
     func: (Context) -> CompletionStage<TResult>
   ): CompletionStage<TResult> = outerPolicy.executeAsync(context) { innerPolicy.executeAsyncGeneric(it, func) }
 
+  @JvmSynthetic
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     executor: Executor,
@@ -39,6 +43,7 @@ internal object AsyncPolicyWrapEngine {
   ): CompletionStage<TResult> =
     outerPolicy.executeAsync(context, executor) { ctx, exe -> innerPolicy.executeAsyncGeneric(ctx, exe, func) }
 
+  @JvmSynthetic
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     outerPolicy: IAsyncPolicy,
@@ -46,6 +51,7 @@ internal object AsyncPolicyWrapEngine {
     func: (Context) -> CompletionStage<TResult>
   ): CompletionStage<TResult> = outerPolicy.executeAsyncGeneric(context) { innerPolicy.executeAsync(it, func) }
 
+  @JvmSynthetic
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     executor: Executor,
@@ -55,6 +61,7 @@ internal object AsyncPolicyWrapEngine {
   ): CompletionStage<TResult> =
     outerPolicy.executeAsyncGeneric(context, executor) { ctx, exe -> innerPolicy.executeAsync(ctx, exe, func) }
 
+  @JvmSynthetic
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     outerPolicy: IAsyncPolicy,
@@ -63,6 +70,7 @@ internal object AsyncPolicyWrapEngine {
   ): CompletionStage<TResult> =
     outerPolicy.executeAsyncGeneric(context) { innerPolicy.executeAsyncGeneric(it, func) }
 
+  @JvmSynthetic
   internal fun <TResult> implementationAsyncGeneric(
     context: Context,
     executor: Executor,
@@ -72,6 +80,7 @@ internal object AsyncPolicyWrapEngine {
   ): CompletionStage<TResult> =
     outerPolicy.executeAsyncGeneric(context, executor) { ctx, exe -> innerPolicy.executeAsyncGeneric(ctx, exe, func) }
 
+  @JvmSynthetic
   internal fun implementationAsync(
     context: Context,
     outerPolicy: IAsyncPolicy,
@@ -79,6 +88,7 @@ internal object AsyncPolicyWrapEngine {
     action: (Context) -> CompletionStage<Unit>
   ): CompletionStage<Unit> = outerPolicy.executeAsync(context) { innerPolicy.executeAsync(it, action) }
 
+  @JvmSynthetic
   internal fun implementationAsync(
     context: Context,
     executor: Executor,
