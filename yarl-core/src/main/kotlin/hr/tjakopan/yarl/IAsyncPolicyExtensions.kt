@@ -1,6 +1,8 @@
+@file:JvmName("PolicyExtensions")
+@file:JvmMultifileClass
+
 package hr.tjakopan.yarl
 
-import hr.tjakopan.yarl.noop.AsyncNoOpPolicyGeneric
 import hr.tjakopan.yarl.wrap.wrapAsync
 
 /**

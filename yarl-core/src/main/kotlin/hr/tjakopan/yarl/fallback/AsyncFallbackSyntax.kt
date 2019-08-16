@@ -1,3 +1,6 @@
+@file:JvmName("FallbackBuilder")
+@file:JvmMultifileClass
+
 package hr.tjakopan.yarl.fallback
 
 import hr.tjakopan.yarl.Context

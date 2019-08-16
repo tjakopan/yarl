@@ -1,3 +1,6 @@
+@file:JvmName("FallbackBuilder")
+@file:JvmMultifileClass
+
 package hr.tjakopan.yarl.fallback
 
 import hr.tjakopan.yarl.Context
@@ -7,8 +10,7 @@ import hr.tjakopan.yarl.PolicyBuilderGeneric
 
 /**
  * Builds a [FallbackPolicy] which provides a fallback action if the main execution fails. Executes the main delegate,
- * but if this throws a handled exception, first calls [onFallback] with details of the handled exception and the
- * execution context; then calls [fallbackAction].
+ * but if this throws a handled exception, calls [fallbackAction] and returns its result.
  *
  * @param fallbackAction The fallback action.
  * @return The policy instance.

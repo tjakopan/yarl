@@ -1,3 +1,6 @@
+@file:JvmName("PolicyExtensions")
+@file:JvmMultifileClass
+
 package hr.tjakopan.yarl
 
 import hr.tjakopan.yarl.wrap.wrap

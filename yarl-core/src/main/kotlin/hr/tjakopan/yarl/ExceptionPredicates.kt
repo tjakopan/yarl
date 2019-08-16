@@ -18,7 +18,7 @@ class ExceptionPredicates(private val predicates: MutableList<ExceptionPredicate
     /**
      * Specifies that no exception handling filters are applied or are required.
      */
-    @JvmStatic
+    @JvmField
     val NONE = ExceptionPredicates()
   }
 

@@ -1,3 +1,5 @@
+@file:JvmName("PolicyWrapExtensions")
+@file:JvmMultifileClass
 @file:Suppress("UNCHECKED_CAST")
 
 package hr.tjakopan.yarl.wrap

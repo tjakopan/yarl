@@ -17,7 +17,7 @@ public class FallbackTestJava {
       fallbackActionExecuted.set(true);
       return null;
     };
-    final var fallbackPolicy = FallbackSyntaxKt.fallback(
+    final var fallbackPolicy = FallbackBuilder.fallback(
       Policy.handle(ArithmeticException.class),
       fallbackAction
     );
