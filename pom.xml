@@ -14,8 +14,15 @@
     <arrow.version>0.9.0</arrow.version>
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     <kotlin.code.style>official</kotlin.code.style>
+    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+
+  <modules>
+    <module>yarl-core</module>
+    <module>yarl-core-java</module>
+  </modules>
 
   <dependencyManagement>
     <dependencies>
@@ -24,16 +31,16 @@
         <artifactId>kotlin-stdlib</artifactId>
         <version>${kotlin.version}</version>
       </dependency>
-<!--      <dependency>-->
-<!--        <groupId>io.arrow-kt</groupId>-->
-<!--        <artifactId>arrow-core-data</artifactId>-->
-<!--        <version>${arrow.version}</version>-->
-<!--      </dependency>-->
-<!--      <dependency>-->
-<!--        <groupId>io.arrow-kt</groupId>-->
-<!--        <artifactId>arrow-core-extensions</artifactId>-->
-<!--        <version>${arrow.version}</version>-->
-<!--      </dependency>-->
+      <!--      <dependency>-->
+      <!--        <groupId>io.arrow-kt</groupId>-->
+      <!--        <artifactId>arrow-core-data</artifactId>-->
+      <!--        <version>${arrow.version}</version>-->
+      <!--      </dependency>-->
+      <!--      <dependency>-->
+      <!--        <groupId>io.arrow-kt</groupId>-->
+      <!--        <artifactId>arrow-core-extensions</artifactId>-->
+      <!--        <version>${arrow.version}</version>-->
+      <!--      </dependency>-->
 
       <dependency>
         <groupId>org.jetbrains.kotlin</groupId>
@@ -45,6 +52,12 @@
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-test-junit</artifactId>
         <version>${kotlin.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.12</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -63,24 +76,16 @@
               <goals>
                 <goal>compile</goal>
               </goals>
-              <configuration>
-                <sourceDirs>${project.basedir}/src/main/kotlin</sourceDirs>
-<!--                <sourceDirs>${project.basedir}/src/main/java</sourceDirs>-->
-              </configuration>
             </execution>
             <execution>
               <id>test-compile</id>
               <goals>
                 <goal>test-compile</goal>
               </goals>
-              <configuration>
-                <sourceDirs>${project.basedir}/src/test/kotlin</sourceDirs>
-                <sourceDirs>${project.basedir}/src/test/java</sourceDirs>
-              </configuration>
             </execution>
           </executions>
           <configuration>
-            <jvmTarget>11</jvmTarget>
+            <jvmTarget>${maven.compiler.target}</jvmTarget>
             <args>
               <arg>-Xjvm-default=enable</arg>
             </args>
@@ -89,36 +94,6 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.1</version>
-          <executions>
-            <!-- Replacing default-compile as it is treated specially by maven -->
-            <execution>
-              <id>default-compile</id>
-              <phase>none</phase>
-            </execution>
-            <!-- Replacing default-testCompile as it is treated specially by maven -->
-            <execution>
-              <id>default-testCompile</id>
-              <phase>none</phase>
-            </execution>
-            <execution>
-              <id>java-compile</id>
-              <phase>compile</phase>
-              <goals>
-                <goal>compile</goal>
-              </goals>
-            </execution>
-            <execution>
-              <id>java-test-compile</id>
-              <phase>test-compile</phase>
-              <goals>
-                <goal>testCompile</goal>
-              </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <source>11</source>
-            <target>11</target>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

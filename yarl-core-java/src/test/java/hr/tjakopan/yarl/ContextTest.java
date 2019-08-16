@@ -7,7 +7,7 @@ import java.util.HashMap;
 import static org.junit.Assert.*;
 
 @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-public class ContextTestJava {
+public class ContextTest {
   @Test
   public void shouldAssignOperationKeyFromConstructor() {
     final var context = new Context("SomeKey");
