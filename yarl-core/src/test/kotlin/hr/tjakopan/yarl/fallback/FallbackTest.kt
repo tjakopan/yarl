@@ -1,6 +1,5 @@
 package hr.tjakopan.yarl.fallback
 
-import hr.tjakopan.yarl.Policy
 import kotlin.test.Test
 import kotlin.test.assertFalse
 

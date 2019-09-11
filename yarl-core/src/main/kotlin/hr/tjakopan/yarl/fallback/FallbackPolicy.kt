@@ -1,41 +1,17 @@
 package hr.tjakopan.yarl.fallback
 
-import hr.tjakopan.yarl.*
-
-/**
- * A fallback policy that can be applied to delegates.
- */
-class FallbackPolicy internal constructor(
-  policyBuilder: PolicyBuilder,
-  private val onFallback: (Throwable, Context) -> Unit,
-  private val fallbackAction: (Throwable, Context) -> Unit
-) : Policy(policyBuilder), IFallbackPolicy {
-  override fun implementation(context: Context, action: (Context) -> Unit) =
-    FallbackEngine.implementation(
-      context,
-      exceptionPredicates,
-      ResultPredicates.none(),
-      { outcome, ctx -> onFallback((outcome as DelegateResult.Exception).exception, ctx) },
-      { outcome, ctx -> fallbackAction((outcome as DelegateResult.Exception).exception, ctx) },
-      action
-    )!!
-
-  override fun <TResult> implementation(context: Context, action: (Context) -> TResult?): TResult? =
-    throw UnsupportedOperationException(
-      "You have executed the generic .execute method on a non-generic fallback policy. A non-generic fallback policy " +
-        "only defines a fallback action which returns void; it can never return a substitute value. To use fallback " +
-        "policy to provide fallback values you must define a generic fallback policy. "
-    )
-}
+import hr.tjakopan.yarl.Context
+import hr.tjakopan.yarl.DelegateResult
+import hr.tjakopan.yarl.Policy
 
 /**
  * A fallback policy that can be applied to delegates returning a value of type [TResult].
  */
-class FallbackPolicyGeneric<TResult> internal constructor(
-  policyBuilder: PolicyBuilderGeneric<TResult>,
-  private val onFallback: (DelegateResult<TResult>, Context) -> Unit,
-  private val fallbackAction: (DelegateResult<TResult>, Context) -> TResult?
-) : PolicyGeneric<TResult>(policyBuilder), IFallbackPolicyGeneric<TResult> {
+class FallbackPolicy<TResult> private constructor(policyBuilder: Builder<TResult>) :
+  Policy<TResult, FallbackPolicy.Builder<TResult>>(policyBuilder), IFallbackPolicy {
+  private val onFallback = policyBuilder.onFallback
+  private val fallbackAction = policyBuilder.fallbackAction
+
   override fun implementation(context: Context, action: (Context) -> TResult?): TResult? =
     FallbackEngine.implementation(
       context,
@@ -45,4 +21,16 @@ class FallbackPolicyGeneric<TResult> internal constructor(
       fallbackAction,
       action
     )
+
+  class Builder<TResult>(@JvmSynthetic internal val fallbackAction: (DelegateResult<TResult>, Context) -> TResult?) :
+    Policy.Builder<TResult, Builder<TResult>>() {
+    @JvmSynthetic
+    internal var onFallback: (DelegateResult<TResult>, Context) -> Unit = { _, _ -> }
+
+    constructor(fallbackValue: TResult?) : this({ _, _ -> fallbackValue })
+
+    override fun `this$`(): Builder<TResult> = this
+
+    fun build() = FallbackPolicy(this)
+  }
 }

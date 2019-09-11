@@ -1,5 +1,7 @@
 package hr.tjakopan.yarl
 
+import java.util.stream.Stream
+
 /**
  * A predicate that can be run against a passed [Throwable].
  *
@@ -39,5 +41,24 @@ class ExceptionPredicates(private val predicates: MutableList<ExceptionPredicate
   fun firstMatchOrNull(ex: Throwable): Throwable? {
     return predicates.map { it(ex) }
       .firstOrNull { it != null }
+  }
+}
+
+@JvmSynthetic
+internal fun getExceptionType(exceptionPredicates: ExceptionPredicates, exception: Throwable): ExceptionType {
+  return when (exceptionPredicates.firstMatchOrNull(exception) != null) {
+    true -> ExceptionType.HANDLED_BY_THIS_POLICY
+    false -> ExceptionType.UNHANDLED
+  }
+}
+
+@JvmSynthetic
+internal fun handleCause(predicate: (Throwable) -> Boolean): ExceptionPredicate {
+  return fun(exception: Throwable): Throwable? {
+    return Stream.iterate(exception, Throwable::cause)
+      .filter { it != null }
+      .filter(predicate)
+      .findFirst()
+      .orElse(null)
   }
 }

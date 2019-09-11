@@ -2,51 +2,14 @@ package hr.tjakopan.yarl.wrap
 
 import hr.tjakopan.yarl.Context
 import hr.tjakopan.yarl.ISyncPolicy
-import hr.tjakopan.yarl.ISyncPolicyGeneric
 
 internal object PolicyWrapEngine {
   @JvmSynthetic
-  internal fun <TResult> implementation(
+  internal fun <TResult> implementation1(
     context: Context,
-    outerPolicy: ISyncPolicyGeneric<TResult>,
-    innerPolicy: ISyncPolicyGeneric<TResult>,
+    outerPolicy: ISyncPolicy<TResult>,
+    innerPolicy: ISyncPolicy<TResult>,
     func: (Context) -> TResult?
   ): TResult? =
     outerPolicy.execute(context) { innerPolicy.execute(it, func) }
-
-  @JvmSynthetic
-  internal fun <TResult> implementation(
-    context: Context,
-    outerPolicy: ISyncPolicyGeneric<TResult>,
-    innerPolicy: ISyncPolicy,
-    func: (Context) -> TResult?
-  ): TResult? =
-    outerPolicy.execute(context) { innerPolicy.execute<TResult>(it, func) }
-
-  @JvmSynthetic
-  internal fun <TResult> implementation(
-    context: Context,
-    outerPolicy: ISyncPolicy,
-    innerPolicy: ISyncPolicyGeneric<TResult>,
-    func: (Context) -> TResult?
-  ): TResult? =
-    outerPolicy.execute<TResult>(context) { innerPolicy.execute(it, func) }
-
-  @JvmSynthetic
-  internal fun <TResult> implementation(
-    context: Context,
-    outerPolicy: ISyncPolicy,
-    innerPolicy: ISyncPolicy,
-    func: (Context) -> TResult?
-  ): TResult? =
-    outerPolicy.execute<TResult>(context) { innerPolicy.execute<TResult>(it, func) }
-
-  @JvmSynthetic
-  internal fun implementation(
-    context: Context,
-    outerPolicy: ISyncPolicy,
-    innerPolicy: ISyncPolicy,
-    action: (Context) -> Unit
-  ) =
-    outerPolicy.execute(context) { innerPolicy.execute(it, action) }
 }

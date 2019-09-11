@@ -3,20 +3,19 @@ package hr.tjakopan.yarl.wrap
 import hr.tjakopan.yarl.AsyncPolicy
 import hr.tjakopan.yarl.Context
 import hr.tjakopan.yarl.IAsyncPolicy
-import hr.tjakopan.yarl.IsPolicy
+import hr.tjakopan.yarl.Policy
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executor
 
 /**
  * A policy that allows two (and by recursion more) async Polly policies to wrap executions of async delegates.
+ *
+ * @param TResult The return type of delegates which may be executed through the policy.
  */
-class AsyncPolicyWrap internal constructor(outer: AsyncPolicy, inner: IAsyncPolicy) :
-  AsyncPolicy(outer.exceptionPredicates), IPolicyWrap {
-  private val _outer: IAsyncPolicy = outer
-  private val _inner: IAsyncPolicy = inner
-
-  override val outer: IsPolicy = _outer
-  override val inner: IsPolicy = _inner
+class AsyncPolicyWrap<TResult> private constructor(policyBuilder: Builder<TResult>) :
+  AsyncPolicy<TResult, AsyncPolicyWrap.Builder<TResult>>(policyBuilder), IPolicyWrap {
+  override val outer = policyBuilder.outer
+  override val inner = policyBuilder.inner
 
   override fun setPolicyContext(executionContext: Context): Pair<String?, String?> {
     val priorPolicyKeys = Pair(executionContext.policyWrapKey, executionContext.policyKey)
@@ -28,27 +27,23 @@ class AsyncPolicyWrap internal constructor(outer: AsyncPolicy, inner: IAsyncPoli
 
   override fun implementationAsync(
     context: Context,
-    action: (Context) -> CompletionStage<Unit>
-  ): CompletionStage<Unit> =
-    AsyncPolicyWrapEngine.implementationAsync(context, _outer, _inner, action)
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> =
+    AsyncPolicyWrapEngine.implementationAsync(context, outer, inner, action)
 
   override fun implementationAsync(
     context: Context,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<Unit> =
-    AsyncPolicyWrapEngine.implementationAsync(context, executor, _outer, _inner, action)
-
-  override fun <TResult> implementationAsyncGeneric(
-    context: Context,
-    action: (Context) -> CompletionStage<TResult>
-  ): CompletionStage<TResult> =
-    AsyncPolicyWrapEngine.implementationAsyncGeneric(context, _outer, _inner, action)
-
-  override fun <TResult> implementationAsyncGeneric(
-    context: Context,
-    executor: Executor,
     action: (Context, Executor) -> CompletionStage<TResult>
   ): CompletionStage<TResult> =
-    AsyncPolicyWrapEngine.implementationAsyncGeneric(context, executor, _outer, _inner, action)
+    AsyncPolicyWrapEngine.implementationAsync(context, executor, outer, inner, action)
+
+  class Builder<TResult>(
+    @JvmSynthetic internal val outer: IAsyncPolicy<TResult>,
+    @JvmSynthetic internal val inner: IAsyncPolicy<TResult>
+  ) : Policy.Builder<TResult, Builder<TResult>>() {
+    override fun `this$`(): Builder<TResult> = this
+
+    fun build() = AsyncPolicyWrap(this)
+  }
 }

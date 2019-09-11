@@ -1,8 +1,6 @@
 package hr.tjakopan.yarl
 
-import hr.tjakopan.yarl.noop.AsyncNoOpPolicy
-import hr.tjakopan.yarl.wrap.AsyncPolicyWrap
-import hr.tjakopan.yarl.wrap.AsyncPolicyWrapGeneric
+import hr.tjakopan.yarl.utilities.KeyHelper
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executor
 import java.util.function.BiConsumer
@@ -11,26 +9,55 @@ import java.util.function.BiFunction
 /**
  * Transient exception handling policies that can be applied to asynchronous delegates.
  *
- * @constructor Constructs a new instance of a derived [AsyncPolicy] type with the passed [exceptionPredicates].
+ * @param TResult The return type of delegates which may be executed through the policy.
+ *
+ * @constructor Constructs a new instance of a derived [AsyncPolicy] type with the passed [exceptionPredicates]
+ * and [resultPredicates].
  * @param exceptionPredicates Predicates indicating which exceptions the policy should handle.
+ * @param resultPredicates Predicates indicating which results the policy should handle.
  */
-abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPredicates?) :
-  PolicyBase(exceptionPredicates), IAsyncPolicy {
+abstract class AsyncPolicy<TResult, B : Policy.Builder<TResult, B>> protected constructor(
+  policyBuilder: Policy.Builder<TResult, B>
+) : IAsyncPolicy<TResult> {
+  override val policyKey: String = policyBuilder.policyKey ?: "$javaClass-${KeyHelper.guidPart()}"
+
+  protected val resultPredicates = policyBuilder.resultPredicates
+
+  protected val exceptionPredicates = policyBuilder.exceptionPredicates
+
   /**
-   * Constructs a new instance of a derived [AsyncPolicy] type with the passed [policyBuilder].
+   * Updates the execution [Context] with context from the executing policy.
    *
-   * @param policyBuilder A [PolicyBuilder] specifying which exceptions the policy should handle.
+   * @param executionContext The execution [Context].
+   * @return [Pair.first] is [Context.policyWrapKey] prior to changes by this method. [Pair.second] is
+   * [Context.policyKey] prior to changes by this method.
    */
-  protected constructor(policyBuilder: PolicyBuilder? = null) : this(policyBuilder?.exceptionPredicates)
+  @JvmSynthetic
+  internal open fun setPolicyContext(executionContext: Context): Pair<String?, String?> {
+    val pair = Pair(executionContext.policyWrapKey, executionContext.policyKey)
 
-  override fun withPolicyKey(policyKey: String): IAsyncPolicy {
-    if (policyKeyInternal != null) throw policyKeyMustBeImmutableException
+    executionContext.policyKey = policyKey
 
-    policyKeyInternal = policyKey
-    return this
+    return pair
   }
 
-  override fun executeAsync(context: Context, action: (Context) -> CompletionStage<Unit>): CompletionStage<Unit> {
+  /**
+   * Restores the supplied keys to the execution [Context].
+   *
+   * @param executionContext The execution [Context].
+   * @param priorPolicyWrapKey The [Context.policyWrapKey] prior to execution through this policy.
+   * @param priorPolicyKey The [Context.policyKey] prior to execution through this policy.
+   */
+  @JvmSynthetic
+  internal fun restorePolicyContext(executionContext: Context, priorPolicyWrapKey: String?, priorPolicyKey: String?) {
+    executionContext.policyWrapKey = priorPolicyWrapKey
+    executionContext.policyKey = priorPolicyKey
+  }
+
+  override fun executeAsync(
+    context: Context,
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> {
     val priorPolicyKeys = setPolicyContext(context)
     val priorPolicyWrapKey = priorPolicyKeys.first
     val priorPolicyKey = priorPolicyKeys.second
@@ -43,8 +70,8 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
   override fun executeAsync(
     context: Context,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<Unit> {
+    action: (Context, Executor) -> CompletionStage<TResult>
+  ): CompletionStage<TResult> {
     val priorPolicyKeys = setPolicyContext(context)
     val priorPolicyWrapKey = priorPolicyKeys.first
     val priorPolicyKey = priorPolicyKeys.second
@@ -54,140 +81,54 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
       }, executor)
   }
 
-  override fun <TResult> executeAsyncGeneric(
-    context: Context,
-    action: (Context) -> CompletionStage<TResult>
-  ): CompletionStage<TResult> {
-    val priorPolicyKeys = setPolicyContext(context)
-    val priorPolicyWrapKey = priorPolicyKeys.first
-    val priorPolicyKey = priorPolicyKeys.second
-    return implementationAsyncGeneric(context, action)
-      .whenCompleteAsync { _, _ ->
-        restorePolicyContext(context, priorPolicyWrapKey, priorPolicyKey)
-      }
-  }
-
-  override fun <TResult> executeAsyncGeneric(
-    context: Context,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult>
-  ): CompletionStage<TResult> {
-    val priorPolicyKeys = setPolicyContext(context)
-    val priorPolicyWrapKey = priorPolicyKeys.first
-    val priorPolicyKey = priorPolicyKeys.second
-    return implementationAsyncGeneric(context, executor, action)
-      .whenCompleteAsync(BiConsumer { _, _ ->
-        restorePolicyContext(context, priorPolicyWrapKey, priorPolicyKey)
-      }, executor)
-  }
-
   override fun executeAndCaptureAsync(
     context: Context,
-    action: (Context) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult> {
+    action: (Context) -> CompletionStage<TResult>
+  ): CompletionStage<PolicyResult<TResult>> {
     return executeAsync(context, action)
-      .handleAsync { _, exception ->
-        when {
-          exception != null -> return@handleAsync PolicyFailure(
-            exception,
-            getExceptionType(exceptionPredicates, exception),
-            context
-          )
-          else -> return@handleAsync PolicySuccess(context)
-        }
-      }
-  }
-
-  override fun executeAndCaptureAsync(
-    context: Context,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult> {
-    return executeAsync(context, executor, action)
-      .handleAsync(BiFunction { _, exception ->
-        when {
-          exception != null -> return@BiFunction PolicyFailure(
-            exception,
-            getExceptionType(exceptionPredicates, exception),
-            context
-          )
-          else -> return@BiFunction PolicySuccess(context)
-        }
-      }, executor)
-  }
-
-  override fun <TResult> executeAndCaptureAsyncGeneric(
-    context: Context,
-    action: (Context) -> CompletionStage<TResult>
-  ): CompletionStage<PolicyResultGeneric<TResult>> {
-    return executeAsyncGeneric(context, action)
       .handleAsync { result, exception ->
         when {
-          exception != null -> return@handleAsync PolicyGenericFailureWithException(
+          exception != null -> return@handleAsync PolicyFailureWithException(
             exception,
             getExceptionType(exceptionPredicates, exception),
             context
           )
-          else -> return@handleAsync PolicyGenericSuccess(result, context)
+          resultPredicates.anyMatch(result) -> return@handleAsync PolicyFailureWithResult<TResult>(
+            result,
+            context
+          )
+          else -> return@handleAsync PolicySuccess<TResult>(result, context)
         }
       }
   }
 
-  override fun <TResult> executeAndCaptureAsyncGeneric(
+  override fun executeAndCaptureAsync(
     context: Context,
     executor: Executor,
     action: (Context, Executor) -> CompletionStage<TResult>
-  ): CompletionStage<PolicyResultGeneric<TResult>> {
-    return executeAsyncGeneric(context, executor, action)
+  ): CompletionStage<PolicyResult<TResult>> {
+    return executeAsync(context, executor, action)
       .handleAsync(BiFunction { result, exception ->
         when {
-          exception != null -> return@BiFunction PolicyGenericFailureWithException(
+          exception != null -> return@BiFunction PolicyFailureWithException(
             exception,
             getExceptionType(exceptionPredicates, exception),
             context
           )
-          else -> return@BiFunction PolicyGenericSuccess(result, context)
+          resultPredicates.anyMatch(result) -> return@BiFunction PolicyFailureWithResult(result, context)
+          else -> return@BiFunction PolicySuccess(result, context)
         }
       }, executor)
   }
 
   /**
-   * Defines the implementation of a policy for async executions with no return value.
-   *
-   * @param context The policy execution context.
-   * @param action The action passed by calling code to execute through the policy.
-   * @return A [CompletionStage] representing the result of the execution.
-   */
-  protected open fun implementationAsync(
-    context: Context,
-    action: (Context) -> CompletionStage<Unit>
-  ): CompletionStage<Unit> =
-    implementationAsyncGeneric(context, action)
-
-  /**
-   * Defines the implementation of a policy for async executions with no return value.
-   *
-   * @param context The policy execution context.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action passed by calling code to execute through the policy.
-   * @return A [CompletionStage] representing the result of the execution.
-   */
-  protected open fun implementationAsync(
-    context: Context,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<Unit> =
-    implementationAsyncGeneric(context, executor, action)
-
-  /**
    * Defines the implementation of a policy for async executions returning [TResult].
    *
-   * @param TResult The type returned by asynchronous executions through the implementation.
    * @param context The policy execution context.
    * @param action The action passed by calling code to execute through the policy.
    * @return A [CompletionStage] representing the result of the execution.
    */
-  protected abstract fun <TResult> implementationAsyncGeneric(
+  protected abstract fun implementationAsync(
     context: Context,
     action: (Context) -> CompletionStage<TResult>
   ): CompletionStage<TResult>
@@ -195,13 +136,12 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
   /**
    * Defines the implementation of a policy for async executions returning [TResult].
    *
-   * @param TResult The type returned by asynchronous executions through the implementation.
    * @param context The policy execution context.
    * @param executor The executor to use for asynchronous execution.
    * @param action The action passed by calling code to execute through the policy.
    * @return A [CompletionStage] representing the result of the execution.
    */
-  protected abstract fun <TResult> implementationAsyncGeneric(
+  protected abstract fun implementationAsync(
     context: Context,
     executor: Executor,
     action: (Context, Executor) -> CompletionStage<TResult>
@@ -210,59 +150,14 @@ abstract class AsyncPolicy internal constructor(exceptionPredicates: ExceptionPr
   /**
    * Wraps the specified inner policy.
    *
-   * @param innerPolicy The inner policy.
+   * @param innerPolicy The inner policy
    */
-  fun wrapAsync(innerPolicy: IAsyncPolicy) = AsyncPolicyWrap(this, innerPolicy)
+//  fun wrapAsync(innerPolicy: IAsyncPolicy) = AsyncPolicyWrapGeneric(this, innerPolicy)
 
   /**
    * Wraps the specified inner policy.
    *
-   * @param TResult The return type of delegates which may be executed through the policy.
-   * @param innerPolicy The inner policy.
+   * @param innerPolicy The inner policy
    */
-  fun <TResult> wrapAsync(innerPolicy: IAsyncPolicyGeneric<TResult>) =
-    AsyncPolicyWrapGeneric<TResult>(this, innerPolicy)
-
-  companion object {
-    /**
-     * Creates a [AsyncPolicyWrap] of the given policies.
-     *
-     * @param policies The policies to place in the wrap, outermost (at left) to innermost (at right).
-     * @return The PolicyWrap.
-     * @throws IllegalArgumentException The enumerable of policies to form the wrap must contain at least two policies.
-     */
-    @JvmStatic
-    fun wrapAsync(vararg policies: IAsyncPolicy): AsyncPolicyWrap {
-      return when (policies.size) {
-        0, 1 -> throw IllegalArgumentException("The array of policies to form the wrap must contain at least two policies.")
-        2 -> AsyncPolicyWrap(policies[0] as AsyncPolicy, policies[1])
-        else -> wrapAsync(policies[0], wrapAsync(*policies.drop(1).toTypedArray()))
-      }
-    }
-
-    /**
-     * Creates a [AsyncPolicyWrapGeneric] of the given policies.
-     *
-     * @param TResult The return type of delegates which may be executed through the policy.
-     * @param policies The policies to place in the wrap, outermost (at left) to innermost (at right).
-     * @return The PolicyWrap.
-     * @throws IllegalArgumentException The enumerable of policies to form the wrap must contain at least two policies.
-     */
-    @JvmStatic
-    fun <TResult> wrapAsync(vararg policies: IAsyncPolicyGeneric<TResult>): AsyncPolicyWrapGeneric<TResult> {
-      return when (policies.size) {
-        0, 1 -> throw IllegalArgumentException("The array of policies to form the wrap must contain at least two policies.")
-        2 -> AsyncPolicyWrapGeneric(policies[0] as AsyncPolicyGeneric<TResult>, policies[1])
-        else -> wrapAsync(policies[0], wrapAsync(*policies.drop(1).toTypedArray()))
-      }
-    }
-
-    /**
-     * Builds a NoOp [AsyncPolicy] that will execute without any custom behavior.
-     *
-     * @return The policy instance.
-     */
-    @JvmStatic
-    fun noOpAsync() = AsyncNoOpPolicy()
-  }
+//  fun wrapAsync(innerPolicy: IAsyncPolicyGeneric<TResult>) = AsyncPolicyWrapGeneric(this, innerPolicy)
 }
