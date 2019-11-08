@@ -167,7 +167,7 @@ abstract class Policy<TResult, B : Policy.Builder<TResult, B>> protected constru
      * @return The PolicyBuilderGeneric instance.
      */
     fun <TException : Throwable> or(exceptionClass: Class<TException>): B {
-      exceptionPredicates.add {
+      exceptionPredicates.plus {
         when {
           exceptionClass.isInstance(it) -> it
           else -> null
@@ -201,7 +201,7 @@ abstract class Policy<TResult, B : Policy.Builder<TResult, B>> protected constru
       exceptionClass: Class<TException>,
       exceptionPredicate: (TException) -> Boolean
     ): B {
-      exceptionPredicates.add {
+      exceptionPredicates.plus {
         @Suppress("UNCHECKED_CAST")
         when {
           exceptionClass.isInstance(it) && exceptionPredicate(it as TException) -> it
@@ -230,7 +230,7 @@ abstract class Policy<TResult, B : Policy.Builder<TResult, B>> protected constru
      * @return The PolicyBuilderGeneric instance.
      */
     fun <TException : Throwable> orCause(causeClass: Class<TException>): B {
-      exceptionPredicates.add(handleCause { causeClass.isInstance(it) })
+      exceptionPredicates.plus(handleCause { causeClass.isInstance(it) })
       return `this$`()
     }
 
@@ -259,7 +259,7 @@ abstract class Policy<TResult, B : Policy.Builder<TResult, B>> protected constru
       causeClass: Class<TException>,
       exceptionPredicate: (TException) -> Boolean
     ): B {
-      exceptionPredicates.add(handleCause {
+      exceptionPredicates.plus(handleCause {
         @Suppress("UNCHECKED_CAST")
         causeClass.isInstance(it) && exceptionPredicate(it as TException)
       })
