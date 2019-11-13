@@ -42,7 +42,7 @@ class AsyncPolicyWrap<TResult> private constructor(policyBuilder: Builder<TResul
     @JvmSynthetic internal val outer: IAsyncPolicy<TResult>,
     @JvmSynthetic internal val inner: IAsyncPolicy<TResult>
   ) : Policy.Builder<TResult, Builder<TResult>>() {
-    override fun `this$`(): Builder<TResult> = this
+    override fun self(): Builder<TResult> = this
 
     fun build() = AsyncPolicyWrap(this)
   }

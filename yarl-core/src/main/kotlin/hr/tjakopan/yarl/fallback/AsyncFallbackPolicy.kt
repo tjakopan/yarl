@@ -81,7 +81,7 @@ class AsyncFallbackPolicy<TResult> private constructor(policyBuilder: Builder<TR
       this.onFallback = onFallback
     }
 
-    override fun `this$`(): Builder<TResult> = this
+    override fun self(): Builder<TResult> = this
 
     fun build() = AsyncFallbackPolicy(this)
   }

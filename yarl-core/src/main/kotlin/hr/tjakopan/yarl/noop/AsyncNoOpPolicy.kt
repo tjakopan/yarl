@@ -25,7 +25,7 @@ class AsyncNoOpPolicy<TResult> private constructor(policyBuilder: Builder<TResul
     NoOpEngine.implementationAsync(context, executor, action)
 
   class Builder<TResult> : Policy.Builder<TResult, Builder<TResult>>() {
-    override fun `this$`(): Builder<TResult> = this
+    override fun self(): Builder<TResult> = this
 
     fun build() = AsyncNoOpPolicy(this)
   }

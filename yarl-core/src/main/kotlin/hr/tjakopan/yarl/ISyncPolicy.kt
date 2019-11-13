@@ -1,12 +1,14 @@
 package hr.tjakopan.yarl
 
+import arrow.core.Option
+
 /**
  * An interface defining all executions available on a synchronous policy generic-typed for executions returning results
- * of type [TResult].
+ * of type [R].
  *
- * @param TResult The type of the result of functions executed through the policy.
+ * @param R The type of the result of functions executed through the policy.
  */
-interface ISyncPolicy<TResult> : IsPolicy {
+interface ISyncPolicy<R> {
   /**
    * Executes the specified action within the policy and returns the result.
    *
@@ -14,7 +16,7 @@ interface ISyncPolicy<TResult> : IsPolicy {
    * @return The value returned by the action.
    */
   @JvmDefault
-  fun execute(action: () -> TResult?): TResult? = execute(Context()) { action() }
+  fun execute(action: () -> Option<R>): Option<R> = execute(Context.none) { action() }
 
   /**
    * Executes the specified action within the policy and returns the result.
@@ -24,8 +26,8 @@ interface ISyncPolicy<TResult> : IsPolicy {
    * @return The value returned by the action.
    */
   @JvmDefault
-  fun execute(contextData: Map<String, Any>, action: (Context) -> TResult?): TResult? =
-    execute(Context(contextData.toMutableMap())) { action(it) }
+  fun execute(contextData: Map<String, Any>, action: (Context) -> Option<R>): Option<R> =
+    execute(Context(contextData = contextData)) { action(it) }
 
   /**
    * Executes the specified action within the policy and returns the result.
@@ -34,7 +36,7 @@ interface ISyncPolicy<TResult> : IsPolicy {
    * @param action The action to perform.
    * @return The value returned by the action.
    */
-  fun execute(context: Context, action: (Context) -> TResult?): TResult?
+  fun execute(context: Context, action: (Context) -> Option<R>): Option<R>
 
   /**
    * Executes the specified action within the policy and returns the captured result.
@@ -43,8 +45,8 @@ interface ISyncPolicy<TResult> : IsPolicy {
    * @return The captured result.
    */
   @JvmDefault
-  fun executeAndCapture(action: () -> TResult?): PolicyResult<TResult> =
-    executeAndCapture(Context()) { action() }
+  fun executeAndCapture(action: () -> Option<R>): PolicyResult<R> =
+    executeAndCapture(Context.none) { action() }
 
   /**
    * Executes the specified action within the policy and returns the captured result.
@@ -54,8 +56,8 @@ interface ISyncPolicy<TResult> : IsPolicy {
    * @return The captured result.
    */
   @JvmDefault
-  fun executeAndCapture(contextData: Map<String, Any>, action: (Context) -> TResult?): PolicyResult<TResult> =
-    executeAndCapture(Context(contextData.toMutableMap())) { action(it) }
+  fun executeAndCapture(contextData: Map<String, Any>, action: (Context) -> Option<R>): PolicyResult<R> =
+    executeAndCapture(Context(contextData = contextData)) { action(it) }
 
   /**
    * Executes the specified action within the policy and returns the captured result.
@@ -64,5 +66,5 @@ interface ISyncPolicy<TResult> : IsPolicy {
    * @param action The action to perform.
    * @return The captured result.
    */
-  fun executeAndCapture(context: Context, action: (Context) -> TResult?): PolicyResult<TResult>
+  fun executeAndCapture(context: Context, action: (Context) -> Option<R>): PolicyResult<R>
 }

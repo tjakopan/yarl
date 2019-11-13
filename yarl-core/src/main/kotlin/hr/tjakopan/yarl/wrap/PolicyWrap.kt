@@ -29,7 +29,7 @@ class PolicyWrap<TResult> private constructor(policyBuilder: Builder<TResult>) :
     @JvmSynthetic internal val outer: ISyncPolicy<TResult>,
     @JvmSynthetic internal val inner: ISyncPolicy<TResult>
   ) : Policy.Builder<TResult, Builder<TResult>>() {
-    override fun `this$`(): Builder<TResult> = this
+    override fun self(): Builder<TResult> = this
 
     fun build() = PolicyWrap(this)
   }

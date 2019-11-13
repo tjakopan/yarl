@@ -29,7 +29,7 @@ class FallbackPolicy<TResult> private constructor(policyBuilder: Builder<TResult
 
     constructor(fallbackValue: TResult?) : this({ _, _ -> fallbackValue })
 
-    override fun `this$`(): Builder<TResult> = this
+    override fun self(): Builder<TResult> = this
 
     fun build() = FallbackPolicy(this)
   }

@@ -2,38 +2,34 @@ package hr.tjakopan.yarl
 
 import arrow.core.Option
 import arrow.core.Some
-import java.util.stream.Stream
+import arrow.core.extensions.sequence.foldable.firstOption
+import arrow.core.firstOrNone
+import arrow.core.getOrElse
 
 typealias ExceptionPredicate = (ex: Throwable) -> Option<Throwable>
+typealias ExceptionPredicates = List<ExceptionPredicate>
 
-data class ExceptionPredicates(private val predicates: List<ExceptionPredicate> = listOf()) :
-  List<ExceptionPredicate> by predicates {
-  companion object {
-    @JvmField
-    val NONE = ExceptionPredicates()
-  }
+@JvmField
+val noExceptionPredicates: ExceptionPredicates = listOf();
 
-  fun firstMatch(ex: Throwable): Option<Throwable> {
-    return predicates.map { it(ex) }
-      .first()
-  }
+fun ExceptionPredicates.firstMatchOrNone(ex: Throwable): Option<Throwable> {
+  return map { it(ex) }
+    .firstOrNone { it.isDefined() }
+    .getOrElse { Option.empty() }
 }
 
 @JvmSynthetic
-internal fun getExceptionType(exceptionPredicates: ExceptionPredicates, exception: Throwable): ExceptionType {
-  return when (exceptionPredicates.firstMatch(exception)) {
-    Some<Throwable>() -> ExceptionType.HANDLED_BY_THIS_POLICY
-    false -> ExceptionType.UNHANDLED
+internal fun ExceptionPredicates.getExceptionType(exception: Throwable): ExceptionType {
+  return when (firstMatchOrNone(exception)) {
+    is Some -> ExceptionType.HANDLED_BY_THIS_POLICY
+    else -> ExceptionType.UNHANDLED
   }
 }
 
 @JvmSynthetic
 internal fun handleCause(predicate: (Throwable) -> Boolean): ExceptionPredicate {
-  return fun(exception: Throwable): Throwable? {
-    return Stream.iterate(exception, Throwable::cause)
-      .filter { it != null }
-      .filter(predicate)
-      .findFirst()
-      .orElse(null)
+  return fun(exception: Throwable): Option<Throwable> {
+    return generateSequence(exception, Throwable::cause)
+      .firstOption(predicate)
   }
 }
