@@ -39,7 +39,7 @@ abstract class Policy<R, B : Policy.Builder<R, B>> protected constructor(policyB
       @JvmSynthetic set
 
     @JvmSynthetic
-    internal var exceptionPredicates: ExceptionPredicates = noExceptionPredicates
+    internal var exceptionPredicates: ExceptionPredicates = NO_EXCEPTION_PREDICATES
       @JvmSynthetic get
       @JvmSynthetic set
 

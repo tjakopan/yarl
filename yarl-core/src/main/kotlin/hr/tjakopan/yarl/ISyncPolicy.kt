@@ -16,7 +16,7 @@ interface ISyncPolicy<R> {
    * @return The value returned by the action.
    */
   @JvmDefault
-  fun execute(action: () -> Option<R>): Option<R> = execute(Context.none) { action() }
+  fun execute(action: () -> Option<R>): Option<R> = execute(Context.NONE) { action() }
 
   /**
    * Executes the specified action within the policy and returns the result.
@@ -46,7 +46,7 @@ interface ISyncPolicy<R> {
    */
   @JvmDefault
   fun executeAndCapture(action: () -> Option<R>): PolicyResult<R> =
-    executeAndCapture(Context.none) { action() }
+    executeAndCapture(Context.NONE) { action() }
 
   /**
    * Executes the specified action within the policy and returns the captured result.

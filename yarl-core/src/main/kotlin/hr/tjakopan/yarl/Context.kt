@@ -9,11 +9,11 @@ data class Context(
   val policyKey: Option<String> = Option.empty(),
   val operationKey: Option<String> = Option.empty(),
   val correlationId: Eval<UUID> = Eval.later { UUID.randomUUID() },
-  private val contextData: Map<String, Any> = mapOf()
-) : Map<String, Any> by contextData {
+  val contextData: Map<String, Any> = mapOf()
+) {
   internal companion object {
     @JvmSynthetic
-    internal val none = Context()
+    internal val NONE = Context()
       @JvmSynthetic get
   }
 }

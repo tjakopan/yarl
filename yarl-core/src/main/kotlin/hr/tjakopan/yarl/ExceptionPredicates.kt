@@ -10,7 +10,7 @@ typealias ExceptionPredicate = (ex: Throwable) -> Option<Throwable>
 typealias ExceptionPredicates = List<ExceptionPredicate>
 
 @JvmField
-val noExceptionPredicates: ExceptionPredicates = listOf();
+val NO_EXCEPTION_PREDICATES: ExceptionPredicates = listOf();
 
 fun ExceptionPredicates.firstMatchOrNone(ex: Throwable): Option<Throwable> {
   return map { it(ex) }
