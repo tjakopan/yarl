@@ -1,35 +1,22 @@
 package hr.tjakopan.yarl
 
-import arrow.core.Option
-import arrow.core.Some
-import arrow.core.extensions.sequence.foldable.firstOption
-import arrow.core.firstOrNone
-import arrow.core.getOrElse
+typealias ExceptionPredicate = (e: Throwable) -> Throwable?
 
-typealias ExceptionPredicate = (ex: Throwable) -> Option<Throwable>
-typealias ExceptionPredicates = List<ExceptionPredicate>
-
-@JvmField
-val NO_EXCEPTION_PREDICATES: ExceptionPredicates = listOf();
-
-fun ExceptionPredicates.firstMatchOrNone(ex: Throwable): Option<Throwable> {
-  return map { it(ex) }
-    .firstOrNone { it.isDefined() }
-    .getOrElse { Option.empty() }
-}
-
-@JvmSynthetic
-internal fun ExceptionPredicates.getExceptionType(exception: Throwable): ExceptionType {
-  return when (firstMatchOrNone(exception)) {
-    is Some -> ExceptionType.HANDLED_BY_THIS_POLICY
-    else -> ExceptionType.UNHANDLED
+class ExceptionPredicates private constructor(private val predicates: List<ExceptionPredicate>) {
+  companion object {
+    @JvmField
+    val NONE = ExceptionPredicates()
   }
-}
 
-@JvmSynthetic
-internal fun handleCause(predicate: (Throwable) -> Boolean): ExceptionPredicate {
-  return fun(exception: Throwable): Option<Throwable> {
-    return generateSequence(exception, Throwable::cause)
-      .firstOption(predicate)
+  constructor() : this(listOf())
+
+  internal operator fun plus(predicate: ExceptionPredicate): ExceptionPredicates {
+    val predicates = this.predicates + predicate
+    return ExceptionPredicates(predicates)
+  }
+
+  fun firstMatchOrNull(e: Throwable): Throwable? {
+    return predicates.mapNotNull { it(e) }
+      .firstOrNull()
   }
 }

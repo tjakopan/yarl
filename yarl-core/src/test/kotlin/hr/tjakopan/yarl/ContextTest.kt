@@ -1,49 +1,56 @@
 package hr.tjakopan.yarl
 
+import org.assertj.core.api.Assertions.assertThat
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class ContextTest {
   @Test
   fun shouldAssignOperationKeyFromConstructor() {
-    val context = Context("SomeKey")
+    val context = Context(operationKey = "SomeKey")
 
-    assertEquals("SomeKey", context.operationKey)
-    assertEquals(0, context.keys.size)
+    assertThat(context.operationKey).isEqualTo("SomeKey")
+    assertThat(context.contextData.keys.size).isEqualTo(0)
   }
 
   @Test
   fun shouldAssignOperationKeyAndContextDataFromConstructor() {
-    val context = Context("SomeKey", mutableMapOf("key1" to "value1", "key2" to "value2"))
+    val context = Context(operationKey = "SomeKey", contextData = mapOf("key1" to "value1", "key2" to "value2"))
 
-    assertEquals("SomeKey", context.operationKey)
-    assertEquals("value1", context["key1"])
-    assertEquals("value2", context["key2"])
+    assertThat(context.operationKey).isEqualTo("SomeKey")
+    assertThat(context.contextData["key1"]).isEqualTo("value1")
+    assertThat(context.contextData["key2"]).isEqualTo("value2")
   }
 
   @Test
-  fun noArgsCtorShouldAssignNoOperationKey() {
+  fun noArgsBuilderShouldAssignNoOperationKey() {
+    val context = Context.builder()
+      .build()
+
+    assertThat(context.operationKey).isNull()
+  }
+
+  @Test
+  fun noArgsConstructorShouldAssignNoOperationKey() {
     val context = Context()
 
-    assertNull(context.operationKey)
+    assertThat(context.operationKey).isNull()
   }
 
   @Test
   fun shouldAssignCorrelationIdWhenAccessed() {
-    val context = Context("SomeKey")
+    val context = Context(operationKey = "SomeKey")
 
-    assertTrue { context.correlationId != null }
+    @Suppress("UsePropertyAccessSyntax")
+    assertThat(context.correlationId).isNotNull()
   }
 
   @Test
   fun shouldReturnConsistentCorrelationId() {
-    val context = Context("SomeKey")
+    val context = Context(operationKey = "SomeKey")
 
-    val retrieved1 = context.correlationId
-    val retrieved2 = context.correlationId
+    val uuid1 = context.correlationId
+    val uuid2 = context.correlationId
 
-    assertTrue { retrieved1 == retrieved2 }
+    assertThat(uuid1).isSameAs(uuid2)
   }
 }

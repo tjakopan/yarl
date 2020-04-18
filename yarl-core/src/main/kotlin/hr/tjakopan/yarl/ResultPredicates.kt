@@ -1,10 +1,19 @@
 package hr.tjakopan.yarl
 
-import arrow.core.Option
+typealias ResultPredicate<R> = (result: R) -> Boolean
 
-typealias ResultPredicate<R> = (result: Option<R>) -> Boolean
-typealias ResultPredicates<R> = List<ResultPredicate<R>>
+class ResultPredicates<R> private constructor(private val predicates: List<ResultPredicate<R>>) {
+  companion object {
+    @JvmField
+    val NONE = ResultPredicates<Any>()
+  }
 
-fun <R> noResultPredicates(): ResultPredicates<R> = listOf()
+  constructor() : this(listOf())
 
-fun <R> ResultPredicates<R>.anyMatch(result: Option<R>): Boolean = this.any { it(result) }
+  internal operator fun plus(predicate: ResultPredicate<R>): ResultPredicates<R> {
+    val predicates = this.predicates + predicate
+    return ResultPredicates(predicates)
+  }
+
+  fun anyMatch(result: R): Boolean = this.predicates.any { it(result) }
+}
