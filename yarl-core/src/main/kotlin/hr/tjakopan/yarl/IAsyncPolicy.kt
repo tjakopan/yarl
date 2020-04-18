@@ -1,335 +1,100 @@
 package hr.tjakopan.yarl
 
-import java.util.concurrent.CompletionStage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
+import java.util.concurrent.ForkJoinPool
+import java.util.function.Supplier
 
-/**
- * An interface defining all executions available on a non-generic, asynchronous policy.
- */
-interface IAsyncPolicy : IsPolicy {
-  /**
-   * Sets the PolicyKey for this [IAsyncPolicy] instance.
-   *
-   * Must be called before the policy is first used. Can only be set once.
-   *
-   * @param policyKey The unique, used-definable key to assign to this [IAsyncPolicy] instance.
-   */
-  fun withPolicyKey(policyKey: String): IAsyncPolicy
+interface IAsyncPolicy<R> {
+  companion object {
+    @JvmSynthetic
+    internal val DEFAULT_EXECUTOR: Executor = ForkJoinPool.commonPool()
+  }
 
-  /**
-   * Executes the specified asynchronous action within the policy.
-   *
-   * @param action The action to perform.
-   */
   @JvmDefault
-  fun executeAsync(action: () -> CompletionStage<Unit>): CompletionStage<Unit> =
-    executeAsync(Context()) { action() }
+  suspend fun execute(action: suspend () -> R): R = execute(Context()) { action() }
 
-  /**
-   * Executes the specified asynchronous action within the policy.
-   *
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   */
   @JvmDefault
-  fun executeAsync(executor: Executor, action: (Executor) -> CompletionStage<Unit>): CompletionStage<Unit> =
-    executeAsync(Context(), executor) { _, ex -> action(ex) }
+  suspend fun execute(contextData: Map<String, Any>, action: suspend (Context) -> R): R =
+    execute(Context(contextData = contextData), action)
 
-  /**
-   * Executes the specified asynchronous action within the policy.
-   *
-   * @param contextData Arbitrary data that is passed to the exception policy.
-   * @param action The action to perform.
-   */
+  suspend fun execute(context: Context, action: suspend (Context) -> R): R
+
   @JvmDefault
-  fun executeAsync(contextData: Map<String, Any>, action: (Context) -> CompletionStage<Unit>): CompletionStage<Unit> =
-    executeAsync(Context(contextData.toMutableMap())) { action(it) }
+  fun executeAsync(action: () -> R): CompletableFuture<R> = executeAsync(Context()) { action() }
 
-  /**
-   * Executes the specified asynchronous action within the policy.
-   *
-   * @param contextData Arbitrary data that is passed to the exception policy.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   */
   @JvmDefault
-  fun executeAsync(
-    contextData: Map<String, Any>,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<Unit> =
-    executeAsync(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
+  fun executeAsync(contextData: Map<String, Any>, action: (Context) -> R): CompletableFuture<R> =
+    executeAsync(Context(contextData = contextData)) { action(it) }
 
-  /**
-   * Executes the specified asynchronous action within the policy.
-   *
-   * @param context Context data that is passed to the exception policy.
-   * @param action The action to perform.
-   */
-  fun executeAsync(context: Context, action: (Context) -> CompletionStage<Unit>): CompletionStage<Unit>
-
-  /**
-   * Executes the specified asynchronous action within the policy.
-   *
-   * @param context Context data that is passed to the exception policy.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   */
-  fun executeAsync(
-    context: Context,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<Unit>
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult the type of result.
-   * @param action The action to perform.
-   * @return The value returned by the action.
-   */
   @JvmDefault
-  fun <TResult> executeAsyncGeneric(action: () -> CompletionStage<TResult>): CompletionStage<TResult> =
-    executeAsyncGeneric(Context()) { action() }
+  fun executeAsync(context: Context, action: (Context) -> R): CompletableFuture<R> =
+    executeAsync(context, DEFAULT_EXECUTOR, action)
 
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult the type of result.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   * @return The value returned by the action.
-   */
   @JvmDefault
-  fun <TResult> executeAsyncGeneric(
-    executor: Executor,
-    action: (Executor) -> CompletionStage<TResult>
-  ): CompletionStage<TResult> =
-    executeAsyncGeneric(Context(), executor) { _, ex -> action(ex) }
+  fun executeAsync(executor: Executor, action: () -> R): CompletableFuture<R> =
+    executeAsync(Context(), executor) { action() }
 
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult the type of result.
-   * @param contextData Arbitrary data that is passed to the exception policy.
-   * @param action The action to perform.
-   * @return The value returned by the action.
-   */
   @JvmDefault
-  fun <TResult> executeAsyncGeneric(
-    contextData: Map<String, Any>,
-    action: (Context) -> CompletionStage<TResult>
-  ): CompletionStage<TResult> =
-    executeAsyncGeneric(Context(contextData.toMutableMap())) { action(it) }
+  fun executeAsync(contextData: Map<String, Any>, executor: Executor, action: (Context) -> R): CompletableFuture<R> =
+    executeAsync(Context(contextData = contextData), executor) { action(it) }
 
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult the type of result.
-   * @param contextData Arbitrary data that is passed to the exception policy.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   * @return The value returned by the action.
-   */
   @JvmDefault
-  fun <TResult> executeAsyncGeneric(
-    contextData: Map<String, Any>,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult>
-  ): CompletionStage<TResult> =
-    executeAsyncGeneric(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
+  fun executeAsync(context: Context, executor: Executor, action: (Context) -> R): CompletableFuture<R> =
+    CoroutineScope(executor.asCoroutineDispatcher()).future {
+      execute(context) { ctx ->
+        CompletableFuture.supplyAsync(Supplier { action(ctx) }, executor).await()
+      }
+    }
 
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult the type of result.
-   * @param context Context data that is passed to the exception policy.
-   * @param action The action to perform.
-   * @return The value returned by the action.
-   */
-  fun <TResult> executeAsyncGeneric(
-    context: Context,
-    action: (Context) -> CompletionStage<TResult>
-  ): CompletionStage<TResult>
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult the type of result.
-   * @param context Context data that is passed to the exception policy.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   * @return The value returned by the action.
-   */
-  fun <TResult> executeAsyncGeneric(
-    context: Context,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult>
-  ): CompletionStage<TResult>
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the captured result.
-   *
-   * @param action The action to perform.
-   * @return The captured result.
-   */
   @JvmDefault
-  fun executeAndCaptureAsync(action: () -> CompletionStage<Unit>): CompletionStage<PolicyResult> =
+  suspend fun executeAndCapture(action: suspend () -> R): PolicyResult<R> = executeAndCapture(Context()) { action() }
+
+  @JvmDefault
+  suspend fun executeAndCapture(contextData: Map<String, Any>, action: suspend (Context) -> R): PolicyResult<R> =
+    executeAndCapture(Context(contextData = contextData)) { action(it) }
+
+  suspend fun executeAndCapture(context: Context, action: suspend (Context) -> R): PolicyResult<R>
+
+  @JvmDefault
+  fun executeAndCaptureAsync(action: () -> R): CompletableFuture<PolicyResult<R>> =
     executeAndCaptureAsync(Context()) { action() }
 
-  /**
-   * Executes the specified asynchronous action within the policy and returns the captured result.
-   *
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
-  @JvmDefault
-  fun executeAndCaptureAsync(
-    executor: Executor,
-    action: (Executor) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult> =
-    executeAndCaptureAsync(Context(), executor) { _, ex -> action(ex) }
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the captured result.
-   *
-   * @param contextData Arbitrary data that is passed to the exception policy.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
   @JvmDefault
   fun executeAndCaptureAsync(
     contextData: Map<String, Any>,
-    action: (Context) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult> =
-    executeAndCaptureAsync(Context(contextData.toMutableMap())) { action(it) }
+    action: (Context) -> R
+  ): CompletableFuture<PolicyResult<R>> =
+    executeAndCaptureAsync(Context(contextData = contextData)) { action(it) }
 
-  /**
-   * Executes the specified asynchronous action within the policy and returns the captured result.
-   *
-   * @param contextData Arbitrary data that is passed to the exception policy.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
+  @JvmDefault
+  fun executeAndCaptureAsync(context: Context, action: (Context) -> R): CompletableFuture<PolicyResult<R>> =
+    executeAndCaptureAsync(context, DEFAULT_EXECUTOR) { ctx -> action(ctx) }
+
+  @JvmDefault
+  fun executeAndCaptureAsync(executor: Executor, action: () -> R): CompletableFuture<PolicyResult<R>> =
+    executeAndCaptureAsync(Context(), executor) { action() }
+
   @JvmDefault
   fun executeAndCaptureAsync(
     contextData: Map<String, Any>,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult> =
-    executeAndCaptureAsync(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
+    action: (Context) -> R
+  ): CompletableFuture<PolicyResult<R>> =
+    executeAndCaptureAsync(Context(contextData = contextData), executor) { ctx -> action(ctx) }
 
-  /**
-   * Executes the specified asynchronous action within the policy and returns the captured result.
-   *
-   * @param context Context data that is passed to the exception policy.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
-  fun executeAndCaptureAsync(
-    context: Context,
-    action: (Context) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult>
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the captured result.
-   *
-   * @param context Context data that is passed to the exception policy.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
+  @JvmDefault
   fun executeAndCaptureAsync(
     context: Context,
     executor: Executor,
-    action: (Context, Executor) -> CompletionStage<Unit>
-  ): CompletionStage<PolicyResult>
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult The type of the result.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
-  @JvmDefault
-  fun <TResult> executeAndCaptureAsyncGeneric(action: () -> CompletionStage<TResult>): CompletionStage<PolicyResultGeneric<TResult>> =
-    executeAndCaptureAsyncGeneric(Context()) { action() }
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult The type of the result.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
-  @JvmDefault
-  fun <TResult> executeAndCaptureAsyncGeneric(
-    executor: Executor,
-    action: (Executor) -> CompletionStage<TResult>
-  ): CompletionStage<PolicyResultGeneric<TResult>> =
-    executeAndCaptureAsyncGeneric(Context(), executor) { _, ex -> action(ex) }
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult The type of the result.
-   * @param contextData Arbitrary data that is passed to the exception policy.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
-  @JvmDefault
-  fun <TResult> executeAndCaptureAsyncGeneric(
-    contextData: Map<String, Any>,
-    action: (Context) -> CompletionStage<TResult>
-  ): CompletionStage<PolicyResultGeneric<TResult>> =
-    executeAndCaptureAsyncGeneric(Context(contextData.toMutableMap())) { action(it) }
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult The type of the result.
-   * @param contextData Arbitrary data that is passed to the exception policy.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
-  @JvmDefault
-  fun <TResult> executeAndCaptureAsyncGeneric(
-    contextData: Map<String, Any>,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult>
-  ): CompletionStage<PolicyResultGeneric<TResult>> =
-    executeAndCaptureAsyncGeneric(Context(contextData.toMutableMap()), executor) { ctx, ex -> action(ctx, ex) }
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult The type of the result.
-   * @param context Context data that is passed to the exception policy.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
-  fun <TResult> executeAndCaptureAsyncGeneric(
-    context: Context,
-    action: (Context) -> CompletionStage<TResult>
-  ): CompletionStage<PolicyResultGeneric<TResult>>
-
-  /**
-   * Executes the specified asynchronous action within the policy and returns the result.
-   *
-   * @param TResult The type of the result.
-   * @param context Context data that is passed to the exception policy.
-   * @param executor The executor to use for asynchronous execution.
-   * @param action The action to perform.
-   * @return The captured result.
-   */
-  fun <TResult> executeAndCaptureAsyncGeneric(
-    context: Context,
-    executor: Executor,
-    action: (Context, Executor) -> CompletionStage<TResult>
-  ): CompletionStage<PolicyResultGeneric<TResult>>
+    action: (Context) -> R
+  ): CompletableFuture<PolicyResult<R>> = CoroutineScope(executor.asCoroutineDispatcher()).future {
+    executeAndCapture(context) { ctx ->
+      CompletableFuture.supplyAsync(Supplier { action(ctx) }, executor).await()
+    }
+  }
 }

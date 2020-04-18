@@ -4,52 +4,67 @@ import org.junit.Test;
 
 import java.util.HashMap;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public class ContextTest {
   @Test
   public void shouldAssignOperationKeyFromConstructor() {
-    final var context = new Context("SomeKey");
+    final var context = Context.builder()
+      .operationKey("SomeKey")
+      .build();
 
-    assertEquals("SomeKey", context.getOperationKey());
-    assertEquals(0, context.getKeys().size());
+    assertThat(context.getOperationKey()).isEqualTo("SomeKey");
+    assertThat(context.getContextData().keySet().size()).isEqualTo(0);
   }
 
   @Test
-  public void shouldAssignOperationKeyAndContextDataFromConstructor() {
-    final var contextData = new HashMap<String, Object>() {{
-      put("key1", "value1");
-      put("key2", "value2");
-    }};
-    final var context = new Context("SomeKey", contextData);
+  public void shouldAssignOperationKeyAndContextDataFromBuilder() {
+    final var context = Context.builder()
+      .operationKey("SomeKey")
+      .contextData(new HashMap<>() {{
+        put("key1", "value1");
+        put("key2", "value2");
+      }})
+      .build();
 
-    assertEquals("SomeKey", context.getOperationKey());
-    assertEquals("value1", context.get("key1"));
-    assertEquals("value2", context.get("key2"));
+    assertThat(context.getOperationKey()).isEqualTo("SomeKey");
+    assertThat(context.getContextData().get("key1")).isEqualTo("value1");
+    assertThat(context.getContextData().get("key2")).isEqualTo("value2");
   }
 
   @Test
-  public void noArgsCtorShouldAssignNoOperationKey() {
+  public void noArgsBuilderShouldAssignNoOperationKey() {
+    final var context = Context.builder()
+      .build();
+
+    assertThat(context.getOperationKey()).isNull();
+  }
+
+  @Test
+  public void noArgsConstructorShouldAssignNoOperationKey() {
     final var context = new Context();
 
-    assertNull(context.getOperationKey());
+    assertThat(context.getOperationKey()).isNull();
   }
 
   @Test
   public void shouldAssignCorrelationIdWhenAccessed() {
-    final var context = new Context("SomeKey");
+    final var context = Context.builder()
+      .operationKey("SomeKey")
+      .build();
 
-    assertNotNull(context.getCorrelationId());
+    assertThat(context.getCorrelationId()).isNotNull();
   }
 
   @Test
   public void shouldReturnConsistentCorrelationId() {
-    final var context = new Context("SomeKey");
+    final var context = Context.builder()
+      .operationKey("SomeKey")
+      .build();
 
-    final var retrieved1 = context.getCorrelationId();
-    final var retrieved2 = context.getCorrelationId();
+    final var uuid1 = context.getCorrelationId();
+    final var uuid2 = context.getCorrelationId();
 
-    assertEquals(retrieved1, retrieved2);
+    assertThat(uuid1).isSameAs(uuid2);
   }
 }

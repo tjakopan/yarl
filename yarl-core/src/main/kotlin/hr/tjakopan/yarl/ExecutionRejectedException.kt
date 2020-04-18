@@ -1,32 +1,14 @@
 package hr.tjakopan.yarl
 
-/**
- * Exception thrown when a policy rejects execution of a delegate.
- *
- * More specific exception which derive from this type are generally thrown.
- *
- * @constructor Initializes a new instance of the [ExecutionRejectedException] class.
- * @param message The message that describes the error.
- * @param cause The cause of the exception.
- *
- * @property message The message that describes the error.
- * @property cause The cause of the exception.
- */
-sealed class ExecutionRejectedException(message: String?, cause: Throwable?) : Throwable(message, cause) {
-  /**
-   * Initializes a new instance of the [ExecutionRejectedException] class.
-   * @param message The message that describes the error.
-   */
-  constructor(message: String?) : this(message, null)
-
-  /**
-   * Initializes a new instance of the [ExecutionRejectedException] class.
-   * @param cause The cause of the exception.
-   */
-  constructor(cause: Throwable?) : this(null, cause)
-
-  /**
-   * Initializes a new instance of the [ExecutionRejectedException] class.
-   */
-  constructor() : this(null, null)
+abstract class ExecutionRejectedException : Throwable {
+  constructor(message: String, cause: Throwable) : super(message, cause)
+  constructor(message: String) : super(message)
+  constructor(cause: Throwable) : super(cause)
+  constructor() : super()
+  constructor(message: String?, cause: Throwable?, enableSuppression: Boolean, writableStackTrace: Boolean) : super(
+    message,
+    cause,
+    enableSuppression,
+    writableStackTrace
+  )
 }
