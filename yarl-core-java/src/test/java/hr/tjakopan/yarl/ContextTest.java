@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ContextTest {
   @Test
-  public void shouldAssignOperationKeyFromConstructor() {
+  public void shouldAssignOperationKeyFromBuilder() {
     final var context = Context.builder()
       .operationKey("SomeKey")
       .build();

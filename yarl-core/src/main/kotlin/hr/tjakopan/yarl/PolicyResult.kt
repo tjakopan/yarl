@@ -33,6 +33,32 @@ sealed class PolicyResult<out R>(val context: Context) {
     is Failure.FailureWithResult -> ifFailureWithResult(finalHandledResult, faultType, context)
   }
 
+  inline fun onSuccess(action: (R, Context) -> Unit): PolicyResult<R> {
+    if (isSuccess) action((this as Success).result, context)
+    return this
+  }
+
+  inline fun onFailure(action: (FaultType, Context) -> Unit): PolicyResult<R> {
+    if (isFailure) action((this as Failure).faultType, context)
+    return this
+  }
+
+  inline fun onFailureWithException(action: (Throwable, ExceptionType, FaultType, Context) -> Unit): PolicyResult<R> {
+    if (isFailureWithException) {
+      this as Failure.FailureWithException
+      action(finalException, exceptionType, faultType, context)
+    }
+    return this
+  }
+
+  inline fun onFailureWithResult(action: (R, FaultType, Context) -> Unit): PolicyResult<R> {
+    if (isFailureWithResult) {
+      this as Failure.FailureWithResult
+      action(finalHandledResult, faultType, context)
+    }
+    return this
+  }
+
   class Success<out R> internal constructor(val result: R, context: Context) : PolicyResult<R>(context) {
     override val isSuccess: Boolean = true
     override val isFailure: Boolean = false

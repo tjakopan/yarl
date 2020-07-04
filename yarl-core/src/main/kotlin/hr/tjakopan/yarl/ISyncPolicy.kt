@@ -17,6 +17,6 @@ interface ISyncPolicy<R> {
   @JvmDefault
   fun executeAndCapture(contextData: Map<String, Any>, action: (Context) -> R): PolicyResult<R> =
     executeAndCapture(Context(contextData = contextData)) { action(it) }
-  
+
   fun executeAndCapture(context: Context, action: (Context) -> R): PolicyResult<R>
 }

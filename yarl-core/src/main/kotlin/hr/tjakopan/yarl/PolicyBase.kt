@@ -12,7 +12,7 @@ abstract class PolicyBase<R, B : PolicyBuilder<R, B>> protected constructor(poli
 
   val policyKey: String = when {
     policyBuilder.policyKey != null -> policyBuilder.policyKey
-    else -> "$javaClass-${hr.tjakopan.yarl.utilities.KeyHelper.guidPart()}"
+    else -> "${javaClass.simpleName}-${hr.tjakopan.yarl.utilities.KeyHelper.guidPart()}"
   } as String
 
   protected val resultPredicates = policyBuilder.resultPredicates

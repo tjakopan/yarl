@@ -3,6 +3,7 @@ package hr.tjakopan.yarl.retry
 import hr.tjakopan.yarl.Context
 import java.time.Duration
 
+@JvmSuppressWildcards
 class RetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, RetryPolicyBuilder<R>>() {
   internal var sleepDurationProvider: ((Int, Result<R>, Context) -> Duration)? = null
   internal var onRetry: (Result<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> Unit }

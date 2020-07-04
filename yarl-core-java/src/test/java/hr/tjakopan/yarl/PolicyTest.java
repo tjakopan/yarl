@@ -1,17 +1,16 @@
 package hr.tjakopan.yarl;
 
-import hr.tjakopan.yarl.PolicyResult.Success;
 import hr.tjakopan.yarl.test.helpers.TestResult;
 import kotlin.Unit;
 import org.junit.Test;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class AsyncPolicyTest {
+public class PolicyTest {
   private static final String RESULT_SUCCESS = "Result was a success.";
   private static final String RESULT_FAILURE = "Result was a failure.";
   private static final String RESULT_FAILURE_WITH_RESULT = "Result was a failure with handled result.";
@@ -20,26 +19,24 @@ public class AsyncPolicyTest {
 
   //<editor-fold desc="execute tests">
   @Test
-  public void executingThePolicyFunctionShouldExecuteTheSpecifiedAsyncFunctionAndReturnTheResult() {
-    final var policy = Policy.<TestResult>asyncRetry()
+  public void executingThePolicyFunctionShouldExecuteTheSpecifiedFunctionAndReturnTheResult() {
+    final var policy = Policy.<TestResult>retry()
       .handleResult(TestResult.FAULT)
       .retry();
 
-    final var future = policy.executeAsync(() -> TestResult.GOOD);
+    final var result = policy.execute(() -> TestResult.GOOD);
 
-    assertThat(future.join()).isEqualTo(TestResult.GOOD);
+    assertThat(result).isEqualTo(TestResult.GOOD);
   }
   //</editor-fold>
 
   //<editor-fold desc="executeAndCapture tests">
   @Test
   public void executingThePolicyFunctionSuccessfullyShouldReturnSuccessResult() {
-    final var future = Policy.<TestResult>asyncRetry()
+    final var result = Policy.<TestResult>retry()
       .handleResult(TestResult.FAULT)
       .retry()
-      .executeAndCaptureAsync(() -> TestResult.GOOD);
-
-    final var result = future.join();
+      .executeAndCapture(() -> TestResult.GOOD);
 
     result.onSuccess((r, context) -> {
       assertThat(r).isEqualTo(TestResult.GOOD);
@@ -54,17 +51,16 @@ public class AsyncPolicyTest {
   @Test
   public void executingThePolicyFunctionAndFailingWithAHandledExceptionTypeShouldReturnFailureResultIndicatingThatExceptionTypeIsOneHandledByThisPolicy() {
     final var handledException = new ArithmeticException();
-    final var future = Policy.<Void>asyncRetry()
+
+    final var result = Policy.<Void>retry()
       .handle(ArithmeticException.class)
       .retry()
-      .executeAndCaptureAsync(() -> {
+      .executeAndCapture(() -> {
         throw handledException;
       });
 
-    final var result = future.join();
-
     result.onFailureWithException((throwable, exceptionType, faultType, context) -> {
-      assertThat(throwable.getCause()).isSameAs(handledException);
+      assertThat(throwable).isSameAs(handledException);
       assertThat(exceptionType).isSameAs(ExceptionType.HANDLED_BY_THIS_POLICY);
       assertThat(faultType).isSameAs(FaultType.EXCEPTION_HANDLED_BY_THIS_POLICY);
       return Unit.INSTANCE;
@@ -76,17 +72,16 @@ public class AsyncPolicyTest {
   @Test
   public void executingThePolicyFunctionAndFailingWithAnUnhandledExceptionTypeShouldReturnFailureResultIndicatingThatExceptionTypeIsUnhandledByThisPolicy() {
     final var unhandledException = new Exception();
-    final var future = Policy.<Void>asyncRetry()
+
+    final var result = Policy.<Void>retry()
       .handle(ArithmeticException.class)
       .retry()
-      .executeAndCaptureAsync(() -> {
+      .executeAndCapture(() -> {
         throw new RuntimeException(unhandledException);
       });
 
-    final var result = future.join();
-
     result.onFailureWithException((throwable, exceptionType, faultType, context) -> {
-      assertThat(throwable.getCause().getCause()).isSameAs(unhandledException);
+      assertThat(throwable.getCause()).isSameAs(unhandledException);
       assertThat(exceptionType).isSameAs(ExceptionType.UNHANDLED);
       assertThat(faultType).isSameAs(FaultType.UNHANDLED_EXCEPTION);
       return Unit.INSTANCE;
@@ -98,12 +93,11 @@ public class AsyncPolicyTest {
   @Test
   public void executingThePolicyFunctionAndFailingWithAHandledResultShouldReturnFailureResultIndicatingThatResultIsOneHandledByThisPolicy() {
     final var handledResult = TestResult.FAULT;
-    final var future = Policy.<TestResult>asyncRetry()
+
+    final var result = Policy.<TestResult>retry()
       .handleResult(handledResult)
       .retry()
-      .executeAndCaptureAsync(() -> handledResult);
-
-    final var result = future.join();
+      .executeAndCapture(() -> handledResult);
 
     result.onFailureWithResult((testResult, faultType, context) -> {
       assertThat(testResult).isSameAs(handledResult);
@@ -118,16 +112,15 @@ public class AsyncPolicyTest {
   public void executingThePolicyFunctionAndReturningAnUnhandledResultShouldReturnResultNotIndicatingAnyFailure() {
     final var handledResult = TestResult.FAULT;
     final var unhandledResult = TestResult.GOOD;
-    final var future = Policy.<TestResult>asyncRetry()
+
+    final var result = Policy.<TestResult>retry()
       .handleResult(handledResult)
       .retry()
-      .executeAndCaptureAsync(() -> unhandledResult);
-
-    final var result = future.join();
+      .executeAndCapture(() -> unhandledResult);
 
     assertThat(result.isSuccess()).isTrue();
     //noinspection rawtypes
-    assertThat(((Success) result).getResult()).isSameAs(unhandledResult);
+    assertThat(((PolicyResult.Success) result).getResult()).isSameAs(unhandledResult);
   }
   //</editor-fold>
 
@@ -136,10 +129,10 @@ public class AsyncPolicyTest {
   public void executingThePolicyFunctionShouldThrowWhenContextDataIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>asyncRetry()
+      .isThrownBy(() -> Policy.<Integer>retry()
         .handle(ArithmeticException.class)
         .retry()
-        .executeAsync((Map<String, Object>) null, context -> 2))
+        .execute((Map<String, Object>) null, context -> 2))
       .withMessageContaining(NULL_PARAMETER);
   }
 
@@ -147,10 +140,10 @@ public class AsyncPolicyTest {
   public void executingThePolicyFunctionShouldThrowWhenContextIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>asyncRetry()
+      .isThrownBy(() -> Policy.<Integer>retry()
         .handle(ArithmeticException.class)
         .retry()
-        .executeAsync((Context) null, context -> 2))
+        .execute((Context) null, context -> 2))
       .withMessageContaining(NULL_PARAMETER);
   }
 
@@ -158,10 +151,10 @@ public class AsyncPolicyTest {
   public void executingAndCapturingThePolicyFunctionShouldThrowWhenContextDataIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>asyncRetry()
+      .isThrownBy(() -> Policy.<Integer>retry()
         .handle(ArithmeticException.class)
         .retry()
-        .executeAndCaptureAsync((Map<String, Object>) null, context -> 2))
+        .executeAndCapture((Map<String, Object>) null, context -> 2))
       .withMessageContaining(NULL_PARAMETER);
   }
 
@@ -169,10 +162,10 @@ public class AsyncPolicyTest {
   public void executingAndCapturingThePolicyFunctionShouldThrowWhenContextIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>asyncRetry()
+      .isThrownBy(() -> Policy.<Integer>retry()
         .handle(ArithmeticException.class)
         .retry()
-        .executeAndCaptureAsync((Context) null, context -> 2))
+        .executeAndCapture((Context) null, context -> 2))
       .withMessageContaining(NULL_PARAMETER);
   }
 
@@ -184,13 +177,12 @@ public class AsyncPolicyTest {
       .build();
     final var capturedContext = new AtomicReference<Context>();
 
-    Policy.<Void>asyncNoOp()
+    Policy.<Void>noOp()
       .noOp()
-      .executeAsync(executionContext, context -> {
+      .execute(executionContext, context -> {
         capturedContext.set(context);
         return null;
-      })
-      .join();
+      });
 
     assertThat(capturedContext.get().getOperationKey()).isEqualTo(operationKey);
   }
@@ -203,13 +195,12 @@ public class AsyncPolicyTest {
       .build();
     final var capturedContext = new AtomicReference<Context>();
 
-    Policy.<Void>asyncNoOp()
+    Policy.<Void>noOp()
       .noOp()
-      .executeAndCaptureAsync(executionContext, context -> {
+      .executeAndCapture(executionContext, context -> {
         capturedContext.set(context);
         return null;
-      })
-      .join();
+      });
 
     assertThat(capturedContext.get().getOperationKey()).isEqualTo(operationKey);
   }
@@ -220,11 +211,10 @@ public class AsyncPolicyTest {
     final var executionContext = Context.builder()
       .operationKey(operationKey)
       .build();
-    final var future = Policy.<Void>asyncNoOp()
-      .noOp()
-      .executeAndCaptureAsync(executionContext, context -> null);
 
-    final var result = future.join();
+    final var result = Policy.<Void>noOp()
+      .noOp()
+      .executeAndCapture(executionContext, context -> null);
 
     assertThat(result.getContext().getOperationKey()).isEqualTo(operationKey);
   }

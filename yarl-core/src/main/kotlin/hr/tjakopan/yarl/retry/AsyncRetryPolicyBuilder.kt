@@ -3,6 +3,7 @@ package hr.tjakopan.yarl.retry
 import hr.tjakopan.yarl.Context
 import java.time.Duration
 
+@JvmSuppressWildcards
 class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBuilder<R>>() {
   internal var sleepDurationProvider: (suspend (Int, Result<R>, Context) -> Duration)? = null
   internal var onRetry: suspend (Result<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> Unit }
@@ -19,7 +20,8 @@ class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBui
     return retry(retryCount, doNothing)
   }
 
-  fun retry(onRetry: suspend (Result<R>, Int, Context) -> Unit): AsyncRetryPolicy<R> = retry(1, onRetry)
+  fun retry(onRetry: suspend (Result<R>, Int, Context) -> Unit): AsyncRetryPolicy<R> =
+    retry(1, onRetry)
 
   fun retry(): AsyncRetryPolicy<R> = retry(1)
 
@@ -81,21 +83,22 @@ class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBui
     return waitAndRetryForever(sleepDurationProvider, doNothing)
   }
 
-  fun retryAsync(retryCount: Int, onRetry: (Result<R>, Int, Context) -> Unit): AsyncRetryPolicy<R> {
+  fun retry(retryCount: Int, onRetry: (Result<R>, Int, Context) -> Unit): AsyncRetryPolicy<R> {
     if (retryCount < 0) throw IllegalArgumentException("Retry count must be greater than or equal to zero.")
     this.onRetry = { outcome, _, i, ctx -> onRetry(outcome, i, ctx) }
     this.permittedRetryCount = retryCount
     return AsyncRetryPolicy(this)
   }
 
-  fun retryAsync(onRetry: (Result<R>, Int, Context) -> Unit): AsyncRetryPolicy<R> = retryAsync(1, onRetry)
+  fun retry(onRetry: (Result<R>, Int, Context) -> Unit): AsyncRetryPolicy<R> =
+    retry(1, onRetry)
 
-  fun retryForeverAsync(onRetry: (Result<R>, Int, Context) -> Unit): AsyncRetryPolicy<R> {
+  fun retryForever(onRetry: (Result<R>, Int, Context) -> Unit): AsyncRetryPolicy<R> {
     this.onRetry = { outcome, _, i, ctx -> onRetry(outcome, i, ctx) }
     return AsyncRetryPolicy(this)
   }
 
-  fun waitAndRetryAsync(
+  fun waitAndRetry(
     retryCount: Int,
     sleepDurationProvider: (Int, Result<R>, Context) -> Duration,
     onRetry: (Result<R>, Duration, Int, Context) -> Unit
@@ -107,15 +110,15 @@ class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBui
     return AsyncRetryPolicy(this)
   }
 
-  fun waitAndRetryAsync(
+  fun waitAndRetry(
     retryCount: Int,
     sleepDurationProvider: (Int, Result<R>, Context) -> Duration
   ): AsyncRetryPolicy<R> {
     val doNothing: (Result<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> Unit }
-    return waitAndRetryAsync(retryCount, sleepDurationProvider, doNothing)
+    return waitAndRetry(retryCount, sleepDurationProvider, doNothing)
   }
 
-  fun waitAndRetryAsync(
+  fun waitAndRetry(
     sleepDurations: Iterable<Duration>,
     onRetry: (Result<R>, Duration, Int, Context) -> Unit
   ): AsyncRetryPolicy<R> {
@@ -124,7 +127,7 @@ class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBui
     return AsyncRetryPolicy(this)
   }
 
-  fun waitAndRetryForeverAsync(
+  fun waitAndRetryForever(
     sleepDurationProvider: (Int, Result<R>, Context) -> Duration,
     onRetry: (Result<R>, Duration, Int, Context) -> Unit
   ): AsyncRetryPolicy<R> {
@@ -133,9 +136,9 @@ class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBui
     return AsyncRetryPolicy(this)
   }
 
-  fun waitAndRetryForeverAsync(sleepDurationProvider: (Int, Result<R>, Context) -> Duration): AsyncRetryPolicy<R> {
+  fun waitAndRetryForever(sleepDurationProvider: (Int, Result<R>, Context) -> Duration): AsyncRetryPolicy<R> {
     val doNothing: (Result<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> Unit }
-    return waitAndRetryForeverAsync(sleepDurationProvider, doNothing)
+    return waitAndRetryForever(sleepDurationProvider, doNothing)
   }
 
   override fun self(): AsyncRetryPolicyBuilder<R> = this
