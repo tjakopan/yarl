@@ -94,7 +94,7 @@ public class AsyncPolicyContextAndKeysTest {
       .policyKey(policyKey)
       .retry(1, onRetry);
 
-    AsyncPolicyUtils.raiseResultsAsync(policy, TestResult.FAULT, TestResult.GOOD);
+    AsyncPolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD);
 
     assertThat(policyKeySetOnExecutionContext.get()).isEqualTo(policyKey);
   }
