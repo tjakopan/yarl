@@ -1,12 +1,9 @@
 package hr.tjakopan.yarl
 
-import hr.tjakopan.yarl.noop.AsyncNoOpPolicyBuilder
-import hr.tjakopan.yarl.noop.NoOpPolicyBuilder
-import hr.tjakopan.yarl.retry.AsyncRetryPolicyBuilder
-import hr.tjakopan.yarl.retry.RetryPolicyBuilder
-
 abstract class Policy<R, B : PolicyBuilder<R, B>> protected constructor(policyBuilder: PolicyBuilder<R, B>) :
   PolicyBase<R, B>(policyBuilder), ISyncPolicy<R> {
+  companion object Policy
+
   override fun execute(context: Context, action: (Context) -> R): R {
     val executionContext: Context = context.copy(policyKey = policyKey)
     return implementation(executionContext, action)
@@ -25,18 +22,4 @@ abstract class Policy<R, B : PolicyBuilder<R, B>> protected constructor(policyBu
   }
 
   protected abstract fun implementation(context: Context, action: (Context) -> R): R
-
-  companion object Policy {
-    @JvmStatic
-    fun <R> noOp(): NoOpPolicyBuilder<R> = NoOpPolicyBuilder()
-
-    @JvmStatic
-    fun <R> asyncNoOp(): AsyncNoOpPolicyBuilder<R> = AsyncNoOpPolicyBuilder()
-
-    @JvmStatic
-    fun <R> retry(): RetryPolicyBuilder<R> = RetryPolicyBuilder()
-
-    @JvmStatic
-    fun <R> asyncRetry(): AsyncRetryPolicyBuilder<R> = AsyncRetryPolicyBuilder();
-  }
 }

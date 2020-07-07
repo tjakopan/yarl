@@ -1,5 +1,7 @@
 package hr.tjakopan.yarl;
 
+import hr.tjakopan.yarl.noop.NoOpPolicy;
+import hr.tjakopan.yarl.retry.RetryPolicy;
 import hr.tjakopan.yarl.test.helpers.TestResult;
 import kotlin.Unit;
 import org.junit.Test;
@@ -8,7 +10,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class PolicyTest {
   private static final String RESULT_SUCCESS = "Result was a success.";
@@ -20,7 +21,7 @@ public class PolicyTest {
   //<editor-fold desc="execute tests">
   @Test
   public void executingThePolicyFunctionShouldExecuteTheSpecifiedFunctionAndReturnTheResult() {
-    final var policy = Policy.<TestResult>retry()
+    final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry();
 
@@ -33,7 +34,7 @@ public class PolicyTest {
   //<editor-fold desc="executeAndCapture tests">
   @Test
   public void executingThePolicyFunctionSuccessfullyShouldReturnSuccessResult() {
-    final var result = Policy.<TestResult>retry()
+    final var result = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry()
       .executeAndCapture(() -> TestResult.GOOD);
@@ -52,7 +53,7 @@ public class PolicyTest {
   public void executingThePolicyFunctionAndFailingWithAHandledExceptionTypeShouldReturnFailureResultIndicatingThatExceptionTypeIsOneHandledByThisPolicy() {
     final var handledException = new ArithmeticException();
 
-    final var result = Policy.<Void>retry()
+    final var result = RetryPolicy.builder()
       .handle(ArithmeticException.class)
       .retry()
       .executeAndCapture(() -> {
@@ -73,7 +74,7 @@ public class PolicyTest {
   public void executingThePolicyFunctionAndFailingWithAnUnhandledExceptionTypeShouldReturnFailureResultIndicatingThatExceptionTypeIsUnhandledByThisPolicy() {
     final var unhandledException = new Exception();
 
-    final var result = Policy.<Void>retry()
+    final var result = RetryPolicy.builder()
       .handle(ArithmeticException.class)
       .retry()
       .executeAndCapture(() -> {
@@ -94,7 +95,7 @@ public class PolicyTest {
   public void executingThePolicyFunctionAndFailingWithAHandledResultShouldReturnFailureResultIndicatingThatResultIsOneHandledByThisPolicy() {
     final var handledResult = TestResult.FAULT;
 
-    final var result = Policy.<TestResult>retry()
+    final var result = RetryPolicy.<TestResult>builder()
       .handleResult(handledResult)
       .retry()
       .executeAndCapture(() -> handledResult);
@@ -113,7 +114,7 @@ public class PolicyTest {
     final var handledResult = TestResult.FAULT;
     final var unhandledResult = TestResult.GOOD;
 
-    final var result = Policy.<TestResult>retry()
+    final var result = RetryPolicy.<TestResult>builder()
       .handleResult(handledResult)
       .retry()
       .executeAndCapture(() -> unhandledResult);
@@ -129,7 +130,7 @@ public class PolicyTest {
   public void executingThePolicyFunctionShouldThrowWhenContextDataIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>retry()
+      .isThrownBy(() -> RetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
         .execute((Map<String, Object>) null, context -> 2))
@@ -140,7 +141,7 @@ public class PolicyTest {
   public void executingThePolicyFunctionShouldThrowWhenContextIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>retry()
+      .isThrownBy(() -> RetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
         .execute((Context) null, context -> 2))
@@ -151,7 +152,7 @@ public class PolicyTest {
   public void executingAndCapturingThePolicyFunctionShouldThrowWhenContextDataIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>retry()
+      .isThrownBy(() -> RetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
         .executeAndCapture((Map<String, Object>) null, context -> 2))
@@ -162,7 +163,7 @@ public class PolicyTest {
   public void executingAndCapturingThePolicyFunctionShouldThrowWhenContextIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>retry()
+      .isThrownBy(() -> RetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
         .executeAndCapture((Context) null, context -> 2))
@@ -177,8 +178,7 @@ public class PolicyTest {
       .build();
     final var capturedContext = new AtomicReference<Context>();
 
-    Policy.<Void>noOp()
-      .noOp()
+    new NoOpPolicy<>()
       .execute(executionContext, context -> {
         capturedContext.set(context);
         return null;
@@ -195,8 +195,7 @@ public class PolicyTest {
       .build();
     final var capturedContext = new AtomicReference<Context>();
 
-    Policy.<Void>noOp()
-      .noOp()
+    new NoOpPolicy<>()
       .executeAndCapture(executionContext, context -> {
         capturedContext.set(context);
         return null;
@@ -212,8 +211,7 @@ public class PolicyTest {
       .operationKey(operationKey)
       .build();
 
-    final var result = Policy.<Void>noOp()
-      .noOp()
+    final var result = new NoOpPolicy<>()
       .executeAndCapture(executionContext, context -> null);
 
     assertThat(result.getContext().getOperationKey()).isEqualTo(operationKey);

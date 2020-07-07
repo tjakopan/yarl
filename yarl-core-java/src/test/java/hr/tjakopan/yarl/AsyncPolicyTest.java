@@ -1,12 +1,13 @@
 package hr.tjakopan.yarl;
 
 import hr.tjakopan.yarl.PolicyResult.Success;
+import hr.tjakopan.yarl.noop.AsyncNoOpPolicy;
+import hr.tjakopan.yarl.retry.AsyncRetryPolicy;
 import hr.tjakopan.yarl.test.helpers.TestResult;
 import kotlin.Unit;
 import org.junit.Test;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.*;
@@ -21,7 +22,7 @@ public class AsyncPolicyTest {
   //<editor-fold desc="execute tests">
   @Test
   public void executingThePolicyFunctionShouldExecuteTheSpecifiedAsyncFunctionAndReturnTheResult() {
-    final var policy = Policy.<TestResult>asyncRetry()
+    final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry();
 
@@ -34,7 +35,7 @@ public class AsyncPolicyTest {
   //<editor-fold desc="executeAndCapture tests">
   @Test
   public void executingThePolicyFunctionSuccessfullyShouldReturnSuccessResult() {
-    final var future = Policy.<TestResult>asyncRetry()
+    final var future = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry()
       .executeAndCaptureAsync(() -> TestResult.GOOD);
@@ -54,7 +55,7 @@ public class AsyncPolicyTest {
   @Test
   public void executingThePolicyFunctionAndFailingWithAHandledExceptionTypeShouldReturnFailureResultIndicatingThatExceptionTypeIsOneHandledByThisPolicy() {
     final var handledException = new ArithmeticException();
-    final var future = Policy.<Void>asyncRetry()
+    final var future = AsyncRetryPolicy.<TestResult>builder()
       .handle(ArithmeticException.class)
       .retry()
       .executeAndCaptureAsync(() -> {
@@ -76,7 +77,7 @@ public class AsyncPolicyTest {
   @Test
   public void executingThePolicyFunctionAndFailingWithAnUnhandledExceptionTypeShouldReturnFailureResultIndicatingThatExceptionTypeIsUnhandledByThisPolicy() {
     final var unhandledException = new Exception();
-    final var future = Policy.<Void>asyncRetry()
+    final var future = AsyncRetryPolicy.builder()
       .handle(ArithmeticException.class)
       .retry()
       .executeAndCaptureAsync(() -> {
@@ -98,7 +99,7 @@ public class AsyncPolicyTest {
   @Test
   public void executingThePolicyFunctionAndFailingWithAHandledResultShouldReturnFailureResultIndicatingThatResultIsOneHandledByThisPolicy() {
     final var handledResult = TestResult.FAULT;
-    final var future = Policy.<TestResult>asyncRetry()
+    final var future = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(handledResult)
       .retry()
       .executeAndCaptureAsync(() -> handledResult);
@@ -118,7 +119,7 @@ public class AsyncPolicyTest {
   public void executingThePolicyFunctionAndReturningAnUnhandledResultShouldReturnResultNotIndicatingAnyFailure() {
     final var handledResult = TestResult.FAULT;
     final var unhandledResult = TestResult.GOOD;
-    final var future = Policy.<TestResult>asyncRetry()
+    final var future = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(handledResult)
       .retry()
       .executeAndCaptureAsync(() -> unhandledResult);
@@ -136,7 +137,7 @@ public class AsyncPolicyTest {
   public void executingThePolicyFunctionShouldThrowWhenContextDataIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>asyncRetry()
+      .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
         .executeAsync((Map<String, Object>) null, context -> 2))
@@ -147,7 +148,7 @@ public class AsyncPolicyTest {
   public void executingThePolicyFunctionShouldThrowWhenContextIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>asyncRetry()
+      .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
         .executeAsync((Context) null, context -> 2))
@@ -158,7 +159,7 @@ public class AsyncPolicyTest {
   public void executingAndCapturingThePolicyFunctionShouldThrowWhenContextDataIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>asyncRetry()
+      .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
         .executeAndCaptureAsync((Map<String, Object>) null, context -> 2))
@@ -169,7 +170,7 @@ public class AsyncPolicyTest {
   public void executingAndCapturingThePolicyFunctionShouldThrowWhenContextIsNull() {
     //noinspection ConstantConditions
     assertThatExceptionOfType(IllegalArgumentException.class)
-      .isThrownBy(() -> Policy.<Integer>asyncRetry()
+      .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
         .executeAndCaptureAsync((Context) null, context -> 2))
@@ -184,8 +185,7 @@ public class AsyncPolicyTest {
       .build();
     final var capturedContext = new AtomicReference<Context>();
 
-    Policy.<Void>asyncNoOp()
-      .noOp()
+    new AsyncNoOpPolicy<>()
       .executeAsync(executionContext, context -> {
         capturedContext.set(context);
         return null;
@@ -203,8 +203,7 @@ public class AsyncPolicyTest {
       .build();
     final var capturedContext = new AtomicReference<Context>();
 
-    Policy.<Void>asyncNoOp()
-      .noOp()
+    new AsyncNoOpPolicy<>()
       .executeAndCaptureAsync(executionContext, context -> {
         capturedContext.set(context);
         return null;
@@ -220,8 +219,7 @@ public class AsyncPolicyTest {
     final var executionContext = Context.builder()
       .operationKey(operationKey)
       .build();
-    final var future = Policy.<Void>asyncNoOp()
-      .noOp()
+    final var future = new AsyncNoOpPolicy<>()
       .executeAndCaptureAsync(executionContext, context -> null);
 
     final var result = future.join();

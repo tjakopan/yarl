@@ -1,5 +1,6 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.retry.retry
 import hr.tjakopan.yarl.test.helpers.TestResult
 import hr.tjakopan.yarl.test.helpers.raiseResults
 import org.assertj.core.api.Assertions.assertThat

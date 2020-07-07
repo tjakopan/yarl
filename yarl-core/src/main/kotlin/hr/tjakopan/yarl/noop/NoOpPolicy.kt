@@ -5,5 +5,7 @@ import hr.tjakopan.yarl.Policy
 
 class NoOpPolicy<R> internal constructor(policyBuilder: NoOpPolicyBuilder<R>) :
   Policy<R, NoOpPolicyBuilder<R>>(policyBuilder), INoOpPolicy {
+  constructor() : this(NoOpPolicyBuilder())
+
   override fun implementation(context: Context, action: (Context) -> R): R = NoOpEngine.implementation(context, action)
 }

@@ -13,7 +13,7 @@ public class RetryAsyncTest {
   @Test
   public void shouldThrowWhenRetryCountIsLessThanZero() {
     final ThrowableAssert.ThrowingCallable shouldThrow = () -> {
-      Policy.<TestResult>asyncRetry()
+      AsyncRetryPolicy.<TestResult>builder()
         .handleResult(TestResult.FAULT)
         .retry(-1);
     };
@@ -25,7 +25,7 @@ public class RetryAsyncTest {
 
   @Test
   public void shouldNotReturnHandledResultWhenHandledResultRaisedSameNumberOfTimesAsRetryCount() {
-    final var policy = Policy.<TestResult>asyncRetry()
+    final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry(3);
 
@@ -36,7 +36,7 @@ public class RetryAsyncTest {
 
   @Test
   public void shouldNotReturnHandledResultWhenOneOfTheHandledResultsRaisedSameNumberOfTimesAsRetryCount() {
-    final var policy = Policy.<TestResult>asyncRetry()
+    final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .handleResult(TestResult.FAULT_AGAIN)
       .retry(3);
@@ -48,7 +48,7 @@ public class RetryAsyncTest {
 
   @Test
   public void shouldNotReturnHandledResultWhenHandledResultRaisedLessNumberOfTimesThanRetryCount() {
-    final var policy = Policy.<TestResult>asyncRetry()
+    final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry(3);
 
@@ -59,7 +59,7 @@ public class RetryAsyncTest {
 
   @Test
   public void shouldNotReturnHandledResultWhenAllOfTheHandledResultsRaisedLessNumberOfTimesThanRetryCount() {
-    final var policy = Policy.<TestResult>asyncRetry()
+    final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .handleResult(TestResult.FAULT_AGAIN)
       .retry(3);
@@ -71,7 +71,7 @@ public class RetryAsyncTest {
 
   @Test
   public void shouldReturnHandledResultWhenHandledResultRaisedMoreTimesThanRetryCount() {
-    final var policy = Policy.<TestResult>asyncRetry()
+    final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry(3);
 

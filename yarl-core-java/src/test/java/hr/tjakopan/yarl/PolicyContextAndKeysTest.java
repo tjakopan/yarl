@@ -1,5 +1,6 @@
 package hr.tjakopan.yarl;
 
+import hr.tjakopan.yarl.retry.RetryPolicy;
 import hr.tjakopan.yarl.test.helpers.PolicyUtils;
 import hr.tjakopan.yarl.test.helpers.TestResult;
 import kotlin.Result;
@@ -17,7 +18,7 @@ public class PolicyContextAndKeysTest {
   //<editor-fold desc="configuration">
   @Test
   public void shouldBeAbleFluentlyToConfigureThePolicyKey() {
-    final var policy = Policy.<Integer>retry()
+    final var policy = RetryPolicy.<Integer>builder()
       .policyKey(UUID.randomUUID().toString())
       .handleResult(0)
       .retry();
@@ -28,7 +29,7 @@ public class PolicyContextAndKeysTest {
   @Test
   public void policyKeyPropertyShouldBeTheFluentlyConfiguredPolicyKey() {
     final var key = "SomePolicyKey";
-    final var policy = Policy.<Integer>retry()
+    final var policy = RetryPolicy.<Integer>builder()
       .handleResult(0)
       .policyKey(key)
       .retry();
@@ -38,7 +39,7 @@ public class PolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldBeNonNullOrEmptyIfNotExplicitlyConfigured() {
-    final var policy = Policy.<Integer>retry()
+    final var policy = RetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -48,7 +49,7 @@ public class PolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldStartWithPolicyTypeIfNotExplicitlyConfigured() {
-    final var policy = Policy.<Integer>retry()
+    final var policy = RetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -57,10 +58,10 @@ public class PolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldBeUniqueForDifferentInstancesIfNotExplicitlyConfigured() {
-    final var policy1 = Policy.<Integer>retry()
+    final var policy1 = RetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
-    final var policy2 = Policy.<Integer>retry()
+    final var policy2 = RetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -69,7 +70,7 @@ public class PolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldReturnConsistentValueForSamePolicyInstanceIfNotExplicitlyConfigured() {
-    final var policy = Policy.<Integer>retry()
+    final var policy = RetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -87,7 +88,7 @@ public class PolicyContextAndKeysTest {
       policyKeySetOnExecutionContext.set(context.getPolicyKey());
       return Unit.INSTANCE;
     };
-    final var policy = Policy.<TestResult>retry()
+    final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .policyKey(policyKey)
       .retry(1, onRetry);
@@ -106,7 +107,7 @@ public class PolicyContextAndKeysTest {
       operationKeySetOnContext.set(context.getOperationKey());
       return Unit.INSTANCE;
     };
-    final var policy = Policy.<TestResult>retry()
+    final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry(1, onRetry);
 

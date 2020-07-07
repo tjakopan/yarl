@@ -1,5 +1,6 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.retry.asyncRetry
 import hr.tjakopan.yarl.test.helpers.TestResult
 import hr.tjakopan.yarl.test.helpers.raiseResults
 import kotlinx.coroutines.ExperimentalCoroutinesApi

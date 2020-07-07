@@ -1,5 +1,6 @@
 package hr.tjakopan.yarl;
 
+import hr.tjakopan.yarl.retry.AsyncRetryPolicy;
 import hr.tjakopan.yarl.test.helpers.AsyncPolicyUtils;
 import hr.tjakopan.yarl.test.helpers.TestResult;
 import kotlin.Result;
@@ -17,7 +18,7 @@ public class AsyncPolicyContextAndKeysTest {
   //<editor-fold desc="configuration">
   @Test
   public void shouldBeAbleFluentlyToConfigurePolicyKey() {
-    final var policy = Policy.<Integer>asyncRetry()
+    final var policy = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .policyKey(UUID.randomUUID().toString())
       .retry();
@@ -28,7 +29,7 @@ public class AsyncPolicyContextAndKeysTest {
   @Test
   public void policyKeyPropertyShouldBeTheFluentlyConfiguredPolicyKey() {
     final var key = "SomePolicyKey";
-    final var policy = Policy.<Integer>asyncRetry()
+    final var policy = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .policyKey(key)
       .retry();
@@ -38,7 +39,7 @@ public class AsyncPolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldBeNonNullOrEmptyIfNotExplicitlyConfigured() {
-    final var policy = Policy.<Integer>asyncRetry()
+    final var policy = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -48,7 +49,7 @@ public class AsyncPolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldStartWithPolicyTypeIfNotExplicitlyConfigured() {
-    final var policy = Policy.<Integer>asyncRetry()
+    final var policy = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -57,10 +58,10 @@ public class AsyncPolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldBeUniqueForDifferentInstancesIfNotExplicitlyConfigured() {
-    final var policy1 = Policy.<Integer>asyncRetry()
+    final var policy1 = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
-    final var policy2 = Policy.<Integer>asyncRetry()
+    final var policy2 = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -69,7 +70,7 @@ public class AsyncPolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldReturnConsistentValueForSamePolicyInstanceIfNotExplicitlyConfigured() {
-    final var policy = Policy.<Integer>asyncRetry()
+    final var policy = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -89,7 +90,7 @@ public class AsyncPolicyContextAndKeysTest {
       policyKeySetOnExecutionContext.set(context.getPolicyKey());
       return Unit.INSTANCE;
     };
-    final var policy = Policy.<TestResult>asyncRetry()
+    final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .policyKey(policyKey)
       .retry(1, onRetry);
@@ -107,7 +108,7 @@ public class AsyncPolicyContextAndKeysTest {
       operationKeySetOnContext.set(context.getOperationKey());
       return Unit.INSTANCE;
     };
-    final var policy = Policy.<TestResult>asyncRetry()
+    final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry(1, onRetry);
 

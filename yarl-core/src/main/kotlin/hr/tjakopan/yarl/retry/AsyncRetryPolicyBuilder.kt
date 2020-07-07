@@ -5,7 +5,10 @@ import java.time.Duration
 
 @JvmSuppressWildcards
 class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBuilder<R>>() {
+  @JvmSynthetic
   internal var sleepDurationProvider: (suspend (Int, Result<R>, Context) -> Duration)? = null
+
+  @JvmSynthetic
   internal var onRetry: suspend (Result<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> Unit }
 
   fun retry(retryCount: Int, onRetry: suspend (Result<R>, Int, Context) -> Unit): AsyncRetryPolicy<R> {

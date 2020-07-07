@@ -6,6 +6,11 @@ import java.time.Duration
 
 class RetryPolicy<R> internal constructor(policyBuilder: RetryPolicyBuilder<R>) :
   Policy<R, RetryPolicyBuilder<R>>(policyBuilder), IRetryPolicy {
+  companion object RetryPolicy {
+    @JvmStatic
+    fun <R> builder(): RetryPolicyBuilder<R> = RetryPolicyBuilder()
+  }
+
   private val onRetry: (Result<R>, Duration, Int, Context) -> Unit = policyBuilder.onRetry
   private val permittedRetryCount: Int = policyBuilder.permittedRetryCount
   private val sleepDurationsIterable: Iterable<Duration> = policyBuilder.sleepDurationsIterable

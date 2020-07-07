@@ -1,5 +1,7 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.noop.asyncNoOp
+import hr.tjakopan.yarl.retry.asyncRetry
 import hr.tjakopan.yarl.test.helpers.TestResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -121,7 +123,6 @@ class AsyncPolicyTest {
     var capturedContext: Context? = null
 
     Policy.asyncNoOp<Unit>()
-      .noOp()
       .execute(executionContext) { context -> capturedContext = context }
 
     assertThat(capturedContext?.operationKey).isEqualTo(operationKey)
@@ -134,7 +135,6 @@ class AsyncPolicyTest {
     var capturedContext: Context? = null
 
     Policy.asyncNoOp<Unit>()
-      .noOp()
       .executeAndCapture(executionContext) { context -> capturedContext = context }
 
     assertThat(capturedContext?.operationKey).isEqualTo(operationKey)
@@ -146,7 +146,6 @@ class AsyncPolicyTest {
     val executionContext = Context(operationKey = operationKey)
 
     val result = Policy.asyncNoOp<Unit>()
-      .noOp()
       .executeAndCapture(executionContext) { _ -> }
 
     assertThat(result.context.operationKey).isEqualTo(operationKey)
