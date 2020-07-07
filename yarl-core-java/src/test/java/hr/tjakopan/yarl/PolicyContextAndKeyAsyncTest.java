@@ -1,7 +1,7 @@
 package hr.tjakopan.yarl;
 
-import hr.tjakopan.yarl.retry.RetryPolicy;
-import hr.tjakopan.yarl.test.helpers.PolicyUtils;
+import hr.tjakopan.yarl.retry.AsyncRetryPolicy;
+import hr.tjakopan.yarl.test.helpers.AsyncPolicyUtils;
 import hr.tjakopan.yarl.test.helpers.TestResult;
 import kotlin.Result;
 import kotlin.Unit;
@@ -14,22 +14,22 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PolicyContextAndKeysTest {
+public class PolicyContextAndKeyAsyncTest {
   //<editor-fold desc="configuration">
   @Test
-  public void shouldBeAbleFluentlyToConfigureThePolicyKey() {
-    final var policy = RetryPolicy.<Integer>builder()
-      .policyKey(UUID.randomUUID().toString())
+  public void shouldBeAbleFluentlyToConfigurePolicyKey() {
+    final var policy = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
+      .policyKey(UUID.randomUUID().toString())
       .retry();
 
-    assertThat(policy).isInstanceOf(Policy.class);
+    assertThat(policy).isInstanceOf(AsyncPolicy.class);
   }
 
   @Test
   public void policyKeyPropertyShouldBeTheFluentlyConfiguredPolicyKey() {
     final var key = "SomePolicyKey";
-    final var policy = RetryPolicy.<Integer>builder()
+    final var policy = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .policyKey(key)
       .retry();
@@ -39,7 +39,7 @@ public class PolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldBeNonNullOrEmptyIfNotExplicitlyConfigured() {
-    final var policy = RetryPolicy.<Integer>builder()
+    final var policy = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -49,19 +49,19 @@ public class PolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldStartWithPolicyTypeIfNotExplicitlyConfigured() {
-    final var policy = RetryPolicy.<Integer>builder()
+    final var policy = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
-    assertThat(policy.getPolicyKey()).startsWith("RetryPolicy");
+    assertThat(policy.getPolicyKey()).startsWith("AsyncRetryPolicy");
   }
 
   @Test
   public void policyKeyPropertyShouldBeUniqueForDifferentInstancesIfNotExplicitlyConfigured() {
-    final var policy1 = RetryPolicy.<Integer>builder()
+    final var policy1 = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
-    final var policy2 = RetryPolicy.<Integer>builder()
+    final var policy2 = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -70,7 +70,7 @@ public class PolicyContextAndKeysTest {
 
   @Test
   public void policyKeyPropertyShouldReturnConsistentValueForSamePolicyInstanceIfNotExplicitlyConfigured() {
-    final var policy = RetryPolicy.<Integer>builder()
+    final var policy = AsyncRetryPolicy.<Integer>builder()
       .handleResult(0)
       .retry();
 
@@ -79,7 +79,9 @@ public class PolicyContextAndKeysTest {
 
     assertThat(keyRetrievedSecond).isSameAs(keyRetrievedFirst);
   }
+  //</editor-fold>
 
+  //<editor-fold desc="policyKey and execution contexts tests">
   @Test
   public void shouldPassPolicyKeyToExecutionContext() {
     final var policyKey = UUID.randomUUID().toString();
@@ -88,16 +90,15 @@ public class PolicyContextAndKeysTest {
       policyKeySetOnExecutionContext.set(context.getPolicyKey());
       return Unit.INSTANCE;
     };
-    final var policy = RetryPolicy.<TestResult>builder()
+    final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .policyKey(policyKey)
       .retry(1, onRetry);
 
-    PolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD);
+    AsyncPolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD);
 
     assertThat(policyKeySetOnExecutionContext.get()).isEqualTo(policyKey);
   }
-  //</editor-fold>
 
   @Test
   public void shouldPassOperationKeyToExecutionContext() {
@@ -107,7 +108,7 @@ public class PolicyContextAndKeysTest {
       operationKeySetOnContext.set(context.getOperationKey());
       return Unit.INSTANCE;
     };
-    final var policy = RetryPolicy.<TestResult>builder()
+    final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry(1, onRetry);
 
@@ -115,14 +116,16 @@ public class PolicyContextAndKeysTest {
     final var context = Context.builder()
       .operationKey(operationKey)
       .build();
-    policy.execute(context, ctx -> {
+    policy.executeAsync(context, ctx -> {
       if (firstExecution.get()) {
         firstExecution.set(false);
         return TestResult.FAULT;
       }
       return TestResult.GOOD;
-    });
+    })
+      .join();
 
     assertThat(operationKeySetOnContext.get()).isEqualTo(operationKey);
   }
+  //</editor-fold>
 }

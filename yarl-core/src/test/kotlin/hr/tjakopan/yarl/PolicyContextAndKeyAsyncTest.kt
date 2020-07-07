@@ -10,7 +10,7 @@ import java.util.*
 import kotlin.test.Test
 
 @ExperimentalCoroutinesApi
-class AsyncPolicyContextAndKeysTest {
+class PolicyContextAndKeyAsyncTest {
   //<editor-fold desc="configuration">
   @Test
   fun shouldBeAbleFluentlyToConfigurePolicyKey() {

@@ -15,7 +15,7 @@ const val RESULT_FAILURE_WITH_RESULT = "Result was a failure with handled result
 const val RESULT_FAILURE_WITH_EXCEPTION = "Result was a failure with exception."
 
 @ExperimentalCoroutinesApi
-class AsyncPolicyTest {
+class PolicyAsyncTest {
 
   //<editor-fold desc="execute tests">
   @Test

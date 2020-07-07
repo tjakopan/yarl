@@ -7,7 +7,7 @@ import org.assertj.core.api.Assertions.assertThat
 import java.util.*
 import kotlin.test.Test
 
-class PolicyContextAndKeysTest {
+class PolicyContextAndKeyTest {
   //<editor-fold desc="configuration">
   @Test
   fun shouldBeAbleFluentlyToConfigureThePolicyKey() {

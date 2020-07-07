@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class AsyncPolicyTest {
+public class PolicyAsyncTest {
   private static final String RESULT_SUCCESS = "Result was a success.";
   private static final String RESULT_FAILURE = "Result was a failure.";
   private static final String RESULT_FAILURE_WITH_RESULT = "Result was a failure with handled result.";
