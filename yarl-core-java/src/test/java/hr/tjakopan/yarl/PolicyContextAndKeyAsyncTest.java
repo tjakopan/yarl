@@ -9,6 +9,7 @@ import kotlin.jvm.functions.Function3;
 import org.junit.Test;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -86,14 +87,15 @@ public class PolicyContextAndKeyAsyncTest {
   public void shouldPassPolicyKeyToExecutionContext() {
     final var policyKey = UUID.randomUUID().toString();
     final AtomicReference<String> policyKeySetOnExecutionContext = new AtomicReference<>();
-    final Function3<Result<TestResult>, Integer, Context, Unit> onRetry = (result, retryCount, context) -> {
-      policyKeySetOnExecutionContext.set(context.getPolicyKey());
-      return Unit.INSTANCE;
-    };
+    final Function3<Result<TestResult>, Integer, Context, CompletableFuture<Unit>> onRetry =
+      (result, retryCount, context) -> {
+        policyKeySetOnExecutionContext.set(context.getPolicyKey());
+        return CompletableFuture.completedFuture(Unit.INSTANCE);
+      };
     final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .policyKey(policyKey)
-      .retry(1, onRetry);
+      .retryAsync(1, onRetry);
 
     AsyncPolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD);
 
@@ -104,13 +106,13 @@ public class PolicyContextAndKeyAsyncTest {
   public void shouldPassOperationKeyToExecutionContext() {
     final var operationKey = "SomeKey";
     final AtomicReference<String> operationKeySetOnContext = new AtomicReference<>();
-    final Function3<Result<TestResult>, Integer, Context, Unit> onRetry = (result, retryCount, context) -> {
+    final Function3<Result<TestResult>, Integer, Context, CompletableFuture<Unit>> onRetry = (result, retryCount, context) -> {
       operationKeySetOnContext.set(context.getOperationKey());
-      return Unit.INSTANCE;
+      return CompletableFuture.completedFuture(Unit.INSTANCE);
     };
     final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
-      .retry(1, onRetry);
+      .retryAsync(1, onRetry);
 
     final AtomicBoolean firstExecution = new AtomicBoolean(true);
     final var context = Context.builder()
@@ -119,9 +121,9 @@ public class PolicyContextAndKeyAsyncTest {
     policy.executeAsync(context, ctx -> {
       if (firstExecution.get()) {
         firstExecution.set(false);
-        return TestResult.FAULT;
+        return CompletableFuture.completedFuture(TestResult.FAULT);
       }
-      return TestResult.GOOD;
+      return CompletableFuture.completedFuture(TestResult.GOOD);
     })
       .join();
 

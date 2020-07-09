@@ -2,11 +2,13 @@ package hr.tjakopan.yarl
 
 abstract class AsyncPolicy<R, B : PolicyBuilder<R, B>> protected constructor(policyBuilder: PolicyBuilder<R, B>) :
   PolicyBase<R, B>(policyBuilder), IAsyncPolicy<R> {
+  @JvmSynthetic
   override suspend fun execute(context: Context, action: suspend (Context) -> R): R {
     val executionContext = context.copy(policyKey = policyKey)
     return implementation(executionContext, action)
   }
 
+  @JvmSynthetic
   override suspend fun executeAndCapture(context: Context, action: suspend (Context) -> R): PolicyResult<R> {
     try {
       val result = execute(context, action)
@@ -19,5 +21,6 @@ abstract class AsyncPolicy<R, B : PolicyBuilder<R, B>> protected constructor(pol
     }
   }
 
+  @JvmSynthetic
   protected abstract suspend fun implementation(context: Context, action: suspend (Context) -> R): R
 }

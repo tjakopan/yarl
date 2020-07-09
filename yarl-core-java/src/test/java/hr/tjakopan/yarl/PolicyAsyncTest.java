@@ -8,6 +8,7 @@ import kotlin.Unit;
 import org.junit.Test;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.*;
@@ -26,7 +27,7 @@ public class PolicyAsyncTest {
       .handleResult(TestResult.FAULT)
       .retry();
 
-    final var future = policy.executeAsync(() -> TestResult.GOOD);
+    final var future = policy.executeAsync(() -> CompletableFuture.completedFuture(TestResult.GOOD));
 
     assertThat(future.join()).isEqualTo(TestResult.GOOD);
   }
@@ -38,7 +39,7 @@ public class PolicyAsyncTest {
     final var future = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry()
-      .executeAndCaptureAsync(() -> TestResult.GOOD);
+      .executeAndCaptureAsync(() -> CompletableFuture.completedFuture(TestResult.GOOD));
 
     final var result = future.join();
 
@@ -65,7 +66,7 @@ public class PolicyAsyncTest {
     final var result = future.join();
 
     result.onFailureWithException((throwable, exceptionType, faultType, context) -> {
-      assertThat(throwable.getCause()).isSameAs(handledException);
+      assertThat(throwable).isSameAs(handledException);
       assertThat(exceptionType).isSameAs(ExceptionType.HANDLED_BY_THIS_POLICY);
       assertThat(faultType).isSameAs(FaultType.EXCEPTION_HANDLED_BY_THIS_POLICY);
       return Unit.INSTANCE;
@@ -87,7 +88,7 @@ public class PolicyAsyncTest {
     final var result = future.join();
 
     result.onFailureWithException((throwable, exceptionType, faultType, context) -> {
-      assertThat(throwable.getCause().getCause()).isSameAs(unhandledException);
+      assertThat(throwable.getCause()).isSameAs(unhandledException);
       assertThat(exceptionType).isSameAs(ExceptionType.UNHANDLED);
       assertThat(faultType).isSameAs(FaultType.UNHANDLED_EXCEPTION);
       return Unit.INSTANCE;
@@ -102,7 +103,7 @@ public class PolicyAsyncTest {
     final var future = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(handledResult)
       .retry()
-      .executeAndCaptureAsync(() -> handledResult);
+      .executeAndCaptureAsync(() -> CompletableFuture.completedFuture(handledResult));
 
     final var result = future.join();
 
@@ -122,7 +123,7 @@ public class PolicyAsyncTest {
     final var future = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(handledResult)
       .retry()
-      .executeAndCaptureAsync(() -> unhandledResult);
+      .executeAndCaptureAsync(() -> CompletableFuture.completedFuture(unhandledResult));
 
     final var result = future.join();
 
@@ -140,7 +141,7 @@ public class PolicyAsyncTest {
       .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
-        .executeAsync((Map<String, Object>) null, context -> 2))
+        .executeAsync((Map<String, Object>) null, context -> CompletableFuture.completedFuture(2)))
       .withMessageContaining(NULL_PARAMETER);
   }
 
@@ -151,7 +152,7 @@ public class PolicyAsyncTest {
       .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
-        .executeAsync((Context) null, context -> 2))
+        .executeAsync((Context) null, context -> CompletableFuture.completedFuture(2)))
       .withMessageContaining(NULL_PARAMETER);
   }
 
@@ -162,7 +163,7 @@ public class PolicyAsyncTest {
       .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
-        .executeAndCaptureAsync((Map<String, Object>) null, context -> 2))
+        .executeAndCaptureAsync((Map<String, Object>) null, context -> CompletableFuture.completedFuture(2)))
       .withMessageContaining(NULL_PARAMETER);
   }
 
@@ -173,7 +174,7 @@ public class PolicyAsyncTest {
       .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
-        .executeAndCaptureAsync((Context) null, context -> 2))
+        .executeAndCaptureAsync((Context) null, context -> CompletableFuture.completedFuture(2)))
       .withMessageContaining(NULL_PARAMETER);
   }
 
@@ -188,7 +189,7 @@ public class PolicyAsyncTest {
     new AsyncNoOpPolicy<>()
       .executeAsync(executionContext, context -> {
         capturedContext.set(context);
-        return null;
+        return CompletableFuture.completedFuture(null);
       })
       .join();
 
@@ -206,7 +207,7 @@ public class PolicyAsyncTest {
     new AsyncNoOpPolicy<>()
       .executeAndCaptureAsync(executionContext, context -> {
         capturedContext.set(context);
-        return null;
+        return CompletableFuture.completedFuture(null);
       })
       .join();
 

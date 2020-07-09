@@ -2,6 +2,7 @@ package hr.tjakopan.yarl.test.helpers;
 
 import hr.tjakopan.yarl.AsyncPolicy;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public class AsyncPolicyUtils {
@@ -15,7 +16,7 @@ public class AsyncPolicyUtils {
       if (!iterator.hasNext()) {
         throw new IllegalArgumentException("Not enough values in resultsToRaise.");
       }
-      return iterator.next();
+      return CompletableFuture.completedFuture(iterator.next());
     })
       .join();
   }

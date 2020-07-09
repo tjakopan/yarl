@@ -14,9 +14,10 @@ class AsyncRetryPolicy<R> internal constructor(policyBuilder: AsyncRetryPolicyBu
   private val onRetry: suspend (Result<R>, Duration, Int, Context) -> Unit = policyBuilder.onRetry
   private val permittedRetryCount: Int = policyBuilder.permittedRetryCount
   private val sleepDurationsIterable: Iterable<Duration> = policyBuilder.sleepDurationsIterable
-  private val sleepDurationProvider: (suspend (Int, Result<R>, Context) -> Duration)? =
+  private val sleepDurationProvider: ((Int, Result<R>, Context) -> Duration)? =
     policyBuilder.sleepDurationProvider
 
+  @JvmSynthetic
   override suspend fun implementation(context: Context, action: suspend (Context) -> R): R =
     RetryEngine.implementation(
       action,

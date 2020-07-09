@@ -81,7 +81,7 @@ internal object RetryEngine {
     onRetry: suspend (Result<R>, Duration, Int, Context) -> Unit,
     permittedRetryCount: Int = Int.MAX_VALUE,
     sleepDurationsIterable: Iterable<Duration> = listOf(),
-    sleepDurationProvider: (suspend (Int, Result<R>, Context) -> Duration)? = null
+    sleepDurationProvider: ((Int, Result<R>, Context) -> Duration)? = null
   ): R {
     var tryCount = 0
     val sleepDurationsIterator = sleepDurationsIterable.iterator()
