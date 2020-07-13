@@ -7,6 +7,15 @@ sealed class DelegateResult<out R> {
 
     @JvmStatic
     fun failure(exception: Throwable): DelegateResult<Nothing> = Failure(exception)
+
+    @JvmStatic
+    inline fun <R> runCatching(block: () -> R): DelegateResult<R> {
+      return try {
+        success(block())
+      } catch (e: Throwable) {
+        failure(e)
+      }
+    }
   }
 
   abstract val isSuccess: Boolean
@@ -25,6 +34,13 @@ sealed class DelegateResult<out R> {
   inline fun onFailure(action: (Throwable) -> Unit): DelegateResult<R> {
     if (isFailure) action((this as Failure).exception)
     return this
+  }
+
+  fun getOrThrow(): R {
+    return when (this) {
+      is Success -> this.value
+      is Failure -> throw this.exception
+    }
   }
 
   class Success<out R> internal constructor(val value: R) : DelegateResult<R>() {

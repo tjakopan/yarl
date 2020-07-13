@@ -4,13 +4,13 @@ import hr.tjakopan.yarl.PolicyResult.Success;
 import hr.tjakopan.yarl.noop.AsyncNoOpPolicy;
 import hr.tjakopan.yarl.retry.AsyncRetryPolicy;
 import hr.tjakopan.yarl.test.helpers.TestResult;
-import kotlin.Unit;
 import org.junit.Test;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static hr.tjakopan.yarl.Functions.*;
 import static org.assertj.core.api.Assertions.*;
 
 public class PolicyAsyncTest {
@@ -43,14 +43,8 @@ public class PolicyAsyncTest {
 
     final var result = future.join();
 
-    result.onSuccess((r, context) -> {
-      assertThat(r).isEqualTo(TestResult.GOOD);
-      return Unit.INSTANCE;
-    })
-      .onFailure((faultType, context) -> {
-        fail(RESULT_FAILURE);
-        return Unit.INSTANCE;
-      });
+    result.onSuccess(fromConsumer2((r, context) -> assertThat(r).isEqualTo(TestResult.GOOD)))
+      .onFailure(fromConsumer2(((faultType, context) -> fail(RESULT_FAILURE))));
   }
 
   @Test
@@ -65,12 +59,11 @@ public class PolicyAsyncTest {
 
     final var result = future.join();
 
-    result.onFailureWithException((throwable, exceptionType, faultType, context) -> {
+    result.onFailureWithException(fromConsumer4(throwable -> exceptionType -> ((faultType, context) -> {
       assertThat(throwable).isSameAs(handledException);
       assertThat(exceptionType).isSameAs(ExceptionType.HANDLED_BY_THIS_POLICY);
       assertThat(faultType).isSameAs(FaultType.EXCEPTION_HANDLED_BY_THIS_POLICY);
-      return Unit.INSTANCE;
-    })
+    })))
       .onSuccess((integer, context) -> fail(RESULT_SUCCESS))
       .onFailureWithResult((integer, faultType, context) -> fail(RESULT_FAILURE_WITH_RESULT));
   }
@@ -87,12 +80,11 @@ public class PolicyAsyncTest {
 
     final var result = future.join();
 
-    result.onFailureWithException((throwable, exceptionType, faultType, context) -> {
+    result.onFailureWithException(fromConsumer4(throwable -> exceptionType -> (faultType, context) -> {
       assertThat(throwable.getCause()).isSameAs(unhandledException);
       assertThat(exceptionType).isSameAs(ExceptionType.UNHANDLED);
       assertThat(faultType).isSameAs(FaultType.UNHANDLED_EXCEPTION);
-      return Unit.INSTANCE;
-    })
+    }))
       .onSuccess((integer, context) -> fail(RESULT_SUCCESS))
       .onFailureWithResult((integer, faultType, context) -> fail(RESULT_FAILURE_WITH_RESULT));
   }
@@ -107,11 +99,10 @@ public class PolicyAsyncTest {
 
     final var result = future.join();
 
-    result.onFailureWithResult((testResult, faultType, context) -> {
+    result.onFailureWithResult(fromConsumer3(testResult -> (faultType, context) -> {
       assertThat(testResult).isSameAs(handledResult);
       assertThat(faultType).isSameAs(FaultType.RESULT_HANDLED_BY_THIS_POLICY);
-      return Unit.INSTANCE;
-    })
+    }))
       .onSuccess((testResult, context) -> fail(RESULT_SUCCESS))
       .onFailureWithException((throwable, exceptionType, faultType, context) -> fail(RESULT_FAILURE_WITH_EXCEPTION));
   }

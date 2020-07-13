@@ -83,7 +83,7 @@ class PolicyContextAndKeyAsyncTest {
   fun shouldPassPolicyKeyToExecutionContext() = runBlockingTest {
     val policyKey = UUID.randomUUID().toString()
     var policyKeySetOnExecutionContext: String? = null
-    val onRetry: suspend (Result<TestResult>, Int, Context) -> Unit =
+    val onRetry: suspend (DelegateResult<TestResult>, Int, Context) -> Unit =
       { _, _, context -> policyKeySetOnExecutionContext = context.policyKey }
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
@@ -99,7 +99,7 @@ class PolicyContextAndKeyAsyncTest {
   fun shouldPassOperationKeyToExecutionContext() = runBlockingTest {
     val operationKey = "SomeKey"
     var operationKeySetOnContext: String? = null
-    val onRetry: suspend (Result<TestResult>, Int, Context) -> Unit =
+    val onRetry: suspend (DelegateResult<TestResult>, Int, Context) -> Unit =
       { _, _, context -> operationKeySetOnContext = context.operationKey }
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)

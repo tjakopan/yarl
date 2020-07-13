@@ -1,6 +1,6 @@
 package hr.tjakopan.yarl
 
-abstract class Policy<R, B : PolicyBuilder<R, B>> protected constructor(policyBuilder: PolicyBuilder<R, B>) :
+abstract class Policy<R, out B : PolicyBuilder<R, B>> protected constructor(policyBuilder: PolicyBuilder<R, B>) :
   PolicyBase<R, B>(policyBuilder), ISyncPolicy<R> {
   companion object Policy
 

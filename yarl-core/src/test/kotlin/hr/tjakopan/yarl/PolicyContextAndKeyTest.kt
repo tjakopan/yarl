@@ -79,7 +79,7 @@ class PolicyContextAndKeyTest {
   fun shouldPassPolicyKeyToExecutionContext() {
     val policyKey = UUID.randomUUID().toString()
     var policyKeySetOnExecutionContext: String? = null
-    val onRetry: (Result<TestResult>, Int, Context) -> Unit =
+    val onRetry: (DelegateResult<TestResult>, Int, Context) -> Unit =
       { _, _, context -> policyKeySetOnExecutionContext = context.policyKey }
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
@@ -95,7 +95,7 @@ class PolicyContextAndKeyTest {
   fun shouldPassOperationKeyToExecutionContext() {
     val operationKey = "SomeKey"
     var operationKeySetOnContext: String? = null
-    val onRetry: (Result<TestResult>, Int, Context) -> Unit =
+    val onRetry: (DelegateResult<TestResult>, Int, Context) -> Unit =
       { _, _, context -> operationKeySetOnContext = context.operationKey }
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)

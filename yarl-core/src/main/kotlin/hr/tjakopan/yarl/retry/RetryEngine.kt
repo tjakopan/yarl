@@ -1,9 +1,13 @@
+@file:Suppress("DuplicatedCode")
+
 package hr.tjakopan.yarl.retry
 
 import hr.tjakopan.yarl.Context
+import hr.tjakopan.yarl.DelegateResult
 import hr.tjakopan.yarl.ExceptionPredicates
 import hr.tjakopan.yarl.ResultPredicates
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.yield
 import java.time.Duration
 
 internal object RetryEngine {
@@ -30,16 +34,16 @@ internal object RetryEngine {
     context: Context,
     shouldRetryExceptionPredicates: ExceptionPredicates,
     shouldRetryResultPredicates: ResultPredicates<R>,
-    onRetry: (Result<R>, Duration, Int, Context) -> Unit,
+    onRetry: (DelegateResult<R>, Duration, Int, Context) -> Unit,
     permittedRetryCount: Int = Int.MAX_VALUE,
     sleepDurationsIterable: Iterable<Duration> = listOf(),
-    sleepDurationProvider: ((Int, Result<R>, Context) -> Duration)? = null
+    sleepDurationProvider: ((Int, DelegateResult<R>, Context) -> Duration)? = null
   ): R {
     var tryCount = 0
     val sleepDurationsIterator = sleepDurationsIterable.iterator()
 
     while (true) {
-      val outcome = Result.runCatching { action(context) }
+      val outcome = DelegateResult.runCatching { action(context) }
       val canRetry = canRetry(tryCount, permittedRetryCount, sleepDurationsIterator, sleepDurationsIterable.count())
 
       if (!canRetry) {
@@ -78,16 +82,17 @@ internal object RetryEngine {
     context: Context,
     shouldRetryExceptionPredicates: ExceptionPredicates,
     shouldRetryResultPredicates: ResultPredicates<R>,
-    onRetry: suspend (Result<R>, Duration, Int, Context) -> Unit,
+    onRetry: suspend (DelegateResult<R>, Duration, Int, Context) -> Unit,
     permittedRetryCount: Int = Int.MAX_VALUE,
     sleepDurationsIterable: Iterable<Duration> = listOf(),
-    sleepDurationProvider: ((Int, Result<R>, Context) -> Duration)? = null
+    sleepDurationProvider: ((Int, DelegateResult<R>, Context) -> Duration)? = null
   ): R {
     var tryCount = 0
     val sleepDurationsIterator = sleepDurationsIterable.iterator()
 
     while (true) {
-      val outcome = Result.runCatching { action(context) }
+      yield()
+      val outcome = DelegateResult.runCatching { action(context) }
       val canRetry = canRetry(tryCount, permittedRetryCount, sleepDurationsIterator, sleepDurationsIterable.count())
 
       if (!canRetry) {
@@ -113,6 +118,7 @@ internal object RetryEngine {
         sleepDurationsIterator.hasNext() -> sleepDurationsIterator.next()
         else -> sleepDurationProvider?.invoke(tryCount, outcome, context) ?: Duration.ZERO
       }
+      yield()
       onRetry(outcome, waitDuration, tryCount, context)
       if (waitDuration > Duration.ZERO) {
         delay(waitDuration.toMillis())

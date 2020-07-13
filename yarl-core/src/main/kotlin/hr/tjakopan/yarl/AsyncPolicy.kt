@@ -1,6 +1,6 @@
 package hr.tjakopan.yarl
 
-abstract class AsyncPolicy<R, B : PolicyBuilder<R, B>> protected constructor(policyBuilder: PolicyBuilder<R, B>) :
+abstract class AsyncPolicy<R, out B : PolicyBuilder<R, B>> protected constructor(policyBuilder: PolicyBuilder<R, B>) :
   PolicyBase<R, B>(policyBuilder), IAsyncPolicy<R> {
   @JvmSynthetic
   override suspend fun execute(context: Context, action: suspend (Context) -> R): R {

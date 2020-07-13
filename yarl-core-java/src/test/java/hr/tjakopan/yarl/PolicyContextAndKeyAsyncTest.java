@@ -3,7 +3,6 @@ package hr.tjakopan.yarl;
 import hr.tjakopan.yarl.retry.AsyncRetryPolicy;
 import hr.tjakopan.yarl.test.helpers.AsyncPolicyUtils;
 import hr.tjakopan.yarl.test.helpers.TestResult;
-import kotlin.Result;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import org.junit.Test;
@@ -13,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static hr.tjakopan.yarl.Functions.fromConsumer3Async;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PolicyContextAndKeyAsyncTest {
@@ -87,17 +87,15 @@ public class PolicyContextAndKeyAsyncTest {
   public void shouldPassPolicyKeyToExecutionContext() {
     final var policyKey = UUID.randomUUID().toString();
     final AtomicReference<String> policyKeySetOnExecutionContext = new AtomicReference<>();
-    final Function3<Result<TestResult>, Integer, Context, CompletableFuture<Unit>> onRetry =
-      (result, retryCount, context) -> {
-        policyKeySetOnExecutionContext.set(context.getPolicyKey());
-        return CompletableFuture.completedFuture(Unit.INSTANCE);
-      };
+    final Function3<DelegateResult<TestResult>, Integer, Context, CompletableFuture<Unit>> onRetry =
+      fromConsumer3Async(result -> (retryCount, context) -> policyKeySetOnExecutionContext.set(context.getPolicyKey()));
     final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .policyKey(policyKey)
-      .retryAsync(1, onRetry);
+      .retry(1, onRetry);
 
-    AsyncPolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD);
+    AsyncPolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD)
+      .join();
 
     assertThat(policyKeySetOnExecutionContext.get()).isEqualTo(policyKey);
   }
@@ -106,13 +104,11 @@ public class PolicyContextAndKeyAsyncTest {
   public void shouldPassOperationKeyToExecutionContext() {
     final var operationKey = "SomeKey";
     final AtomicReference<String> operationKeySetOnContext = new AtomicReference<>();
-    final Function3<Result<TestResult>, Integer, Context, CompletableFuture<Unit>> onRetry = (result, retryCount, context) -> {
-      operationKeySetOnContext.set(context.getOperationKey());
-      return CompletableFuture.completedFuture(Unit.INSTANCE);
-    };
+    final Function3<DelegateResult<TestResult>, Integer, Context, CompletableFuture<Unit>> onRetry =
+      fromConsumer3Async(result -> (retryCount, context) -> operationKeySetOnContext.set(context.getOperationKey()));
     final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
-      .retryAsync(1, onRetry);
+      .retry(1, onRetry);
 
     final AtomicBoolean firstExecution = new AtomicBoolean(true);
     final var context = Context.builder()

@@ -10,6 +10,7 @@ class ResultPredicates<R> private constructor(private val predicates: List<Resul
 
   constructor() : this(listOf())
 
+  @JvmSynthetic
   internal operator fun plus(predicate: ResultPredicate<R>): ResultPredicates<R> {
     val predicates = this.predicates + predicate
     return ResultPredicates(predicates)

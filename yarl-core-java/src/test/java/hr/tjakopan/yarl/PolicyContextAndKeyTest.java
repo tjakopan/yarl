@@ -3,7 +3,6 @@ package hr.tjakopan.yarl;
 import hr.tjakopan.yarl.retry.RetryPolicy;
 import hr.tjakopan.yarl.test.helpers.PolicyUtils;
 import hr.tjakopan.yarl.test.helpers.TestResult;
-import kotlin.Result;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import org.junit.Test;
@@ -12,6 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static hr.tjakopan.yarl.Functions.fromConsumer3;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PolicyContextAndKeyTest {
@@ -84,10 +84,8 @@ public class PolicyContextAndKeyTest {
   public void shouldPassPolicyKeyToExecutionContext() {
     final var policyKey = UUID.randomUUID().toString();
     final AtomicReference<String> policyKeySetOnExecutionContext = new AtomicReference<>();
-    final Function3<Result<TestResult>, Integer, Context, Unit> onRetry = (result, retryCount, context) -> {
-      policyKeySetOnExecutionContext.set(context.getPolicyKey());
-      return Unit.INSTANCE;
-    };
+    final Function3<DelegateResult<TestResult>, Integer, Context, Unit> onRetry =
+      fromConsumer3(result -> (retryCount, context) -> policyKeySetOnExecutionContext.set(context.getPolicyKey()));
     final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .policyKey(policyKey)
@@ -103,10 +101,8 @@ public class PolicyContextAndKeyTest {
   public void shouldPassOperationKeyToExecutionContext() {
     final var operationKey = "SomeKey";
     final AtomicReference<String> operationKeySetOnContext = new AtomicReference<>();
-    final Function3<Result<TestResult>, Integer, Context, Unit> onRetry = (result, retryCount, context) -> {
-      operationKeySetOnContext.set(context.getOperationKey());
-      return Unit.INSTANCE;
-    };
+    final Function3<DelegateResult<TestResult>, Integer, Context, Unit> onRetry =
+      fromConsumer3(result -> (retryCount, context) -> operationKeySetOnContext.set(context.getOperationKey()));
     final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry(1, onRetry);

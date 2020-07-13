@@ -10,6 +10,7 @@ class ExceptionPredicates private constructor(private val predicates: List<Excep
 
   constructor() : this(listOf())
 
+  @JvmSynthetic
   internal operator fun plus(predicate: ExceptionPredicate): ExceptionPredicates {
     val predicates = this.predicates + predicate
     return ExceptionPredicates(predicates)

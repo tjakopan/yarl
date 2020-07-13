@@ -1,6 +1,6 @@
 package hr.tjakopan.yarl
 
-abstract class PolicyBase<R, B : PolicyBuilder<R, B>> protected constructor(policyBuilder: PolicyBuilder<R, B>) {
+abstract class PolicyBase<R, out B : PolicyBuilder<R, B>> protected constructor(policyBuilder: PolicyBuilder<R, B>) {
   internal companion object {
     @JvmSynthetic
     internal fun getExceptionType(exceptionPredicates: ExceptionPredicates, exception: Throwable): ExceptionType =
