@@ -2,6 +2,7 @@ package hr.tjakopan.yarl.retry
 
 import hr.tjakopan.yarl.Context
 import hr.tjakopan.yarl.Policy
+import hr.tjakopan.yarl.test.helpers.TestResult
 import hr.tjakopan.yarl.test.helpers.raiseExceptions
 import hr.tjakopan.yarl.test.helpers.raiseExceptionsAndOrCancellation
 import hr.tjakopan.yarl.test.helpers.raiseExceptionsOnExecuteAndCapture
@@ -11,12 +12,27 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runBlockingTest
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 @ExperimentalCoroutinesApi
 class AsyncRetryPolicyHandleExceptionTest {
+  @Test
+  fun shouldThrowWhenRetryCountIsLessThanZero() {
+    val shouldThrow = {
+      Policy.asyncRetry<TestResult>()
+        .handle(ArithmeticException::class)
+        .retry(-1)
+      Unit
+    }
+
+    assertThatThrownBy(shouldThrow)
+      .isInstanceOf(IllegalArgumentException::class.java)
+      .hasMessageContaining("Retry count")
+  }
+
   @Test
   fun shouldNotThrowWhenSpecifiedExceptionThrownSameNumberOfTimesAsRetryCount() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()

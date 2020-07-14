@@ -2,8 +2,10 @@ package hr.tjakopan.yarl.retry;
 
 import hr.tjakopan.yarl.Context;
 import hr.tjakopan.yarl.test.helpers.AsyncPolicyUtils;
+import hr.tjakopan.yarl.test.helpers.TestResult;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -20,6 +22,19 @@ import static hr.tjakopan.yarl.Functions.fromConsumer3Async;
 import static org.assertj.core.api.Assertions.*;
 
 public class AsyncRetryPolicyHandleExceptionTest {
+  @Test
+  public void shouldThrowWhenRetryCountIsLessThanZero() {
+    final ThrowableAssert.ThrowingCallable shouldThrow = () -> {
+      AsyncRetryPolicy.<TestResult>builder()
+        .handle(ArithmeticException.class)
+        .retry(-1);
+    };
+
+    assertThatThrownBy(shouldThrow)
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("Retry count");
+  }
+
   @Test
   public void shouldNotThrowWhenSpecifiedExceptionThrownSameNumberOfTimesAsRetryCount() {
     final var policy = AsyncRetryPolicy.<Void>builder()
