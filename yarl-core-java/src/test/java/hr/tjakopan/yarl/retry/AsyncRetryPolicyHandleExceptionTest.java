@@ -36,6 +36,20 @@ public class AsyncRetryPolicyHandleExceptionTest {
   }
 
   @Test
+  public void shouldThrowWhenOnRetryIsNull() {
+    final ThrowableAssert.ThrowingCallable shouldThrow = () -> {
+      //noinspection ConstantConditions
+      AsyncRetryPolicy.<TestResult>builder()
+        .handle(ArithmeticException.class)
+        .retry(null);
+    };
+
+    assertThatThrownBy(shouldThrow)
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessageContaining("onRetry");
+  }
+
+  @Test
   public void shouldNotThrowWhenSpecifiedExceptionThrownSameNumberOfTimesAsRetryCount() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)

@@ -47,7 +47,7 @@ public class AsyncRetryPolicyHandleResultTest {
       //noinspection ConstantConditions
       AsyncRetryPolicy.<TestResult>builder()
         .handleResult(TestResult.FAULT)
-        .retry(1, null);
+        .retry(null);
     };
 
     assertThatThrownBy(shouldThrow)
