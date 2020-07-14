@@ -454,4 +454,37 @@ class AsyncRetryPolicyHandleExceptionTest {
       }
     }
   }
+
+  @Test
+  fun shouldExecuteFunctionReturningValueWhenNotCancelled() = runBlockingTest {
+    val policy = Policy.asyncRetry<Boolean>()
+      .handle(ArithmeticException::class)
+      .retry(3)
+    var attemptsInvoked = 0
+    val onExecute: () -> Unit = { attemptsInvoked++ }
+
+    val result = policy.raiseExceptions(0, onExecute, true) {
+      ArithmeticException()
+    }
+
+    assertThat(result).isTrue()
+    assertThat(attemptsInvoked).isEqualTo(1)
+  }
+
+  @Test
+  fun shouldHonourAndReportCancellationDuringFunctionExecution() = runBlockingTest {
+    val policy = Policy.asyncRetry<Boolean>()
+      .handle(ArithmeticException::class)
+      .retry(3)
+    var attemptsInvoked = 0
+    val onExecute: () -> Unit = { attemptsInvoked++ }
+
+    assertFailsWith(CancellationException::class) {
+      policy.raiseExceptionsAndOrCancellation(
+        0, 1, onExecute,
+        true
+      ) { ArithmeticException() }
+    }
+    assertThat(attemptsInvoked).isEqualTo(1)
+  }
 }

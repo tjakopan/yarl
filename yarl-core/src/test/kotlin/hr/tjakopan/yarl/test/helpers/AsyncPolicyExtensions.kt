@@ -36,6 +36,19 @@ internal suspend fun <R> AsyncPolicy<R, *>.raiseResults(onExecute: () -> Unit, v
   }
 }
 
+internal suspend fun <R> AsyncPolicy<R, *>.raiseResultsOnExecuteAndCapture(
+  context: Context,
+  vararg resultsToRaise: R
+): PolicyResult<R> {
+  val iterator = resultsToRaise.iterator()
+  return this.executeAndCapture(context) {
+    if (!iterator.hasNext()) {
+      throw IllegalArgumentException("Not enough values in resultsToRaise.")
+    }
+    return@executeAndCapture iterator.next()
+  }
+}
+
 internal suspend fun <R> AsyncPolicy<R, *>.raiseResultsAndOrCancellation(
   attemptDuringWhichToCancel: Int,
   onExecute: () -> Unit,
@@ -53,29 +66,6 @@ internal suspend fun <R> AsyncPolicy<R, *>.raiseResultsAndOrCancellation(
       throw CancellationException()
     }
     return@execute iterator.next()
-  }
-}
-
-internal suspend fun <R> AsyncPolicy<R, *>.raiseResultsOnExecuteAndCapture(vararg resultsToRaise: R): PolicyResult<R> {
-  val iterator = resultsToRaise.iterator()
-  return this.executeAndCapture {
-    if (!iterator.hasNext()) {
-      throw IllegalArgumentException("Not enough values in resultsToRaise.")
-    }
-    return@executeAndCapture iterator.next()
-  }
-}
-
-internal suspend fun <R> AsyncPolicy<R, *>.raiseResultsOnExecuteAndCapture(
-  context: Context,
-  vararg resultsToRaise: R
-): PolicyResult<R> {
-  val iterator = resultsToRaise.iterator()
-  return this.executeAndCapture(context) {
-    if (!iterator.hasNext()) {
-      throw IllegalArgumentException("Not enough values in resultsToRaise.")
-    }
-    return@executeAndCapture iterator.next()
   }
 }
 
@@ -106,20 +96,6 @@ internal suspend fun <E : Throwable> AsyncPolicy<Unit, *>.raiseExceptions(
   }
 }
 
-internal suspend fun <E : Throwable> AsyncPolicy<Unit, *>.raiseExceptionsOnExecuteAndCapture(
-  context: Context,
-  numberOfTimesToRaiseException: Int,
-  exceptionSupplier: (Int) -> E
-) {
-  var counter = 0
-  this.executeAndCapture(context) {
-    counter++
-    if (counter <= numberOfTimesToRaiseException) {
-      throw exceptionSupplier(counter)
-    }
-  }
-}
-
 internal suspend fun <E : Throwable> AsyncPolicy<Unit, *>.raiseExceptions(
   numberOfTimesToRaiseException: Int,
   onExecute: () -> Unit,
@@ -128,6 +104,37 @@ internal suspend fun <E : Throwable> AsyncPolicy<Unit, *>.raiseExceptions(
   var counter = 0
   return this.execute {
     onExecute()
+    counter++
+    if (counter <= numberOfTimesToRaiseException) {
+      throw exceptionSupplier(counter)
+    }
+  }
+}
+
+internal suspend fun <E : Throwable, R> AsyncPolicy<R, *>.raiseExceptions(
+  numberOfTimesToRaiseException: Int,
+  onExecute: () -> Unit,
+  successResult: R,
+  exceptionSupplier: (Int) -> E
+): R {
+  var counter = 0
+  return this.execute {
+    onExecute()
+    counter++
+    if (counter <= numberOfTimesToRaiseException) {
+      throw exceptionSupplier(counter)
+    }
+    return@execute successResult
+  }
+}
+
+internal suspend fun <E : Throwable> AsyncPolicy<Unit, *>.raiseExceptionsOnExecuteAndCapture(
+  context: Context,
+  numberOfTimesToRaiseException: Int,
+  exceptionSupplier: (Int) -> E
+) {
+  var counter = 0
+  this.executeAndCapture(context) {
     counter++
     if (counter <= numberOfTimesToRaiseException) {
       throw exceptionSupplier(counter)
@@ -151,5 +158,26 @@ internal suspend fun <E : Throwable> AsyncPolicy<Unit, *>.raiseExceptionsAndOrCa
     if (counter <= numberOfTimesToRaiseException) {
       throw exceptionSupplier(counter)
     }
+  }
+}
+
+internal suspend fun <E : Throwable, R> AsyncPolicy<R, *>.raiseExceptionsAndOrCancellation(
+  numberOfTimesToRaiseException: Int,
+  attemptDuringWhichToCancel: Int,
+  onExecute: () -> Unit,
+  successResult: R,
+  exceptionSupplier: (Int) -> E
+): R {
+  var counter = 0
+  return this.execute {
+    onExecute()
+    counter++
+    if (counter >= attemptDuringWhichToCancel) {
+      throw CancellationException()
+    }
+    if (counter <= numberOfTimesToRaiseException) {
+      throw exceptionSupplier(counter)
+    }
+    return@execute successResult
   }
 }

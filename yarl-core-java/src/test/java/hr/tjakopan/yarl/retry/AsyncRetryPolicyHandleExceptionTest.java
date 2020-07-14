@@ -398,7 +398,10 @@ public class AsyncRetryPolicyHandleExceptionTest {
       .handle(ArithmeticException.class)
       .retry(3);
     final var attemptsInvoked = new AtomicInteger(0);
-    final Runnable action = attemptsInvoked::incrementAndGet;
+    final Function0<CompletableFuture<Void>> action = () -> {
+      attemptsInvoked.incrementAndGet();
+      return CompletableFuture.completedFuture(null);
+    };
 
     AsyncPolicyUtils.raiseExceptions(policy, 0, action, i -> new ArithmeticException())
       .join();
@@ -412,7 +415,10 @@ public class AsyncRetryPolicyHandleExceptionTest {
       .handle(ArithmeticException.class)
       .retry(3);
     final var attemptsInvoked = new AtomicInteger(0);
-    final Runnable action = attemptsInvoked::incrementAndGet;
+    final Function0<CompletableFuture<Void>> action = () -> {
+      attemptsInvoked.incrementAndGet();
+      return CompletableFuture.completedFuture(null);
+    };
 
     assertThatThrownBy(() ->
       AsyncPolicyUtils.raiseExceptions(policy, 1 + 3, action, i -> new ArithmeticException())
@@ -532,6 +538,43 @@ public class AsyncRetryPolicyHandleExceptionTest {
 
     assertThatExceptionOfType(CancellationException.class).isThrownBy(() ->
       AsyncPolicyUtils.raiseExceptions(policy, 1 + 3, action, i -> new ArithmeticException())
+        .join());
+    assertThat(attemptsInvoked.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void shouldExecuteFunctionReturningValueWhenNotCancelled() {
+    final var policy = AsyncRetryPolicy.<Boolean>builder()
+      .handle(ArithmeticException.class)
+      .retry(3);
+    final var attemptsInvoked = new AtomicInteger(0);
+    final Function0<CompletableFuture<Void>> action = () -> {
+      attemptsInvoked.incrementAndGet();
+      return CompletableFuture.completedFuture(null);
+    };
+
+    final var result = AsyncPolicyUtils.raiseExceptions(policy, 0, action, true,
+      i -> new ArithmeticException())
+      .join();
+
+    assertThat(result).isTrue();
+    assertThat(attemptsInvoked.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void shouldHonourAndReportCancellationDuringFunctionExecution() {
+    final var policy = AsyncRetryPolicy.<Boolean>builder()
+      .handle(ArithmeticException.class)
+      .retry(3);
+    final var attemptsInvoked = new AtomicInteger(0);
+    final Function0<CompletableFuture<Void>> action = () -> {
+      attemptsInvoked.incrementAndGet();
+      return CompletableFuture.completedFuture(null);
+    };
+
+    assertThatThrownBy(() ->
+      AsyncPolicyUtils.raiseExceptionsAndOrCancellation(policy, 0, 1,
+        action, true, i -> new ArithmeticException())
         .join());
     assertThat(attemptsInvoked.get()).isEqualTo(1);
   }
