@@ -1,12 +1,17 @@
 package hr.tjakopan.yarl.retry;
 
+import hr.tjakopan.yarl.Context;
+import hr.tjakopan.yarl.PolicyResult;
 import hr.tjakopan.yarl.test.helpers.PolicyUtils;
 import hr.tjakopan.yarl.test.helpers.TestResult;
 import hr.tjakopan.yarl.test.helpers.TestResultClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static hr.tjakopan.yarl.Functions.fromConsumer3;
@@ -209,5 +214,153 @@ public class RetryPolicyHandleResultTest {
     PolicyUtils.raiseResults(policy, resultsToRaise.toArray(TestResultClass[]::new));
 
     assertThat(retryFaults).containsExactlyElementsOf(expectedFaults);
+  }
+
+  @Test
+  public void shouldNotCallOnRetryWhenNoRetriesArePerformed() {
+    final var retryCalled = new AtomicBoolean(false);
+    final var policy = RetryPolicy.<TestResult>builder()
+      .handleResult(TestResult.FAULT)
+      .retry(fromConsumer3(r -> (i, c) -> retryCalled.set(true)));
+
+    PolicyUtils.raiseResults(policy, TestResult.GOOD);
+
+    assertThat(retryCalled.get()).isFalse();
+  }
+
+  @Test
+  public void shouldCallOnRetryWithThePassedContext() {
+    final var capturedContext = new AtomicReference<Context>();
+    final var policy = RetryPolicy.<TestResult>builder()
+      .handleResult(TestResult.FAULT)
+      .retry(fromConsumer3(r -> (i, context) -> capturedContext.set(context)));
+    final var context = Context.builder()
+      .contextData(new HashMap<>() {{
+        put("key1", "value1");
+        put("key2", "value2");
+      }})
+      .build();
+
+    final var result = PolicyUtils.raiseResults(policy, context, TestResult.FAULT, TestResult.GOOD);
+
+    assertThat(result).isEqualTo(TestResult.GOOD);
+    assertThat(capturedContext.get().getContextData()).containsKeys("key1", "key2")
+      .containsValues("value1", "value2");
+  }
+
+  @Test
+  public void shouldCallOnRetryWithThePassedContextWhenExecuteAndCapture() {
+    final var capturedContext = new AtomicReference<Context>();
+    final var policy = RetryPolicy.<TestResult>builder()
+      .handleResult(TestResult.FAULT)
+      .retry(fromConsumer3(r -> (i, context) -> capturedContext.set(context)));
+    final var context = Context.builder()
+      .contextData(new HashMap<>() {{
+        put("key1", "value1");
+        put("key2", "value2");
+      }})
+      .build();
+
+    final var result = PolicyUtils.raiseResultsOnExecuteAndCapture(policy, context, TestResult.FAULT, TestResult.GOOD);
+
+    assertThat(result.isSuccess()).isTrue();
+    //noinspection rawtypes
+    assertThat(((PolicyResult.Success) result).getResult()).isEqualTo(TestResult.GOOD);
+    assertThat(capturedContext.get().getContextData()).containsKeys("key1", "key2")
+      .containsValues("value1", "value2");
+  }
+
+  @Test
+  public void contextShouldBeEmptyIfExecuteNotCalledWithContext() {
+    final var capturedContext = new AtomicReference<Context>();
+    final var policy = RetryPolicy.<TestResult>builder()
+      .handleResult(TestResult.FAULT)
+      .retry(fromConsumer3(r -> (i, context) -> capturedContext.set(context)));
+
+    PolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD);
+
+    assertThat(capturedContext.get()).isNotNull();
+    assertThat(capturedContext.get().getPolicyWrapKey()).isNull();
+    assertThat(capturedContext.get().getPolicyKey()).isNotNull();
+    assertThat(capturedContext.get().getOperationKey()).isNull();
+    assertThat(capturedContext.get().getContextData()).isEmpty();
+  }
+
+  @Test
+  public void shouldCreateNewContextForEachCallToExecute() {
+    final var contextValue = new AtomicReference<String>();
+    final var policy = RetryPolicy.<TestResult>builder()
+      .handleResult(TestResult.FAULT)
+      .retry(fromConsumer3(r -> (i, context) -> contextValue.set(context.getContextData().get("key").toString())));
+    var context1 = Context.builder()
+      .contextData(new HashMap<>() {{
+        put("key", "original_value");
+      }})
+      .build();
+    var context2 = Context.builder()
+      .contextData(new HashMap<>() {{
+        put("key", "new_value");
+      }})
+      .build();
+
+    PolicyUtils.raiseResults(policy, context1, TestResult.FAULT, TestResult.GOOD);
+
+    assertThat(contextValue.get()).isEqualTo("original_value");
+
+    PolicyUtils.raiseResults(policy, context2, TestResult.FAULT, TestResult.GOOD);
+
+    assertThat(contextValue.get()).isEqualTo("new_value");
+  }
+
+  @Test
+  public void shouldCreateNewContextForEachCallToExecuteAndCapture() {
+    final var contextValue = new AtomicReference<String>();
+    final var policy = RetryPolicy.<TestResult>builder()
+      .handleResult(TestResult.FAULT)
+      .retry(fromConsumer3(r -> (i, context) -> contextValue.set(context.getContextData().get("key").toString())));
+    var context1 = Context.builder()
+      .contextData(new HashMap<>() {{
+        put("key", "original_value");
+      }})
+      .build();
+    var context2 = Context.builder()
+      .contextData(new HashMap<>() {{
+        put("key", "new_value");
+      }})
+      .build();
+
+    PolicyUtils.raiseResultsOnExecuteAndCapture(policy, context1, TestResult.FAULT, TestResult.GOOD);
+
+    assertThat(contextValue.get()).isEqualTo("original_value");
+
+    PolicyUtils.raiseResultsOnExecuteAndCapture(policy, context2, TestResult.FAULT, TestResult.GOOD);
+
+    assertThat(contextValue.get()).isEqualTo("new_value");
+  }
+
+  @Test
+  public void shouldCreateNewStateForEachCallToPolicy() {
+    final var policy = RetryPolicy.<TestResult>builder()
+      .handleResult(TestResult.FAULT)
+      .retry(1);
+
+    final var result1 = PolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD);
+    final var result2 = PolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD);
+
+    assertThat(result1).isEqualTo(TestResult.GOOD);
+    assertThat(result2).isEqualTo(TestResult.GOOD);
+  }
+
+  @Test
+  public void shouldNotCallOnRetryWhenRetryCountIsZero() {
+    final var retryInvoked = new AtomicBoolean(false);
+    final var policy = RetryPolicy.<TestResult>builder()
+      .handleResult(TestResult.FAULT)
+      .retry(0, fromConsumer3(r -> (i, c) -> retryInvoked.set(true)));
+
+    final var result = PolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD);
+
+    assertThat(result).isEqualTo(TestResult.FAULT);
+    assertThat(retryInvoked.get()).isFalse();
   }
 }

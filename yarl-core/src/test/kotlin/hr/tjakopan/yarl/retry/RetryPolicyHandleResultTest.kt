@@ -1,9 +1,12 @@
 package hr.tjakopan.yarl.retry
 
+import hr.tjakopan.yarl.Context
 import hr.tjakopan.yarl.Policy
+import hr.tjakopan.yarl.PolicyResult
 import hr.tjakopan.yarl.test.helpers.TestResult
 import hr.tjakopan.yarl.test.helpers.TestResultClass
 import hr.tjakopan.yarl.test.helpers.raiseResults
+import hr.tjakopan.yarl.test.helpers.raiseResultsOnExecuteAndCapture
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import kotlin.test.Test
@@ -205,5 +208,126 @@ class RetryPolicyHandleResultTest {
     policy.raiseResults(*resultsToRaise.toTypedArray())
 
     assertThat(retryFaults).containsExactlyElementsOf(expectedFaults)
+  }
+
+  @Test
+  fun shouldNotCallOnRetryWhenNoRetriesArePerformed() {
+    var retryCalled = false;
+    val policy = Policy.retry<TestResult>()
+      .handleResult(TestResult.FAULT)
+      .retry { _, _, _ -> retryCalled = true }
+
+    policy.raiseResults(TestResult.GOOD)
+
+    assertThat(retryCalled).isFalse()
+  }
+
+  @Test
+  fun shouldCallOnRetryWithThePassedContext() {
+    var capturedContext: Context? = null
+    val policy = Policy.retry<TestResult>()
+      .handleResult(TestResult.FAULT)
+      .retry { _, _, context -> capturedContext = context }
+    val context = Context(contextData = mapOf("key1" to "value1", "key2" to "value2"))
+
+    val result = policy.raiseResults(context, TestResult.FAULT, TestResult.GOOD)
+
+    assertThat(result).isEqualTo(TestResult.GOOD)
+    assertThat(capturedContext?.contextData).containsKeys("key1", "key2")
+      .containsValues("value1", "value2")
+  }
+
+  @Test
+  fun shouldCallOnRetryWithThePassedContextWhenExecuteAndCapture() {
+    var capturedContext: Context? = null
+    val policy = Policy.retry<TestResult>()
+      .handleResult(TestResult.FAULT)
+      .retry { _, _, context -> capturedContext = context }
+    val context = Context(contextData = mapOf("key1" to "value1", "key2" to "value2"))
+
+    val result = policy.raiseResultsOnExecuteAndCapture(context, TestResult.FAULT, TestResult.GOOD)
+
+    assertThat(result.isSuccess).isTrue()
+    assertThat((result as PolicyResult.Success).result).isEqualTo(TestResult.GOOD)
+    assertThat(capturedContext?.contextData).containsKeys("key1", "key2")
+      .containsValues("value1", "value2")
+  }
+
+  @Test
+  fun contextShouldBeEmptyIfExecuteNotCalledWithContext() {
+    var capturedContext: Context? = null
+    val policy = Policy.retry<TestResult>()
+      .handleResult(TestResult.FAULT)
+      .retry { _, _, context -> capturedContext = context }
+
+    policy.raiseResults(TestResult.FAULT, TestResult.GOOD)
+
+    assertThat(capturedContext).isNotNull
+    assertThat(capturedContext?.policyWrapKey).isNull()
+    assertThat(capturedContext?.policyKey).isNotNull()
+    assertThat(capturedContext?.operationKey).isNull()
+    assertThat(capturedContext?.contextData).isEmpty()
+  }
+
+  @Test
+  fun shouldCreateNewContextForEachCallToExecute() {
+    var contextValue: String? = null
+    val policy = Policy.retry<TestResult>()
+      .handleResult(TestResult.FAULT)
+      .retry { _, _, context -> contextValue = context.contextData["key"].toString() }
+    val context1 = Context(contextData = mapOf("key" to "original_value"))
+    val context2 = Context(contextData = mapOf("key" to "new_value"))
+
+    policy.raiseResults(context1, TestResult.FAULT, TestResult.GOOD)
+
+    assertThat(contextValue).isEqualTo("original_value")
+
+    policy.raiseResults(context2, TestResult.FAULT, TestResult.GOOD)
+
+    assertThat(contextValue).isEqualTo("new_value")
+  }
+
+  @Test
+  fun shouldCreateNewContextForEachCallToExecuteAndCapture() {
+    var contextValue: String? = null
+    val policy = Policy.retry<TestResult>()
+      .handleResult(TestResult.FAULT)
+      .retry { _, _, context -> contextValue = context.contextData["key"].toString() }
+    val context1 = Context(contextData = mapOf("key" to "original_value"))
+    val context2 = Context(contextData = mapOf("key" to "new_value"))
+
+    policy.raiseResultsOnExecuteAndCapture(context1, TestResult.FAULT, TestResult.GOOD)
+
+    assertThat(contextValue).isEqualTo("original_value")
+
+    policy.raiseResultsOnExecuteAndCapture(context2, TestResult.FAULT, TestResult.GOOD)
+
+    assertThat(contextValue).isEqualTo("new_value")
+  }
+
+  @Test
+  fun shouldCreateNewStateForEachCallToPolicy() {
+    val policy = Policy.retry<TestResult>()
+      .handleResult(TestResult.FAULT)
+      .retry(1)
+
+    val result1 = policy.raiseResults(TestResult.FAULT, TestResult.GOOD)
+    val result2 = policy.raiseResults(TestResult.FAULT, TestResult.GOOD)
+
+    assertThat(result1).isEqualTo(TestResult.GOOD)
+    assertThat(result2).isEqualTo(TestResult.GOOD)
+  }
+
+  @Test
+  fun shouldNotCallOnRetryWhenRetryCountIsZero() {
+    var retryInvoked = false
+    val policy = Policy.retry<TestResult>()
+      .handleResult(TestResult.FAULT)
+      .retry(0) { _, _, _ -> retryInvoked = true }
+
+    val result = policy.raiseResults(TestResult.FAULT, TestResult.GOOD)
+
+    assertThat(result).isEqualTo(TestResult.FAULT)
+    assertThat(retryInvoked).isFalse()
   }
 }
