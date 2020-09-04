@@ -9,11 +9,16 @@ sealed class DelegateResult<out R> {
     fun failure(exception: Throwable): DelegateResult<Nothing> = Failure(exception)
 
     @JvmStatic
-    inline fun <R> runCatching(block: () -> R): DelegateResult<R> {
+    inline fun <R> runCatching(exceptionPredicates: ExceptionPredicates, block: () -> R): DelegateResult<R> {
       return try {
         success(block())
       } catch (e: Throwable) {
-        failure(e)
+        val exceptionToHandle = exceptionPredicates.firstMatchOrNull(e)
+        if (exceptionToHandle != null) {
+          failure(exceptionToHandle)
+        } else {
+          failure(e)
+        }
       }
     }
   }

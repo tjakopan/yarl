@@ -58,4 +58,18 @@ public class PolicyUtils {
       return null;
     });
   }
+
+  public static <E extends RuntimeException> void raiseExceptions(final Policy<Void, ?> policy,
+                                                                  final Context context,
+                                                                  final int numberOfTimesToRaiseException,
+                                                                  final Function<Integer, E> exceptionSupplier) {
+    final var counter = new AtomicInteger(0);
+    policy.execute(context, ctx -> {
+      counter.incrementAndGet();
+      if (counter.get() <= numberOfTimesToRaiseException) {
+        throw exceptionSupplier.apply(counter.get());
+      }
+      return null;
+    });
+  }
 }

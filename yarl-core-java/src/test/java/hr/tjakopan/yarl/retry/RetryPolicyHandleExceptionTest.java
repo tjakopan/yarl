@@ -1,10 +1,14 @@
 package hr.tjakopan.yarl.retry;
 
+import hr.tjakopan.yarl.Context;
 import hr.tjakopan.yarl.test.helpers.PolicyUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static hr.tjakopan.yarl.Functions.fromConsumer;
 import static hr.tjakopan.yarl.Functions.fromConsumer3;
@@ -178,5 +182,55 @@ public class RetryPolicyHandleExceptionTest {
     assertThat(retryExceptions.stream()
       .map(Throwable::getMessage))
       .containsExactlyElementsOf(expectedExceptions);
+  }
+
+  @Test
+  public void shouldCallOnRetryWithAHandledCauseException() {
+    final var passedToOnRetry = new AtomicReference<Throwable>();
+    final var policy = RetryPolicy.<Void>builder()
+      .handleCause(ArithmeticException.class)
+      .retry(3, fromConsumer3(outcome -> (i, c) -> outcome.onFailure(fromConsumer(passedToOnRetry::set))));
+    final var toRaiseAsInner = new ArithmeticException();
+    final var withInner = new RuntimeException(toRaiseAsInner);
+
+    PolicyUtils.raiseExceptions(policy, 1, i -> withInner);
+
+    assertThat(passedToOnRetry.get()).isSameAs(toRaiseAsInner);
+  }
+
+  @Test
+  public void shouldNotCallOnRetryWhenNoRetriesArePerformed() {
+    final var retryCount = new AtomicInteger(0);
+    final var policy = RetryPolicy.<Void>builder()
+      .handle(ArithmeticException.class)
+      .retry(fromConsumer3(d -> (i, c) -> retryCount.incrementAndGet()));
+
+    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> {
+      PolicyUtils.raiseExceptions(policy, 1, i -> new IllegalArgumentException());
+    });
+    assertThat(retryCount.get()).isEqualTo(0);
+  }
+
+  @Test
+  public void shouldCallOnRetryWithThePassedContext() {
+    final var context = new AtomicReference<Context>();
+    final var policy = RetryPolicy.<Void>builder()
+      .handle(ArithmeticException.class)
+      .retry(fromConsumer3(d -> (i, ctx) -> context.set(ctx)));
+
+    PolicyUtils.raiseExceptions(
+      policy,
+      Context.builder()
+        .contextData(new HashMap<>() {{
+          put("key1", "value1");
+          put("key2", "value2");
+        }})
+        .build(),
+      1,
+      i -> new ArithmeticException());
+
+    assertThat(context.get()).isNotNull();
+    assertThat(context.get().getContextData()).containsKeys("key1", "key2")
+      .containsValues("value1", "value2");
   }
 }

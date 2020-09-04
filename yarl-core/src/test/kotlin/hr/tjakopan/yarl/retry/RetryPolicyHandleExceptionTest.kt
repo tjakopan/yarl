@@ -1,9 +1,11 @@
 package hr.tjakopan.yarl.retry
 
+import hr.tjakopan.yarl.Context
 import hr.tjakopan.yarl.Policy
 import hr.tjakopan.yarl.test.helpers.raiseExceptions
 import org.assertj.core.api.Assertions.*
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
 class RetryPolicyHandleExceptionTest {
   @Test
@@ -169,5 +171,52 @@ class RetryPolicyHandleExceptionTest {
     policy.raiseExceptions(3) { ArithmeticException("Exception #$it") }
 
     assertThat(retryExceptions.map { e -> e.message }).containsExactlyElementsOf(expectedExceptions)
+  }
+
+  @Test
+  fun shouldCallOnRetryWithAHandledCauseException() {
+    var passedToOnRetry: Throwable? = null
+    val policy = Policy.retry<Unit>()
+      .handleCause(ArithmeticException::class)
+      .retry(3) { outcome, _, _ ->
+        outcome.onFailure { passedToOnRetry = it }
+      }
+    val toRaiseAsInner = ArithmeticException()
+    val withInner = Exception(toRaiseAsInner)
+
+    policy.raiseExceptions(1) { withInner }
+
+    assertThat(passedToOnRetry).isSameAs(toRaiseAsInner)
+  }
+
+  @Test
+  fun shouldNotCallOnRetryWhenNoRetriesArePerformed() {
+    var retryCount = 0
+    val policy = Policy.retry<Unit>()
+      .handle(ArithmeticException::class)
+      .retry { _, _, _ -> retryCount++ }
+
+    assertFailsWith(IllegalArgumentException::class) {
+      policy.raiseExceptions(1) { IllegalArgumentException() }
+    }
+    assertThat(retryCount).isEqualTo(0)
+  }
+
+  @Test
+  fun shouldCallOnRetryWithThePassedContext() {
+    var context: Context? = null
+    val policy = Policy.retry<Unit>()
+      .handle(ArithmeticException::class)
+      .retry { _, _, ctx -> context = ctx }
+
+    policy.raiseExceptions(
+      Context(contextData = mapOf("key1" to "value1", "key2" to "value2")),
+      1
+    ) { ArithmeticException() }
+
+    @Suppress("UsePropertyAccessSyntax")
+    assertThat(context).isNotNull()
+    assertThat(context?.contextData).containsKeys("key1", "key2")
+      .containsValues("value1", "value2")
   }
 }

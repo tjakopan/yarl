@@ -43,7 +43,7 @@ internal object RetryEngine {
     val sleepDurationsIterator = sleepDurationsIterable.iterator()
 
     while (true) {
-      val outcome = DelegateResult.runCatching { action(context) }
+      val outcome = DelegateResult.runCatching(shouldRetryExceptionPredicates) { action(context) }
       val canRetry = canRetry(tryCount, permittedRetryCount, sleepDurationsIterator, sleepDurationsIterable.count())
 
       if (!canRetry) {
@@ -92,7 +92,7 @@ internal object RetryEngine {
 
     while (true) {
       yield()
-      val outcome = DelegateResult.runCatching { action(context) }
+      val outcome = DelegateResult.runCatching(shouldRetryExceptionPredicates) { action(context) }
       val canRetry = canRetry(tryCount, permittedRetryCount, sleepDurationsIterator, sleepDurationsIterable.count())
 
       if (!canRetry) {

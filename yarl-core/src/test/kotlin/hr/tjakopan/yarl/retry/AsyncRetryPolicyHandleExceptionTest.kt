@@ -106,6 +106,18 @@ class AsyncRetryPolicyHandleExceptionTest {
   }
 
   @Test
+  fun shouldThrowWhenExceptionThrownIsNotOneOfTheSpecifiedExceptionTypes() = runBlockingTest {
+    val policy = Policy.asyncRetry<Unit>()
+      .handle(ArithmeticException::class)
+      .handle(IllegalArgumentException::class)
+      .retry(3)
+
+    assertFailsWith(NullPointerException::class) {
+      policy.raiseExceptions(1) { NullPointerException() }
+    }
+  }
+
+  @Test
   fun shouldThrowWhenSpecifiedExceptionPredicateIsNotSatisfied() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class) { false }
@@ -188,8 +200,7 @@ class AsyncRetryPolicyHandleExceptionTest {
 
     policy.raiseExceptions(1) { exception }
 
-    assertThat(exceptionPassedToOnRetry).isSameAs(exception)
-    assertThat(exceptionPassedToOnRetry?.cause).isSameAs(causeException)
+    assertThat(exceptionPassedToOnRetry).isSameAs(causeException)
   }
 
   @Test
@@ -494,13 +505,15 @@ class AsyncRetryPolicyHandleExceptionTest {
       .retry(3)
     var attemptsInvoked = 0
     val onExecute: () -> Unit = { attemptsInvoked++ }
+    var result: Boolean? = null
 
     assertFailsWith(CancellationException::class) {
-      policy.raiseExceptionsAndOrCancellation(
+      result = policy.raiseExceptionsAndOrCancellation(
         0, 1, onExecute,
         true
       ) { ArithmeticException() }
     }
+    assertThat(result).isNull()
     assertThat(attemptsInvoked).isEqualTo(1)
   }
 }

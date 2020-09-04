@@ -24,11 +24,9 @@ import static org.assertj.core.api.Assertions.*;
 public class AsyncRetryPolicyHandleExceptionTest {
   @Test
   public void shouldThrowWhenRetryCountIsLessThanZero() {
-    final ThrowableAssert.ThrowingCallable shouldThrow = () -> {
-      AsyncRetryPolicy.<TestResult>builder()
-        .handle(ArithmeticException.class)
-        .retry(-1);
-    };
+    final ThrowableAssert.ThrowingCallable shouldThrow = () -> AsyncRetryPolicy.<TestResult>builder()
+      .handle(ArithmeticException.class)
+      .retry(-1);
 
     assertThatThrownBy(shouldThrow)
       .isInstanceOf(IllegalArgumentException.class)
@@ -132,6 +130,20 @@ public class AsyncRetryPolicyHandleExceptionTest {
   }
 
   @Test
+  public void shouldThrowWhenExceptionThrownIsNotOneOfTheSpecifiedExceptionTypes() {
+    final var policy = AsyncRetryPolicy.<Void>builder()
+      .handle(ArithmeticException.class)
+      .handle(IllegalArgumentException.class)
+      .retry(3);
+
+    assertThatThrownBy(() ->
+      AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new NullPointerException())
+        .join())
+      .isInstanceOf(CompletionException.class)
+      .hasCauseInstanceOf(NullPointerException.class);
+  }
+
+  @Test
   public void shouldThrowWhenSpecifiedExceptionPredicateIsNotSatisfied() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class, e -> false)
@@ -224,8 +236,7 @@ public class AsyncRetryPolicyHandleExceptionTest {
     AsyncPolicyUtils.raiseExceptions(policy, 1, i -> exception)
       .join();
 
-    assertThat(exceptionPassedToOnRetry.get()).isSameAs(exception);
-    assertThat(exceptionPassedToOnRetry.get().getCause()).isSameAs(causeException);
+    assertThat(exceptionPassedToOnRetry.get()).isSameAs(causeException);
   }
 
   @Test
@@ -600,11 +611,13 @@ public class AsyncRetryPolicyHandleExceptionTest {
       attemptsInvoked.incrementAndGet();
       return CompletableFuture.completedFuture(null);
     };
+    final AtomicReference<Boolean> result = new AtomicReference<>();
 
-    assertThatThrownBy(() ->
-      AsyncPolicyUtils.raiseExceptionsAndOrCancellation(policy, 0, 1,
+    assertThatExceptionOfType(CancellationException.class).isThrownBy(() ->
+      result.set(AsyncPolicyUtils.raiseExceptionsAndOrCancellation(policy, 0, 1,
         action, true, i -> new ArithmeticException())
-        .join());
+        .join()));
+    assertThat(result.get()).isNull();
     assertThat(attemptsInvoked.get()).isEqualTo(1);
   }
 }
