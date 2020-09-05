@@ -300,7 +300,7 @@ class AsyncRetryForeverTest {
       runBlockingTest {
         val policy = Policy.asyncRetry<Unit>()
           .handle(ArithmeticException::class)
-          .retryForever() { _, _, _ -> coroutineContext.cancel() }
+          .retryForever { _, _, _ -> coroutineContext.cancel() }
         var attemptsInvoked = 0
         val onExecute: () -> Unit = { attemptsInvoked++ }
 

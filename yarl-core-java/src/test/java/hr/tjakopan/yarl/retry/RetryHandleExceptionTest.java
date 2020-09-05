@@ -206,9 +206,8 @@ public class RetryHandleExceptionTest {
       .handle(ArithmeticException.class)
       .retry(fromConsumer3(d -> (i, c) -> retryCount.incrementAndGet()));
 
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> {
-      PolicyUtils.raiseExceptions(policy, 1, i -> new IllegalArgumentException());
-    });
+    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+      PolicyUtils.raiseExceptions(policy, 1, i -> new IllegalArgumentException()));
     assertThat(retryCount.get()).isEqualTo(0);
   }
 
@@ -358,5 +357,9 @@ public class RetryHandleExceptionTest {
     final var policy = RetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
       .retry(0, fromConsumer3(d -> (i, c) -> retryInvoked.set(true)));
+
+    assertThatExceptionOfType(ArithmeticException.class).isThrownBy(() ->
+      PolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException()));
+    assertThat(retryInvoked.get()).isFalse();
   }
 }
