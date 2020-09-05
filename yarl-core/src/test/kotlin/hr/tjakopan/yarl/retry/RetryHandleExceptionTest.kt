@@ -8,7 +8,7 @@ import org.assertj.core.api.Assertions.*
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
-class RetryPolicyHandleExceptionTest {
+class RetryHandleExceptionTest {
   @Test
   fun shouldThrowWhenRetryCountIsLessThanZero() {
     assertThatThrownBy {

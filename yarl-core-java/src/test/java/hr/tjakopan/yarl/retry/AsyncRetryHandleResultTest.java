@@ -27,7 +27,7 @@ import static hr.tjakopan.yarl.Functions.fromConsumer;
 import static hr.tjakopan.yarl.Functions.fromConsumer3Async;
 import static org.assertj.core.api.Assertions.*;
 
-public class AsyncRetryPolicyHandleResultTest {
+public class AsyncRetryHandleResultTest {
   @Test
   public void shouldThrowWhenRetryCountIsLessThanZero() {
     final ThrowableAssert.ThrowingCallable shouldThrow = () -> {

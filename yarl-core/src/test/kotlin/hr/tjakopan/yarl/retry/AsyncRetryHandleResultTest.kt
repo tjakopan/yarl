@@ -16,7 +16,7 @@ import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 @ExperimentalCoroutinesApi
-class AsyncRetryPolicyHandleResultTest {
+class AsyncRetryHandleResultTest {
   @Test
   fun shouldThrowWhenRetryCountIsLessThanZero() {
     val shouldThrow = {

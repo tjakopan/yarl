@@ -9,7 +9,7 @@ import org.assertj.core.api.Assertions.assertThat
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
-class RetryPolicyHandleMixedTest {
+class RetryHandleMixedTest {
   @Test
   fun shouldHandleExceptionWhenHandlingExceptionsOnly() {
     val policy = Policy.retry<TestResult>()

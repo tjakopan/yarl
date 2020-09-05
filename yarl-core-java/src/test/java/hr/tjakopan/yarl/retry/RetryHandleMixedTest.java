@@ -8,7 +8,7 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class RetryPolicyHandleMixedTest {
+public class RetryHandleMixedTest {
   @Test
   public void shouldHandleExceptionWhenHandlingExceptionsOnly() {
     final var policy = RetryPolicy.<TestResult>builder()

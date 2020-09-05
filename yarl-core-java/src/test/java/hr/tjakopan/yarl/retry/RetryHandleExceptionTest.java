@@ -15,7 +15,7 @@ import static hr.tjakopan.yarl.Functions.fromConsumer;
 import static hr.tjakopan.yarl.Functions.fromConsumer3;
 import static org.assertj.core.api.Assertions.*;
 
-public class RetryPolicyHandleExceptionTest {
+public class RetryHandleExceptionTest {
   @Test
   public void shouldThrowWhenRetryCountIsLessThanZero() {
     assertThatThrownBy(() ->
