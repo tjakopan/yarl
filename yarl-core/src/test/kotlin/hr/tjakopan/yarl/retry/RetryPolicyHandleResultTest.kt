@@ -212,7 +212,7 @@ class RetryPolicyHandleResultTest {
 
   @Test
   fun shouldNotCallOnRetryWhenNoRetriesArePerformed() {
-    var retryCalled = false;
+    var retryCalled = false
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry { _, _, _ -> retryCalled = true }
