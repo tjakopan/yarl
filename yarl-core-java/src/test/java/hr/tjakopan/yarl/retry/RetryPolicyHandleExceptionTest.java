@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -232,5 +233,130 @@ public class RetryPolicyHandleExceptionTest {
     assertThat(context.get()).isNotNull();
     assertThat(context.get().getContextData()).containsKeys("key1", "key2")
       .containsValues("value1", "value2");
+  }
+
+  @Test
+  public void shouldCallOnRetryWithThePassedContextWhenExecuteAndCapture() {
+    final var context = new AtomicReference<Context>();
+    final var policy = RetryPolicy.<Void>builder()
+      .handle(ArithmeticException.class)
+      .retry(fromConsumer3(d -> (i, ctx) -> context.set(ctx)));
+
+    PolicyUtils.raiseExceptionsOnExecuteAndCapture(
+      policy,
+      Context.builder()
+        .contextData(new HashMap<>() {{
+          put("key1", "value1");
+          put("key2", "value2");
+        }})
+        .build(),
+      1,
+      i -> new ArithmeticException());
+
+    assertThat(context.get()).isNotNull();
+    assertThat(context.get().getContextData()).containsKeys("key1", "key2")
+      .containsValues("value1", "value2");
+  }
+
+  @Test
+  public void contextShouldBeEmptyIfExecuteNotCalledWithAnyContextData() {
+    final var capturedContext = new AtomicReference<Context>();
+    final var policy = RetryPolicy.<Void>builder()
+      .handle(ArithmeticException.class)
+      .retry(fromConsumer3(d -> (i, context) -> capturedContext.set(context)));
+
+    PolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException());
+
+    assertThat(capturedContext.get()).isNotNull();
+    assertThat(capturedContext.get().getPolicyWrapKey()).isNull();
+    assertThat(capturedContext.get().getPolicyKey()).isNotNull();
+    assertThat(capturedContext.get().getOperationKey()).isNull();
+    assertThat(capturedContext.get().getContextData()).isEmpty();
+  }
+
+  @Test
+  public void shouldCreateNewContextForEachCallToExecute() {
+    final var contextValue = new AtomicReference<String>();
+    final var policy = RetryPolicy.<Void>builder()
+      .handle(ArithmeticException.class)
+      .retry(fromConsumer3(d -> (i, context) -> contextValue.set(context.getContextData().get("key").toString())));
+
+    PolicyUtils.raiseExceptions(
+      policy,
+      Context.builder()
+        .contextData(new HashMap<>() {{
+          put("key", "original_value");
+        }})
+        .build(),
+      1,
+      i -> new ArithmeticException()
+    );
+
+    assertThat(contextValue.get()).isEqualTo("original_value");
+
+    PolicyUtils.raiseExceptions(
+      policy,
+      Context.builder()
+        .contextData(new HashMap<>() {{
+          put("key", "new_value");
+        }})
+        .build(),
+      1,
+      i -> new ArithmeticException()
+    );
+
+    assertThat(contextValue.get()).isEqualTo("new_value");
+  }
+
+  @Test
+  public void shouldCreateNewContextForEachCallToExecuteAndCapture() {
+    final var contextValue = new AtomicReference<String>();
+    final var policy = RetryPolicy.<Void>builder()
+      .handle(ArithmeticException.class)
+      .retry(fromConsumer3(d -> (i, context) -> contextValue.set(context.getContextData().get("key").toString())));
+
+    PolicyUtils.raiseExceptionsOnExecuteAndCapture(
+      policy,
+      Context.builder()
+        .contextData(new HashMap<>() {{
+          put("key", "original_value");
+        }})
+        .build(),
+      1,
+      i -> new ArithmeticException()
+    );
+
+    assertThat(contextValue.get()).isEqualTo("original_value");
+
+    PolicyUtils.raiseExceptionsOnExecuteAndCapture(
+      policy,
+      Context.builder()
+        .contextData(new HashMap<>() {{
+          put("key", "new_value");
+        }})
+        .build(),
+      1,
+      i -> new ArithmeticException()
+    );
+
+    assertThat(contextValue.get()).isEqualTo("new_value");
+  }
+
+  @Test
+  public void shouldCreateNewStateForEachCallToPolicy() {
+    final var policy = RetryPolicy.<Void>builder()
+      .handle(ArithmeticException.class)
+      .retry();
+
+    PolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException());
+    PolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException());
+  }
+
+  @Test
+  public void shouldNotCallOnRetryWhenRetryCountIsZero() {
+    final var retryInvoked = new AtomicBoolean(false);
+    final var policy = RetryPolicy.<Void>builder()
+      .handle(ArithmeticException.class)
+      .retry(0, fromConsumer3(d -> (i, c) -> retryInvoked.set(true)));
   }
 }

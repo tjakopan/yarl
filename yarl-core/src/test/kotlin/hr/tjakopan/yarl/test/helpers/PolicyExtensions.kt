@@ -63,3 +63,17 @@ internal fun <E : Throwable> Policy<Unit, *>.raiseExceptions(
     }
   }
 }
+
+internal fun <E : Throwable> Policy<Unit, *>.raiseExceptionsOnExecuteAndCapture(
+  context: Context,
+  numberOfTimesToRaiseException: Int,
+  exceptionSupplier: (Int) -> E
+) {
+  var counter = 0
+  this.executeAndCapture(context) {
+    counter++
+    if (counter <= numberOfTimesToRaiseException) {
+      throw exceptionSupplier(counter)
+    }
+  }
+}
