@@ -17,7 +17,7 @@ public class PolicyUtils {
     final var iterator = Stream.of(resultsToRaise).iterator();
     return policy.execute(() -> {
       if (!iterator.hasNext()) {
-        throw new IllegalArgumentException("Not enough values in resultsToRaise.");
+        throw new ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.");
       }
       return iterator.next();
     });
@@ -28,9 +28,28 @@ public class PolicyUtils {
     final var iterator = Stream.of(resultsToRaise).iterator();
     return policy.execute(context, ctx -> {
       if (!iterator.hasNext()) {
-        throw new IllegalArgumentException("Not enough values in resultsToRaise.");
+        throw new ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.");
       }
       return iterator.next();
+    });
+  }
+
+  public static <R> R raiseResultsAndOrExceptions(final Policy<R, ?> policy, Class<R> resultClass,
+                                                  final Object... resultsOrExceptionsToRaise) {
+    final var iterator = Stream.of(resultsOrExceptionsToRaise).iterator();
+    return policy.execute(() -> {
+      if (!iterator.hasNext()) {
+        throw new ArrayIndexOutOfBoundsException("Not enough values in resultsOrExceptionsToRaise.");
+      }
+      final var current = iterator.next();
+      if (current instanceof RuntimeException) {
+        throw (RuntimeException) current;
+      } else if (resultClass.isInstance(current)) {
+        //noinspection unchecked
+        return (R) current;
+      } else {
+        throw new ArrayIndexOutOfBoundsException("Value is not either a runtime exception or result.");
+      }
     });
   }
 
@@ -40,7 +59,7 @@ public class PolicyUtils {
     final var iterator = Stream.of(resultsToRaise).iterator();
     return policy.executeAndCapture(context, ctx -> {
       if (!iterator.hasNext()) {
-        throw new IllegalArgumentException("Not enough values in resultsToRaise.");
+        throw new ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.");
       }
       return iterator.next();
     });

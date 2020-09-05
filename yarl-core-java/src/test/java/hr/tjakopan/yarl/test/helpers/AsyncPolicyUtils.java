@@ -21,7 +21,7 @@ public class AsyncPolicyUtils {
     final var iterator = Stream.of(resultsToRaise).iterator();
     return policy.executeAsync(() -> {
       if (!iterator.hasNext()) {
-        throw new IllegalArgumentException("Not enough values in resultsToRaise.");
+        throw new ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.");
       }
       return CompletableFuture.completedFuture(iterator.next());
     });
@@ -33,7 +33,7 @@ public class AsyncPolicyUtils {
     final var iterator = Stream.of(resultsToRaise).iterator();
     return policy.executeAsync(context, ctx -> {
       if (!iterator.hasNext()) {
-        throw new IllegalArgumentException("Not enough values in resultsToRaise.");
+        throw new ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.");
       }
       return CompletableFuture.completedFuture(iterator.next());
     });
@@ -46,7 +46,7 @@ public class AsyncPolicyUtils {
     final var iterator = Stream.of(resultsToRaise).iterator();
     return policy.executeAsync(() -> {
       if (!iterator.hasNext()) {
-        throw new IllegalArgumentException("Not enough values in resultsToRaise.");
+        throw new ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.");
       }
       return action.invoke(iterator.next());
     });
@@ -59,7 +59,7 @@ public class AsyncPolicyUtils {
     final var iterator = Stream.of(resultsToRaise).iterator();
     return policy.executeAndCaptureAsync(context, ctx -> {
       if (!iterator.hasNext()) {
-        throw new IllegalArgumentException("Not enough values in resultsToRaise.");
+        throw new ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.");
       }
       return CompletableFuture.completedFuture(iterator.next());
     });
@@ -74,7 +74,7 @@ public class AsyncPolicyUtils {
     final var iterator = Stream.of(resultsToRaise).iterator();
     return policy.executeAsync(() -> {
       if (!iterator.hasNext()) {
-        throw new IllegalArgumentException("Not enough values in resultsToRaise.");
+        throw new ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.");
       }
       return action.invoke(iterator.next())
         .whenCompleteAsync((r, e) -> {

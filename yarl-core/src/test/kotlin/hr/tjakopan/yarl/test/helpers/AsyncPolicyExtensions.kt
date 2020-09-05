@@ -9,7 +9,7 @@ internal suspend fun <R> AsyncPolicy<R, *>.raiseResults(vararg resultsToRaise: R
   val iterator = resultsToRaise.iterator()
   return this.execute {
     if (!iterator.hasNext()) {
-      throw IllegalArgumentException("Not enough values in resultsToRaise.")
+      throw ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.")
     }
     return@execute iterator.next()
   }
@@ -19,7 +19,7 @@ internal suspend fun <R> AsyncPolicy<R, *>.raiseResults(context: Context, vararg
   val iterator = resultsToRaise.iterator()
   return this.execute(context) {
     if (!iterator.hasNext()) {
-      throw IllegalArgumentException("Not enough values in resultsToRaise.")
+      throw ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.")
     }
     return@execute iterator.next()
   }
@@ -30,7 +30,7 @@ internal suspend fun <R> AsyncPolicy<R, *>.raiseResults(onExecute: () -> Unit, v
   return this.execute {
     onExecute()
     if (!iterator.hasNext()) {
-      throw IllegalArgumentException("Not enough values in resultsToRaise.")
+      throw ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.")
     }
     return@execute iterator.next()
   }
@@ -43,7 +43,7 @@ internal suspend fun <R> AsyncPolicy<R, *>.raiseResultsOnExecuteAndCapture(
   val iterator = resultsToRaise.iterator()
   return this.executeAndCapture(context) {
     if (!iterator.hasNext()) {
-      throw IllegalArgumentException("Not enough values in resultsToRaise.")
+      throw ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.")
     }
     return@executeAndCapture iterator.next()
   }
@@ -60,7 +60,7 @@ internal suspend fun <R> AsyncPolicy<R, *>.raiseResultsAndOrCancellation(
     onExecute()
     counter++
     if (!iterator.hasNext()) {
-      throw IllegalArgumentException("Not enough values in resultsToRaise.")
+      throw ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.")
     }
     if (counter >= attemptDuringWhichToCancel) {
       throw CancellationException()

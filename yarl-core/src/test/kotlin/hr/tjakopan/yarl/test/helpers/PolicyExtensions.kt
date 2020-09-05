@@ -8,7 +8,7 @@ internal fun <R> Policy<R, *>.raiseResults(vararg resultsToRaise: R): R {
   val iterator = resultsToRaise.iterator()
   return this.execute {
     if (!iterator.hasNext()) {
-      throw IllegalArgumentException("Not enough values in resultsToRaise.")
+      throw ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.")
     }
     return@execute iterator.next();
   }
@@ -18,9 +18,23 @@ internal fun <R> Policy<R, *>.raiseResults(context: Context, vararg resultsToRai
   val iterator = resultsToRaise.iterator()
   return this.execute(context) {
     if (!iterator.hasNext()) {
-      throw IllegalArgumentException("Not enough values in resultsToRaise.")
+      throw ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.")
     }
     return@execute iterator.next();
+  }
+}
+
+internal inline fun <reified R> Policy<R, *>.raiseResultsAndOrExceptions(vararg resultsOrExceptionsToRaise: Any): R {
+  val iterator = resultsOrExceptionsToRaise.iterator()
+  return this.execute {
+    if (!iterator.hasNext()) {
+      throw ArrayIndexOutOfBoundsException("Not enough values in resultsOrExceptionsToRaise.")
+    }
+    when (val current = iterator.next()) {
+      is Throwable -> throw current
+      is R -> return@execute current
+      else -> throw ArrayIndexOutOfBoundsException("Value is not either an exception or result.")
+    }
   }
 }
 
@@ -31,7 +45,7 @@ internal fun <R> Policy<R, *>.raiseResultsOnExecuteAndCapture(
   val iterator = resultsToRaise.iterator()
   return this.executeAndCapture(context) {
     if (!iterator.hasNext()) {
-      throw IllegalArgumentException("Not enough values in resultsToRaise.")
+      throw ArrayIndexOutOfBoundsException("Not enough values in resultsToRaise.")
     }
     return@executeAndCapture iterator.next();
   }
