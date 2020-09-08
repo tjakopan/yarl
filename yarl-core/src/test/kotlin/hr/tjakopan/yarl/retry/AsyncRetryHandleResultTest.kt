@@ -226,7 +226,7 @@ class AsyncRetryHandleResultTest {
       .retry { _, _, ctx -> context = ctx }
 
     val result = policy.raiseResults(
-      Context(contextData = mapOf("key1" to "value1", "key2" to "value2")),
+      Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2")),
       TestResult.FAULT,
       TestResult.GOOD
     )
@@ -246,7 +246,7 @@ class AsyncRetryHandleResultTest {
       .retry { _, _, ctx -> context = ctx }
 
     val result = policy.raiseResultsOnExecuteAndCapture(
-      Context(contextData = mapOf("key1" to "value1", "key2" to "value2")),
+      Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2")),
       TestResult.FAULT,
       TestResult.GOOD
     )
@@ -282,11 +282,11 @@ class AsyncRetryHandleResultTest {
       .handleResult(TestResult.FAULT)
       .retry { _, _, ctx -> contextValue = ctx.contextData["key"].toString() }
 
-    policy.raiseResults(Context(contextData = mapOf("key" to "original_value")), TestResult.FAULT, TestResult.GOOD)
+    policy.raiseResults(Context(contextData = mutableMapOf("key" to "original_value")), TestResult.FAULT, TestResult.GOOD)
 
     assertThat(contextValue).isEqualTo("original_value")
 
-    policy.raiseResults(Context(contextData = mapOf("key" to "new_value")), TestResult.FAULT, TestResult.GOOD)
+    policy.raiseResults(Context(contextData = mutableMapOf("key" to "new_value")), TestResult.FAULT, TestResult.GOOD)
 
     assertThat(contextValue).isEqualTo("new_value")
   }
@@ -299,7 +299,7 @@ class AsyncRetryHandleResultTest {
       .retry { _, _, ctx -> contextValue = ctx.contextData["key"].toString() }
 
     policy.raiseResultsOnExecuteAndCapture(
-      Context(contextData = mapOf("key" to "original_value")),
+      Context(contextData = mutableMapOf("key" to "original_value")),
       TestResult.FAULT,
       TestResult.GOOD
     )
@@ -307,7 +307,7 @@ class AsyncRetryHandleResultTest {
     assertThat(contextValue).isEqualTo("original_value")
 
     policy.raiseResultsOnExecuteAndCapture(
-      Context(contextData = mapOf("key" to "new_value")),
+      Context(contextData = mutableMapOf("key" to "new_value")),
       TestResult.FAULT,
       TestResult.GOOD
     )

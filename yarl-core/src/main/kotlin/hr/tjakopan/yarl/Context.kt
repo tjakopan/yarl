@@ -6,7 +6,7 @@ data class Context(
   val policyWrapKey: String? = null,
   val policyKey: String? = null,
   val operationKey: String? = null,
-  val contextData: Map<String, Any> = mapOf()
+  val contextData: MutableMap<String, Any> = mutableMapOf()
 ) {
   companion object {
     @JvmSynthetic
@@ -23,7 +23,7 @@ data class Context(
     var policyWrapKey: String? = null
     var policyKey: String? = null
     var operationKey: String? = null
-    var contextData: Map<String, Any> = mapOf()
+    var contextData: MutableMap<String, Any> = mutableMapOf()
 
     fun policyWrapKey(policyWrapKey: String): Builder {
       this.policyWrapKey = policyWrapKey
@@ -40,7 +40,7 @@ data class Context(
       return this
     }
 
-    fun contextData(contextData: Map<String, Any>): Builder {
+    fun contextData(contextData: MutableMap<String, Any>): Builder {
       this.contextData = contextData
       return this;
     }

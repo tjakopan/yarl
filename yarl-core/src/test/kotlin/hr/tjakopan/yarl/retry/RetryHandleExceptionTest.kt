@@ -211,7 +211,7 @@ class RetryHandleExceptionTest {
       .retry { _, _, ctx -> context = ctx }
 
     policy.raiseExceptions(
-      Context(contextData = mapOf("key1" to "value1", "key2" to "value2")),
+      Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2")),
       1
     ) { ArithmeticException() }
 
@@ -229,7 +229,7 @@ class RetryHandleExceptionTest {
       .retry { _, _, ctx -> context = ctx }
 
     policy.raiseExceptionsOnExecuteAndCapture(
-      Context(contextData = mapOf("key1" to "value1", "key2" to "value2")),
+      Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2")),
       1
     ) { ArithmeticException() }
 
@@ -261,11 +261,11 @@ class RetryHandleExceptionTest {
       .handle(ArithmeticException::class)
       .retry { _, _, context -> contextValue = context.contextData["key"].toString() }
 
-    policy.raiseExceptions(Context(contextData = mapOf("key" to "original_value")), 1) { ArithmeticException() }
+    policy.raiseExceptions(Context(contextData = mutableMapOf("key" to "original_value")), 1) { ArithmeticException() }
 
     assertThat(contextValue).isEqualTo("original_value")
 
-    policy.raiseExceptions(Context(contextData = mapOf("key" to "new_value")), 1) { ArithmeticException() }
+    policy.raiseExceptions(Context(contextData = mutableMapOf("key" to "new_value")), 1) { ArithmeticException() }
 
     assertThat(contextValue).isEqualTo("new_value")
   }
@@ -278,14 +278,14 @@ class RetryHandleExceptionTest {
       .retry { _, _, context -> contextValue = context.contextData["key"].toString() }
 
     policy.raiseExceptionsOnExecuteAndCapture(
-      Context(contextData = mapOf("key" to "original_value")),
+      Context(contextData = mutableMapOf("key" to "original_value")),
       1
     ) { ArithmeticException() }
 
     assertThat(contextValue).isEqualTo("original_value")
 
     policy.raiseExceptionsOnExecuteAndCapture(
-      Context(contextData = mapOf("key" to "new_value")),
+      Context(contextData = mutableMapOf("key" to "new_value")),
       1
     ) { ArithmeticException() }
 

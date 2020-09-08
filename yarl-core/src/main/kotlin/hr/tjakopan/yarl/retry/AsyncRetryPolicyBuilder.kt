@@ -56,6 +56,7 @@ class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBui
     return retryForever(doNothing)
   }
 
+  @JvmName("retryForever")
   fun retryForeverAsync(onRetry: (DelegateResult<R>, Int, Context) -> CompletableFuture<Unit>): AsyncRetryPolicy<R> {
     this.onRetry = { outcome, _, i, ctx -> onRetry(outcome, i, ctx).await() }
     return AsyncRetryPolicy(this)
@@ -97,6 +98,7 @@ class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBui
     return waitAndRetry(sleepDurations, doNothing)
   }
 
+  @JvmName("waitAndRetry")
   fun waitAndRetryAsync(
     retryCount: Int,
     sleepDurationProvider: (Int, DelegateResult<R>, Context) -> Duration,
@@ -109,6 +111,7 @@ class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBui
     return AsyncRetryPolicy(this)
   }
 
+  @JvmName("waitAndRetry")
   fun waitAndRetryAsync(
     sleepDurations: Iterable<Duration>,
     onRetry: (DelegateResult<R>, Duration, Int, Context) -> CompletableFuture<Unit>
@@ -133,6 +136,7 @@ class AsyncRetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, AsyncRetryPolicyBui
     return waitAndRetryForever(sleepDurationProvider, doNothing)
   }
 
+  @JvmName("waitAndRetryForever")
   fun waitAndRetryForeverAsync(
     sleepDurationProvider: (Int, DelegateResult<R>, Context) -> Duration,
     onRetry: (DelegateResult<R>, Duration, Int, Context) -> CompletableFuture<Unit>

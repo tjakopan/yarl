@@ -118,7 +118,7 @@ public class AsyncRetryForeverTest {
     final var retryExceptions = new ArrayList<Throwable>(3);
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .retryForeverAsync(fromConsumer3Async(outcome -> (i, c) -> outcome.onFailure(fromConsumer(retryExceptions::add))));
+      .retryForever(fromConsumer3Async(outcome -> (i, c) -> outcome.onFailure(fromConsumer(retryExceptions::add))));
 
     AsyncPolicyUtils.raiseExceptions(policy, 3, i -> new ArithmeticException("Exception #" + i))
       .join();
@@ -133,7 +133,7 @@ public class AsyncRetryForeverTest {
     final var context = new AtomicReference<Context>();
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .retryForeverAsync(fromConsumer3Async(d -> (i, ctx) -> context.set(ctx)));
+      .retryForever(fromConsumer3Async(d -> (i, ctx) -> context.set(ctx)));
 
     AsyncPolicyUtils.raiseExceptions(
       policy,
@@ -158,7 +158,7 @@ public class AsyncRetryForeverTest {
     final var retryCounts = new ArrayList<Integer>(3);
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .retryForeverAsync(fromConsumer3Async(d -> (retryCount, c) -> retryCounts.add(retryCount)));
+      .retryForever(fromConsumer3Async(d -> (retryCount, c) -> retryCounts.add(retryCount)));
 
     AsyncPolicyUtils.raiseExceptions(policy, 3, i -> new ArithmeticException())
       .join();
@@ -171,7 +171,7 @@ public class AsyncRetryForeverTest {
     final var capturedContext = new AtomicReference<Context>();
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .retryForeverAsync(fromConsumer3Async(r -> (i, ctx) -> capturedContext.set(ctx)));
+      .retryForever(fromConsumer3Async(r -> (i, ctx) -> capturedContext.set(ctx)));
 
     AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException())
       .join();
@@ -188,7 +188,7 @@ public class AsyncRetryForeverTest {
     final var contextValue = new AtomicReference<String>();
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .retryForeverAsync(fromConsumer3Async(r -> (i, ctx) -> contextValue.set(ctx.getContextData().get("key").toString())));
+      .retryForever(fromConsumer3Async(r -> (i, ctx) -> contextValue.set(ctx.getContextData().get("key").toString())));
 
     AsyncPolicyUtils.raiseExceptions(policy,
       Context.builder()
@@ -218,7 +218,7 @@ public class AsyncRetryForeverTest {
     final var retryCalled = new AtomicBoolean(false);
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .retryForeverAsync(fromConsumer3Async(r -> (i, c) -> retryCalled.set(true)));
+      .retryForever(fromConsumer3Async(r -> (i, c) -> retryCalled.set(true)));
 
     assertThatThrownBy(() -> AsyncPolicyUtils.raiseExceptions(policy, 1,
       i -> new IllegalArgumentException())
@@ -353,7 +353,7 @@ public class AsyncRetryForeverTest {
   public void shouldReportCancellationAfterFaultingActionExecutionAndCancelFurtherRetriesIfOnRetryInvokesCancellation() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .retryForeverAsync(fromConsumer3Async(r -> (i, c) -> {
+      .retryForever(fromConsumer3Async(r -> (i, c) -> {
         throw new CancellationException();
       }));
     final var attemptsInvoked = new AtomicInteger(0);

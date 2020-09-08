@@ -228,7 +228,7 @@ class RetryHandleResultTest {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry { _, _, context -> capturedContext = context }
-    val context = Context(contextData = mapOf("key1" to "value1", "key2" to "value2"))
+    val context = Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2"))
 
     val result = policy.raiseResults(context, TestResult.FAULT, TestResult.GOOD)
 
@@ -243,7 +243,7 @@ class RetryHandleResultTest {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry { _, _, context -> capturedContext = context }
-    val context = Context(contextData = mapOf("key1" to "value1", "key2" to "value2"))
+    val context = Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2"))
 
     val result = policy.raiseResultsOnExecuteAndCapture(context, TestResult.FAULT, TestResult.GOOD)
 
@@ -275,8 +275,8 @@ class RetryHandleResultTest {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry { _, _, context -> contextValue = context.contextData["key"].toString() }
-    val context1 = Context(contextData = mapOf("key" to "original_value"))
-    val context2 = Context(contextData = mapOf("key" to "new_value"))
+    val context1 = Context(contextData = mutableMapOf("key" to "original_value"))
+    val context2 = Context(contextData = mutableMapOf("key" to "new_value"))
 
     policy.raiseResults(context1, TestResult.FAULT, TestResult.GOOD)
 
@@ -293,8 +293,8 @@ class RetryHandleResultTest {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry { _, _, context -> contextValue = context.contextData["key"].toString() }
-    val context1 = Context(contextData = mapOf("key" to "original_value"))
-    val context2 = Context(contextData = mapOf("key" to "new_value"))
+    val context1 = Context(contextData = mutableMapOf("key" to "original_value"))
+    val context2 = Context(contextData = mutableMapOf("key" to "new_value"))
 
     policy.raiseResultsOnExecuteAndCapture(context1, TestResult.FAULT, TestResult.GOOD)
 

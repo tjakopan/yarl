@@ -18,7 +18,7 @@ interface IAsyncPolicy<R> {
   suspend fun execute(action: suspend () -> R): R = execute(Context()) { action() }
 
   @JvmSynthetic
-  suspend fun execute(contextData: Map<String, Any>, action: suspend (Context) -> R): R =
+  suspend fun execute(contextData: MutableMap<String, Any>, action: suspend (Context) -> R): R =
     execute(Context(contextData = contextData), action)
 
   @JvmSynthetic
@@ -28,7 +28,7 @@ interface IAsyncPolicy<R> {
   fun executeAsync(action: () -> CompletableFuture<R>): CompletableFuture<R> = executeAsync(Context()) { action() }
 
   @JvmDefault
-  fun executeAsync(contextData: Map<String, Any>, action: (Context) -> CompletableFuture<R>): CompletableFuture<R> =
+  fun executeAsync(contextData: MutableMap<String, Any>, action: (Context) -> CompletableFuture<R>): CompletableFuture<R> =
     executeAsync(Context(contextData = contextData)) { action(it) }
 
   @JvmDefault
@@ -40,7 +40,7 @@ interface IAsyncPolicy<R> {
     executeAsync(Context(), executor) { action() }
 
   @JvmDefault
-  fun executeAsync(contextData: Map<String, Any>, executor: Executor, action: (Context) -> CompletableFuture<R>):
+  fun executeAsync(contextData: MutableMap<String, Any>, executor: Executor, action: (Context) -> CompletableFuture<R>):
     CompletableFuture<R> =
     executeAsync(Context(contextData = contextData), executor) { action(it) }
 
@@ -57,7 +57,7 @@ interface IAsyncPolicy<R> {
   suspend fun executeAndCapture(action: suspend () -> R): PolicyResult<R> = executeAndCapture(Context()) { action() }
 
   @JvmSynthetic
-  suspend fun executeAndCapture(contextData: Map<String, Any>, action: suspend (Context) -> R): PolicyResult<R> =
+  suspend fun executeAndCapture(contextData: MutableMap<String, Any>, action: suspend (Context) -> R): PolicyResult<R> =
     executeAndCapture(Context(contextData = contextData)) { action(it) }
 
   @JvmSynthetic
@@ -69,7 +69,7 @@ interface IAsyncPolicy<R> {
 
   @JvmDefault
   fun executeAndCaptureAsync(
-    contextData: Map<String, Any>,
+    contextData: MutableMap<String, Any>,
     action: (Context) -> CompletableFuture<R>
   ): CompletableFuture<PolicyResult<R>> =
     executeAndCaptureAsync(Context(contextData = contextData)) { action(it) }
@@ -86,7 +86,7 @@ interface IAsyncPolicy<R> {
 
   @JvmDefault
   fun executeAndCaptureAsync(
-    contextData: Map<String, Any>,
+    contextData: MutableMap<String, Any>,
     executor: Executor,
     action: (Context) -> CompletableFuture<R>
   ): CompletableFuture<PolicyResult<R>> =

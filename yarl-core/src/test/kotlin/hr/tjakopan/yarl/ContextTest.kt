@@ -14,7 +14,7 @@ class ContextTest {
 
   @Test
   fun shouldAssignOperationKeyAndContextDataFromConstructor() {
-    val context = Context(operationKey = "SomeKey", contextData = mapOf("key1" to "value1", "key2" to "value2"))
+    val context = Context(operationKey = "SomeKey", contextData = mutableMapOf("key1" to "value1", "key2" to "value2"))
 
     assertThat(context.operationKey).isEqualTo("SomeKey")
     assertThat(context.contextData["key1"]).isEqualTo("value1")
