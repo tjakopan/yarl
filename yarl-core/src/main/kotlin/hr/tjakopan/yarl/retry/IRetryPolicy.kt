@@ -1,3 +1,5 @@
 package hr.tjakopan.yarl.retry
 
-interface IRetryPolicy
+import hr.tjakopan.yarl.IPolicy
+
+interface IRetryPolicy : IPolicy

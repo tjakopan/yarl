@@ -1,6 +1,6 @@
 package hr.tjakopan.yarl
 
-interface ISyncPolicy<R> {
+interface ISyncPolicy<R> : IPolicy {
   @JvmDefault
   fun execute(action: () -> R): R = execute(Context.NONE) { action() }
 

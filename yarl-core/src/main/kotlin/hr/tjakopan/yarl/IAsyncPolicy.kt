@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.ForkJoinPool
 
-interface IAsyncPolicy<R> {
+interface IAsyncPolicy<R> : IPolicy {
   companion object {
     @JvmSynthetic
     internal val DEFAULT_EXECUTOR: Executor = ForkJoinPool.commonPool()
