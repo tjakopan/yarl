@@ -30,11 +30,10 @@ import static org.assertj.core.api.Assertions.*;
 public class AsyncRetryHandleResultTest {
   @Test
   public void shouldThrowWhenRetryCountIsLessThanZero() {
-    final ThrowableAssert.ThrowingCallable shouldThrow = () -> {
+    final ThrowableAssert.ThrowingCallable shouldThrow = () ->
       AsyncRetryPolicy.<TestResult>builder()
         .handleResult(TestResult.FAULT)
         .retry(-1);
-    };
 
     assertThatThrownBy(shouldThrow)
       .isInstanceOf(IllegalArgumentException.class)

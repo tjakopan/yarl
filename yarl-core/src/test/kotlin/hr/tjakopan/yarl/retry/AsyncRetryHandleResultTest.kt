@@ -215,7 +215,7 @@ class AsyncRetryHandleResultTest {
     val result = policy.raiseResults(TestResult.GOOD)
 
     assertThat(result).isEqualTo(TestResult.GOOD)
-    assertThat(retryCalled).isFalse();
+    assertThat(retryCalled).isFalse()
   }
 
   @Test
