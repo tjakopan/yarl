@@ -13,15 +13,13 @@ internal object BulkheadEngine {
     onBulkheadRejected: (Context) -> Unit,
     maxParallelizationSemaphore: Semaphore,
     maxQueuedActionsSemaphore: Semaphore
-  ): R {
+  ): R = runBlocking {
     if (!maxQueuedActionsSemaphore.tryAcquire()) {
       onBulkheadRejected(context)
       throw BulkheadRejectedException()
     }
     try {
-      return runBlocking {
-        maxParallelizationSemaphore.withPermit { action(context) }
-      }
+      maxParallelizationSemaphore.withPermit { action(context) }
     } finally {
       maxQueuedActionsSemaphore.release()
     }

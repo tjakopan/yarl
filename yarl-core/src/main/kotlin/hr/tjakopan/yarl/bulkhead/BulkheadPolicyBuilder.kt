@@ -11,10 +11,10 @@ class BulkheadPolicyBuilder<R> : BulkheadPolicyBuilderBase<R, BulkheadPolicyBuil
   fun bulkhead(
     maxParallelization: Int,
     maxQueueingActions: Int = 0,
-    onBulkheadRejected: (Context) -> Unit = {_ ->}
+    onBulkheadRejected: (Context) -> Unit = { _ -> }
   ): BulkheadPolicy<R> {
-    if (maxParallelization <= 0) throw IllegalArgumentException("Max parallelization must be greater than zero.")
-    if (maxQueueingActions < 0) throw IllegalArgumentException("Max queueing actions must be greater than or equal to zero.")
+    require(maxParallelization > 0) { "Max parallelization must be greater than zero." }
+    require(maxQueueingActions >= 0) { "Max queueing actions must be greater than or equal to zero." }
     this.maxParallelization = maxParallelization
     this.maxQueueingActions = maxQueueingActions
     this.onBulkheadRejected = onBulkheadRejected
