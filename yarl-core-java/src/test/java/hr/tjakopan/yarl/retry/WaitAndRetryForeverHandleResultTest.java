@@ -10,7 +10,7 @@ import java.util.HashMap;
 import static hr.tjakopan.yarl.Functions.fromConsumer4;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class WaitAndRetryHandleResultTest {
+public class WaitAndRetryForeverHandleResultTest {
   @Test
   public void shouldBeAbleToCalculateRetryDurationsBasedOnTheHandledFault() {
     final var expectedRetryWaits = new HashMap<TestResult, Duration>() {{
@@ -21,8 +21,7 @@ public class WaitAndRetryHandleResultTest {
     final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .handleResult(TestResult.FAULT_AGAIN)
-      .waitAndRetry(2,
-        (i, outcome, c) -> outcome.fold(expectedRetryWaits::get, e -> Duration.ZERO),
+      .waitAndRetryForever((i, outcome, c) -> outcome.fold(expectedRetryWaits::get, e -> Duration.ZERO),
         fromConsumer4(d -> duration -> (i, c) -> actualRetryWaits.add(duration)));
 
     final var iterator = expectedRetryWaits.keySet().iterator();
