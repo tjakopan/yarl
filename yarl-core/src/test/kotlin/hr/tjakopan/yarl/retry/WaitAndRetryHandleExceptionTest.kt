@@ -137,7 +137,7 @@ class WaitAndRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentTimespan() {
+  fun shouldCallOnRetryOnEachRetryWithTheCurrentDuration() {
     val expectedRetryWaits = listOf(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3))
     val actualRetryWaits = mutableListOf<Duration>()
     val policy = Policy.retry<Unit>()

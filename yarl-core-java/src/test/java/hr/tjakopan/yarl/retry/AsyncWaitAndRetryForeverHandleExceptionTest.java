@@ -3,10 +3,8 @@ package hr.tjakopan.yarl.retry;
 import hr.tjakopan.yarl.Context;
 import hr.tjakopan.yarl.DelegateResult;
 import hr.tjakopan.yarl.test.helpers.AsyncPolicyUtils;
-import hr.tjakopan.yarl.test.helpers.TestResult;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
-import org.assertj.core.api.ThrowableAssert;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -22,104 +20,57 @@ import java.util.stream.Collectors;
 
 import static hr.tjakopan.yarl.Functions.fromConsumer;
 import static hr.tjakopan.yarl.Functions.fromConsumer4Async;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class AsyncWaitAndRetryHandleExceptionTest {
+public class AsyncWaitAndRetryForeverHandleExceptionTest {
   @Test
-  public void shouldThrowWhenSleepDurationsIsNull() {
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> {
-      //noinspection ConstantConditions
+  public void shouldThrowWhenSleepDurationProviderIsNull() {
+    //noinspection ConstantConditions
+    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
       AsyncRetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
-        .waitAndRetry(null, fromConsumer4Async(dr -> d -> (i, c) -> {
-        }));
-    })
-      .withMessageContaining("sleepDurations");
+        .waitAndRetryForever(null, fromConsumer4Async(r -> d -> (i, c) -> {
+        })))
+      .withMessageContaining("sleepDurationProvider");
   }
 
   @Test
   public void shouldThrowWhenOnRetryActionIsNull() {
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> {
-      //noinspection ConstantConditions
+    //noinspection ConstantConditions
+    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
       AsyncRetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
-        .waitAndRetry(List.of(), null);
-    })
+        .waitAndRetryForever((i, r, c) -> Duration.ZERO, null))
       .withMessageContaining("onRetry");
   }
 
   @Test
-  public void shouldNotThrowWhenSpecifiedExceptionThrownSameNumberOfTimesAsThereAreSleepDurations() {
+  public void shouldNotThrowRegardlessOfHowManyTimesTheSpecifiedExceptionIsRaised() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
 
     AsyncPolicyUtils.raiseExceptions(policy, 3, i -> new ArithmeticException())
       .join();
   }
 
   @Test
-  public void shouldNotThrowWhenOneOfTheSpecifiedExceptionsThrownSameNumberOfTimesAsThereAreSleepDurations() {
+  public void shouldNotThrowRegardlessOfHowManyTimesOneOfTheSpecifiedExceptionIsRaised() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
       .handle(IllegalArgumentException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
 
     AsyncPolicyUtils.raiseExceptions(policy, 3, i -> new IllegalArgumentException())
       .join();
   }
 
   @Test
-  public void shouldNotThrowWhenSpecifiedExceptionThrownLessNumberOfTimesThanThereAreSleepDurations() {
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
-
-    AsyncPolicyUtils.raiseExceptions(policy, 2, i -> new ArithmeticException())
-      .join();
-  }
-
-  @Test
-  public void shouldNotThrowWhenOneOfTheSpecifiedExceptionsThrownLessNumberOfTimesThanThereAreSleepDurations() {
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .handle(IllegalArgumentException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
-
-    AsyncPolicyUtils.raiseExceptions(policy, 2, i -> new IllegalArgumentException())
-      .join();
-  }
-
-  @Test
-  public void shouldThrowWhenSpecifiedExceptionThrownMoreTimesThanThereAreSleepDurations() {
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
-
-    assertThatExceptionOfType(CompletionException.class).isThrownBy(() ->
-      AsyncPolicyUtils.raiseExceptions(policy, 3 + 1, i -> new ArithmeticException())
-        .join())
-      .withCauseInstanceOf(ArithmeticException.class);
-  }
-
-  @Test
-  public void shouldThrowWhenOneOfTheSpecifiedExceptionsAreThrownMoreTimesThanThereAreSleepDurations() {
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .handle(IllegalArgumentException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
-
-    assertThatExceptionOfType(CompletionException.class).isThrownBy(() ->
-      AsyncPolicyUtils.raiseExceptions(policy, 3 + 1, i -> new IllegalArgumentException())
-        .join())
-      .withCauseInstanceOf(IllegalArgumentException.class);
-  }
-
-  @Test
   public void shouldThrowWhenExceptionThrownIsNotTheSpecifiedExceptionType() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of());
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
 
     assertThatExceptionOfType(CompletionException.class).isThrownBy(() ->
       AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new NullPointerException())
@@ -132,7 +83,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
       .handle(IllegalArgumentException.class)
-      .waitAndRetry(List.of());
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
 
     assertThatExceptionOfType(CompletionException.class).isThrownBy(() ->
       AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new NullPointerException())
@@ -144,7 +95,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   public void shouldThrowWhenSpecifiedExceptionPredicateIsNotSatisfied() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class, e -> false)
-      .waitAndRetry(List.of());
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
 
     assertThatExceptionOfType(CompletionException.class).isThrownBy(() ->
       AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException())
@@ -157,7 +108,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class, e -> false)
       .handle(IllegalArgumentException.class, e -> false)
-      .waitAndRetry(List.of());
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
 
     assertThatExceptionOfType(CompletionException.class).isThrownBy(() ->
       AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new IllegalArgumentException())
@@ -169,7 +120,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   public void shouldNotThrowWhenSpecifiedExceptionPredicateIsSatisfied() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class, e -> true)
-      .waitAndRetry(List.of(Duration.ofMillis(1)));
+      .waitAndRetryForever((i, r, c) -> Duration.ofMillis(1));
 
     AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException())
       .join();
@@ -180,25 +131,10 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class, e -> true)
       .handle(IllegalArgumentException.class, e -> true)
-      .waitAndRetry(List.of(Duration.ofMillis(1)));
+      .waitAndRetryForever((i, r, c) -> Duration.ofMillis(1));
 
     AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new IllegalArgumentException())
       .join();
-  }
-
-  @Test
-  public void shouldCallOnRetryOnEachRetryWithTheCurrentDuration() {
-    final var expectedRetryWaits = List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3));
-    final var actualRetryWaits = new ArrayList<>(3);
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)),
-        fromConsumer4Async(dr -> duration -> (i, c) -> actualRetryWaits.add(duration)));
-
-    AsyncPolicyUtils.raiseExceptions(policy, 3, i -> new ArithmeticException())
-      .join();
-
-    assertThat(actualRetryWaits).containsExactlyElementsOf(expectedRetryWaits);
   }
 
   @Test
@@ -207,7 +143,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     final var retryExceptions = new ArrayList<Throwable>(3);
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)),
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO,
         fromConsumer4Async(outcome -> d -> (i, c) -> outcome.onFailure(fromConsumer(retryExceptions::add))));
 
     AsyncPolicyUtils.raiseExceptions(policy, 3, i -> new ArithmeticException("Exception #" + i))
@@ -225,7 +161,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     final var retryCounts = new ArrayList<Integer>(3);
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)),
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO,
         fromConsumer4Async(dr -> d -> (retryCount, c) -> retryCounts.add(retryCount)));
 
     AsyncPolicyUtils.raiseExceptions(policy, 3, i -> new ArithmeticException())
@@ -239,7 +175,8 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     final var onRetryCalled = new AtomicBoolean(false);
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(), fromConsumer4Async(dr -> d -> (i, c) -> onRetryCalled.set(true)));
+      .waitAndRetryForever((i, r, c) -> Duration.ofMillis(1),
+        fromConsumer4Async(dr -> d -> (i, c) -> onRetryCalled.set(true)));
 
     assertThatExceptionOfType(CompletionException.class).isThrownBy(() ->
       AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new IllegalArgumentException())
@@ -249,65 +186,11 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   }
 
   @Test
-  public void shouldCreateNewStateForEachCallToPolicy() {
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1)));
-
-    AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException());
-    AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException());
-  }
-
-  @Test
-  public void shouldCallOnRetryWithThePassedContext() {
-    final var context = new AtomicReference<Context>();
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)),
-        fromConsumer4Async(r -> d -> (i, ctx) -> context.set(ctx)));
-
-    AsyncPolicyUtils.raiseExceptions(
-      policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key1", "value1");
-          put("key2", "value2");
-        }})
-        .build(),
-      1,
-      i -> new ArithmeticException()
-    )
-      .join();
-
-    assertThat(context.get()).isNotNull();
-    assertThat(context.get().getContextData()).containsKeys("key1", "key2")
-      .containsValues("value1", "value2");
-  }
-
-  @Test
-  public void contextShouldBeEmptyIfExecuteNotCalledWithContext() {
-    final var capturedContext = new AtomicReference<Context>();
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)),
-        fromConsumer4Async(r -> d -> (i, ctx) -> capturedContext.set(ctx)));
-
-    AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException())
-      .join();
-
-    assertThat(capturedContext.get()).isNotNull();
-    assertThat(capturedContext.get().getPolicyWrapKey()).isNull();
-    assertThat(capturedContext.get().getPolicyKey()).isNotNull();
-    assertThat(capturedContext.get().getOperationKey()).isNull();
-    assertThat(capturedContext.get().getContextData()).isEmpty();
-  }
-
-  @Test
   public void shouldCreateNewContextForEachCallToExecute() {
     final var contextValue = new AtomicReference<String>();
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1)),
+      .waitAndRetryForever((i, r, c) -> Duration.ofMillis(1),
         fromConsumer4Async(r -> d -> (i, ctx) -> contextValue.set(ctx.getContextData().get("key").toString())));
 
     AsyncPolicyUtils.raiseExceptions(policy,
@@ -334,75 +217,19 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   }
 
   @Test
-  public void shouldThrowWhenRetryCountIsLessThanZero() {
-    final ThrowableAssert.ThrowingCallable shouldThrow = () -> AsyncRetryPolicy.<TestResult>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(-1, (i, dr, c) -> Duration.ZERO, fromConsumer4Async(dr -> d -> (i, c) -> {
-      }));
-
-    assertThatThrownBy(shouldThrow)
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("Retry count");
-  }
-
-  @Test
-  public void shouldThrowWhenSleepDurationProviderIsNull() {
-    //noinspection ConstantConditions
-    final ThrowableAssert.ThrowingCallable shouldThrow = () -> AsyncRetryPolicy.<TestResult>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(1, null, fromConsumer4Async(dr -> d -> (i, c) -> {
-      }));
-
-    assertThatThrownBy(shouldThrow)
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("sleepDurationProvider");
-  }
-
-  @Test
-  public void shouldThrowWhenOnRetryActionIsNullWhenUsingProviderOverload() {
-    final ThrowableAssert.ThrowingCallable shouldThrow = () -> {
-      //noinspection ConstantConditions
-      AsyncRetryPolicy.<TestResult>builder()
-        .handle(ArithmeticException.class)
-        .waitAndRetry(1, (i, dr, c) -> Duration.ZERO, null);
-    };
-
-    assertThatThrownBy(shouldThrow)
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessageContaining("onRetry");
-  }
-
-  @Test
   public void shouldCalculateRetryDurationsFromCurrentRetryAttemptAndDurationProvider() {
     final var expectedRetryWaits = List.of(Duration.ofMillis(2), Duration.ofMillis(4), Duration.ofMillis(8),
       Duration.ofMillis(16), Duration.ofMillis(32));
     final var actualRetryWaits = new ArrayList<Duration>(5);
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(5, (retryAttempt, dr, c) -> Duration.ofMillis((long) Math.pow(2.0, retryAttempt)),
+      .waitAndRetryForever((retryAttempt, dr, c) -> Duration.ofMillis((long) Math.pow(2.0, retryAttempt)),
         fromConsumer4Async(dr -> duration -> (i, c) -> actualRetryWaits.add(duration)));
 
     AsyncPolicyUtils.raiseExceptions(policy, 5, i -> new ArithmeticException())
       .join();
 
     assertThat(actualRetryWaits).containsExactlyElementsOf(expectedRetryWaits);
-  }
-
-  @Test
-  public void shouldBeAbleToPassHandledExceptionToSleepDurationProvider() {
-    final var capturedExceptionInstance = new AtomicReference<Throwable>();
-    final var exceptionInstance = new ArithmeticException();
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(5, (i, outcome, c) -> {
-        outcome.onFailure(fromConsumer(capturedExceptionInstance::set));
-        return Duration.ZERO;
-      });
-
-    AsyncPolicyUtils.raiseExceptions(policy, 1, i -> exceptionInstance)
-      .join();
-
-    assertThat(capturedExceptionInstance.get()).isSameAs(exceptionInstance);
   }
 
   @Test
@@ -413,8 +240,8 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     //noinspection SuspiciousMethodCalls
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(RuntimeException.class)
-      .waitAndRetry(2,
-        (Integer i, DelegateResult<Void> outcome, Context c) -> outcome.fold(v -> Duration.ZERO, expectedRetryWaits::get),
+      .waitAndRetryForever((Integer i, DelegateResult<Void> outcome, Context c) ->
+          outcome.fold(v -> Duration.ZERO, expectedRetryWaits::get),
         fromConsumer4Async(dr -> duration -> (i, c) -> actualRetryWaits.add(duration)));
 
     final var iterator = expectedRetryWaits.keySet().iterator();
@@ -434,8 +261,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     final var defaultRetryAfter = Duration.ofMillis(30);
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(1,
-        (Integer i, DelegateResult<Void> dr, Context context) -> {
+      .waitAndRetryForever((Integer i, DelegateResult<Void> dr, Context context) -> {
           if (context.getContextData().containsKey("RetryAfter")) {
             return (Duration) context.getContextData().get("RetryAfter");
           } else {
@@ -463,30 +289,13 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   }
 
   @Test
-  public void shouldNotCallOnRetryWhenRetryCountIsZero() {
-    final var retryInvoked = new AtomicBoolean(false);
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(0,
-        (i, dr, c) -> Duration.ofMillis(1),
-        fromConsumer4Async(dr -> d -> (i, c) -> retryInvoked.set(true)));
-
-    assertThatExceptionOfType(CompletionException.class).isThrownBy(() ->
-      AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException())
-        .join())
-      .withCauseInstanceOf(ArithmeticException.class);
-    assertThat(retryInvoked.get()).isFalse();
-  }
-
-  @Test
   public void shouldWaitAsynchronouslyForAsyncOnRetryDelegate() {
     final var duration = Duration.ofMillis(200);
     final var executeDelegateInvocations = new AtomicInteger(0);
     final var executeDelegateInvocationsWhenOnRetryExits = new AtomicInteger(0);
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(1,
-        (i, dr, c) -> Duration.ZERO,
+      .waitAndRetryForever((i, dr, c) -> Duration.ZERO,
         (r, d, i, c) -> {
           final var executor = CompletableFuture.delayedExecutor(duration.toMillis(), TimeUnit.MILLISECONDS);
           return CompletableFuture
@@ -494,14 +303,15 @@ public class AsyncWaitAndRetryHandleExceptionTest {
             .thenApplyAsync(v -> Unit.INSTANCE);
         });
 
-    assertThatThrownBy(() ->
-      policy.executeAsync(() -> {
-        executeDelegateInvocations.incrementAndGet();
+    policy.executeAsync(() -> {
+      executeDelegateInvocations.incrementAndGet();
+      if (executeDelegateInvocations.get() == 1) {
         throw new ArithmeticException();
-      })
-        .join())
-      .isInstanceOf(CompletionException.class)
-      .hasCauseInstanceOf(ArithmeticException.class);
+      }
+      return CompletableFuture.completedFuture(null);
+    })
+      .join();
+
     assertThat(executeDelegateInvocationsWhenOnRetryExits.get()).isEqualTo(1);
     assertThat(executeDelegateInvocations.get()).isEqualTo(2);
   }
@@ -510,7 +320,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   public void shouldExecuteActionWhenNonFaultingAndNotCancelled() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
     final var attemptsInvoked = new AtomicInteger(0);
     final Function0<CompletableFuture<Void>> action = () -> {
       attemptsInvoked.incrementAndGet();
@@ -524,29 +334,10 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   }
 
   @Test
-  public void shouldExecuteAllTriesWhenFaultingAndNotCancelled() {
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
-    final var attemptsInvoked = new AtomicInteger(0);
-    final Function0<CompletableFuture<Void>> action = () -> {
-      attemptsInvoked.incrementAndGet();
-      return CompletableFuture.completedFuture(null);
-    };
-
-    assertThatThrownBy(() ->
-      AsyncPolicyUtils.raiseExceptions(policy, 1 + 3, action, i -> new ArithmeticException())
-        .join())
-      .isInstanceOf(CompletionException.class)
-      .hasCauseInstanceOf(ArithmeticException.class);
-    assertThat(attemptsInvoked.get()).isEqualTo(1 + 3);
-  }
-
-  @Test
   public void shouldNotExecuteActionWhenCancelledBeforeExecute() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
     final var attemptsInvoked = new AtomicInteger(0);
     final Executor executor = CompletableFuture.delayedExecutor(200, TimeUnit.MILLISECONDS);
     final CompletableFuture<Void> dummyFuture = CompletableFuture.runAsync(() -> {
@@ -569,7 +360,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   public void shouldReportCancellationDuringOtherwiseNonFaultingActionExecutionAndCancelFurtherRetries() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
     final var attemptsInvoked = new AtomicInteger(0);
     final Function0<CompletableFuture<Void>> action = () -> {
       attemptsInvoked.incrementAndGet();
@@ -587,7 +378,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   public void shouldReportCancellationDuringFaultingInitialActionExecutionAndCancelFurtherRetries() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
     final var attemptsInvoked = new AtomicInteger(0);
     final Function0<CompletableFuture<Void>> action = () -> {
       attemptsInvoked.incrementAndGet();
@@ -605,7 +396,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   public void shouldReportCancellationDuringFaultingRetriedActionExecutionAndCancelFurtherRetries() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
     final var attemptsInvoked = new AtomicInteger(0);
     final Function0<CompletableFuture<Void>> action = () -> {
       attemptsInvoked.incrementAndGet();
@@ -620,28 +411,10 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   }
 
   @Test
-  public void shouldReportCancellationDuringFaultingLastRetryExecution() {
-    final var policy = AsyncRetryPolicy.<Void>builder()
-      .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
-    final var attemptsInvoked = new AtomicInteger(0);
-    final Function0<CompletableFuture<Void>> action = () -> {
-      attemptsInvoked.incrementAndGet();
-      return CompletableFuture.completedFuture(null);
-    };
-
-    assertThatExceptionOfType(CancellationException.class).isThrownBy(() ->
-      AsyncPolicyUtils.raiseExceptionsAndOrCancellation(policy, 1 + 3, 1 + 3,
-        action, i -> new ArithmeticException())
-        .join());
-    assertThat(attemptsInvoked.get()).isEqualTo(1 + 3);
-  }
-
-  @Test
   public void shouldReportCancellationAfterFaultingActionExecutionAndCancelFurtherRetriesIfOnRetryInvokesCancellation() {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)),
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO,
         fromConsumer4Async(r -> d -> (i, c) -> {
           throw new CancellationException();
         }));
@@ -661,7 +434,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   public void shouldExecuteFunctionReturningValueWhenNotCancelled() {
     final var policy = AsyncRetryPolicy.<Boolean>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
     final var attemptsInvoked = new AtomicInteger(0);
     final Function0<CompletableFuture<Void>> action = () -> {
       attemptsInvoked.incrementAndGet();
@@ -680,7 +453,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
   public void shouldHonourAndReportCancellationDuringFunctionExecution() {
     final var policy = AsyncRetryPolicy.<Boolean>builder()
       .handle(ArithmeticException.class)
-      .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)));
+      .waitAndRetryForever((i, r, c) -> Duration.ZERO);
     final var attemptsInvoked = new AtomicInteger(0);
     final Function0<CompletableFuture<Void>> action = () -> {
       attemptsInvoked.incrementAndGet();

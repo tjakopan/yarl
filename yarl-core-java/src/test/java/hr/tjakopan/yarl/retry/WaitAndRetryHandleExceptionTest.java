@@ -160,7 +160,7 @@ public class WaitAndRetryHandleExceptionTest {
   }
 
   @Test
-  public void shouldCallOnRetryOnEachRetryWithTheCurrentTimespan() {
+  public void shouldCallOnRetryOnEachRetryWithTheCurrentDuration() {
     final var expectedRetryWaits = List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3));
     final var actualRetryWaits = new ArrayList<Duration>(3);
     final var policy = RetryPolicy.<Void>builder()
