@@ -43,7 +43,7 @@ public class AsyncRetryHandleExceptionTest {
     };
 
     assertThatThrownBy(shouldThrow)
-      .isInstanceOf(IllegalArgumentException.class)
+      .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("onRetry");
   }
 

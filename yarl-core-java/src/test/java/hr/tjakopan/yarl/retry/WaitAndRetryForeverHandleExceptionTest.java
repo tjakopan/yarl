@@ -21,7 +21,7 @@ public class WaitAndRetryForeverHandleExceptionTest {
   @Test
   public void shouldThrowWhenSleepDurationsIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+    assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
       RetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
         .waitAndRetryForever(null,
@@ -33,7 +33,7 @@ public class WaitAndRetryForeverHandleExceptionTest {
   @Test
   public void shouldThrowWhenOnRetryActionIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+    assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
       RetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
         .waitAndRetryForever((i, r, c) -> Duration.ZERO, null))

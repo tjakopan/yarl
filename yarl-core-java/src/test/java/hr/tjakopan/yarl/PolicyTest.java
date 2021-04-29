@@ -120,7 +120,7 @@ public class PolicyTest {
   @Test
   public void executingThePolicyFunctionShouldThrowWhenContextDataIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class)
+    assertThatExceptionOfType(NullPointerException.class)
       .isThrownBy(() -> RetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
@@ -131,7 +131,7 @@ public class PolicyTest {
   @Test
   public void executingThePolicyFunctionShouldThrowWhenContextIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class)
+    assertThatExceptionOfType(NullPointerException.class)
       .isThrownBy(() -> RetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
@@ -142,7 +142,7 @@ public class PolicyTest {
   @Test
   public void executingAndCapturingThePolicyFunctionShouldThrowWhenContextDataIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class)
+    assertThatExceptionOfType(NullPointerException.class)
       .isThrownBy(() -> RetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
@@ -153,7 +153,7 @@ public class PolicyTest {
   @Test
   public void executingAndCapturingThePolicyFunctionShouldThrowWhenContextIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class)
+    assertThatExceptionOfType(NullPointerException.class)
       .isThrownBy(() -> RetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()

@@ -33,7 +33,7 @@ public class RetryHandleExceptionTest {
       RetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
         .retry(null))
-      .isInstanceOf(IllegalArgumentException.class)
+      .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("onRetry");
   }
 

@@ -128,7 +128,7 @@ public class PolicyAsyncTest {
   @Test
   public void executingThePolicyFunctionShouldThrowWhenContextDataIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class)
+    assertThatExceptionOfType(NullPointerException.class)
       .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
@@ -139,7 +139,7 @@ public class PolicyAsyncTest {
   @Test
   public void executingThePolicyFunctionShouldThrowWhenContextIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class)
+    assertThatExceptionOfType(NullPointerException.class)
       .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
@@ -150,7 +150,7 @@ public class PolicyAsyncTest {
   @Test
   public void executingAndCapturingThePolicyFunctionShouldThrowWhenContextDataIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class)
+    assertThatExceptionOfType(NullPointerException.class)
       .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
@@ -161,7 +161,7 @@ public class PolicyAsyncTest {
   @Test
   public void executingAndCapturingThePolicyFunctionShouldThrowWhenContextIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class)
+    assertThatExceptionOfType(NullPointerException.class)
       .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()

@@ -27,7 +27,7 @@ public class AsyncWaitAndRetryForeverHandleExceptionTest {
   @Test
   public void shouldThrowWhenSleepDurationProviderIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+    assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
       AsyncRetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
         .waitAndRetryForever(null, fromConsumer4Async(r -> d -> (i, c) -> {
@@ -38,7 +38,7 @@ public class AsyncWaitAndRetryForeverHandleExceptionTest {
   @Test
   public void shouldThrowWhenOnRetryActionIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+    assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
       AsyncRetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
         .waitAndRetryForever((i, r, c) -> Duration.ZERO, null))

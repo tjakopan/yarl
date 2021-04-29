@@ -36,7 +36,7 @@ public class RetryHandleResultTest {
       RetryPolicy.<TestResult>builder()
         .handleResult(TestResult.FAULT)
         .retry(null))
-      .isInstanceOf(IllegalArgumentException.class)
+      .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("onRetry");
   }
 

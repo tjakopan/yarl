@@ -22,7 +22,7 @@ public class RetryForeverTest {
       RetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
         .retryForever(null))
-      .isInstanceOf(IllegalArgumentException.class)
+      .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("onRetry");
   }
 

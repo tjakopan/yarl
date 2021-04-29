@@ -22,7 +22,7 @@ public class WaitAndRetryHandleExceptionTest {
   @Test
   public void shouldThrowWhenSleepDurationsIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+    assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
       RetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
         .waitAndRetry(null))
@@ -32,7 +32,7 @@ public class WaitAndRetryHandleExceptionTest {
   @Test
   public void shouldThrowWhenOnRetryActionIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+    assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
       RetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
         .waitAndRetry(List.of(), null))
@@ -294,7 +294,7 @@ public class WaitAndRetryHandleExceptionTest {
   @Test
   public void shouldThrowWhenSleepDurationProviderIsNull() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+    assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
       RetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
         .waitAndRetry(1, null, fromConsumer4(r -> d -> (i, c) -> {
@@ -305,7 +305,7 @@ public class WaitAndRetryHandleExceptionTest {
   @Test
   public void shouldThrowWhenOnRetryActionIsNullWhenUsingProviderOverload() {
     //noinspection ConstantConditions
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+    assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
       RetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
         .waitAndRetry(1, (i, r, c) -> Duration.ZERO, null))

@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.*;
 public class AsyncWaitAndRetryHandleExceptionTest {
   @Test
   public void shouldThrowWhenSleepDurationsIsNull() {
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> {
+    assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> {
       //noinspection ConstantConditions
       AsyncRetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
@@ -39,7 +39,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
 
   @Test
   public void shouldThrowWhenOnRetryActionIsNull() {
-    assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> {
+    assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> {
       //noinspection ConstantConditions
       AsyncRetryPolicy.<Void>builder()
         .handle(ArithmeticException.class)
@@ -354,7 +354,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
       }));
 
     assertThatThrownBy(shouldThrow)
-      .isInstanceOf(IllegalArgumentException.class)
+      .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("sleepDurationProvider");
   }
 
@@ -368,7 +368,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     };
 
     assertThatThrownBy(shouldThrow)
-      .isInstanceOf(IllegalArgumentException.class)
+      .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("onRetry");
   }
 
