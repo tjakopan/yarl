@@ -7,6 +7,11 @@ import kotlin.math.min
 
 class BulkheadPolicy<R> internal constructor(policyBuilder: BulkheadPolicyBuilder<R>) :
   Policy<R, BulkheadPolicyBuilder<R>>(policyBuilder), IBulkheadPolicy {
+  companion object BulkheadPolicy {
+    @JvmStatic
+    fun <R> builder(): BulkheadPolicyBuilder<R> = BulkheadPolicyBuilder()
+  }
+
   private val maxParallelizationSemaphore: Semaphore =
     BulkheadSemaphoreFactory.createMaxParallelizationSemaphore(policyBuilder.maxParallelization)
   private val maxQueuedActionsSemaphore: Semaphore = BulkheadSemaphoreFactory.createMaxQueuedActionsSemaphore(
