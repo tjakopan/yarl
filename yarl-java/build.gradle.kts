@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-  implementation(project(":yarl-core"))
+  api(project(":yarl-core"))
 
   testImplementation("junit:junit:4.13.1")
   testImplementation("org.assertj:assertj-core:3.19.0")

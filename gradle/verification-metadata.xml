@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<verification-metadata xmlns="https://schema.gradle.org/dependency-verification" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://schema.gradle.org/dependency-verification https://schema.gradle.org/dependency-verification/dependency-verification-1.0.xsd">
+   <configuration>
+      <verify-metadata>false</verify-metadata>
+      <verify-signatures>true</verify-signatures>
+      <trusted-keys>
+         <trusted-key id="475f3b8e59e6e63aa78067482c7b12f2a511e325" group="ch.qos.logback"/>
+         <trusted-key id="6f538074ccebf35f28af9b066a0975f8b1127b83" group="org.jetbrains.kotlin"/>
+         <trusted-key id="8756c4f765c9ac3cb6b85d62379ce192d401ab61" group="^org[.]jetbrains($|([.].*))" regex="true"/>
+         <trusted-key id="e7dc75fc24fb3c8dfe8086ad3d5839a2262cbbfb" group="org.jetbrains.kotlinx"/>
+         <trusted-key id="fa7929f83ad44c4590f6cc6815c71c0a4e0b8edd" group="net.java.dev.jna"/>
+      </trusted-keys>
+   </configuration>
+   <components>
+      <component group="com.github.gundy" name="semver4j" version="0.16.4">
+         <artifact name="semver4j-0.16.4.jar">
+            <pgp value="55e770230e69cc6de143fb5b62c82e50836eb3ee"/>
+         </artifact>
+      </component>
+      <component group="com.google.code.gson" name="gson" version="2.8.6">
+         <artifact name="gson-2.8.6.jar">
+            <pgp value="afcc4c7594d09e2182c60e0f7a01b0f236e5430f"/>
+         </artifact>
+      </component>
+      <component group="de.undercouch" name="gradle-download-task" version="4.0.2">
+         <artifact name="gradle-download-task-4.0.2.jar">
+            <pgp value="1fa37fbe4453c1073e7ef61d6449005f96bc97a3"/>
+         </artifact>
+      </component>
+      <component group="junit" name="junit" version="4.12">
+         <artifact name="junit-4.12.jar">
+            <pgp value="d4c89ea4aaf455fd88b22087efe8086f9e93774e"/>
+         </artifact>
+      </component>
+      <component group="junit" name="junit" version="4.13.1">
+         <artifact name="junit-4.13.1.jar">
+            <pgp value="ff6e2c001948c5f2f38b0cc385911f425ec61b51"/>
+         </artifact>
+      </component>
+      <component group="org.antlr" name="antlr4-runtime" version="4.5.2-1">
+         <artifact name="antlr4-runtime-4.5.2-1.jar">
+            <pgp value="d54a395b5cf3f86eb45f6e426b1b008864323b92"/>
+         </artifact>
+      </component>
+      <component group="org.assertj" name="assertj-core" version="3.19.0">
+         <artifact name="assertj-core-3.19.0.jar">
+            <pgp value="77993d3295698c46912e83984b2277c6358670ee"/>
+         </artifact>
+      </component>
+      <component group="org.hamcrest" name="hamcrest-core" version="1.3">
+         <artifact name="hamcrest-core-1.3.jar">
+            <pgp value="4db1a49729b053caf015cee9a6adfc93ef34893e"/>
+         </artifact>
+      </component>
+      <component group="org.jetbrains" name="annotations" version="13.0">
+         <artifact name="annotations-13.0.jar">
+            <pgp value="2e3a1affe42b5f53af19f780bcf4173966770193"/>
+         </artifact>
+      </component>
+      <component group="org.slf4j" name="slf4j-api" version="1.7.25">
+         <artifact name="slf4j-api-1.7.25.jar">
+            <pgp value="475f3b8e59e6e63aa78067482c7b12f2a511e325"/>
+         </artifact>
+      </component>
+   </components>
+</verification-metadata>
