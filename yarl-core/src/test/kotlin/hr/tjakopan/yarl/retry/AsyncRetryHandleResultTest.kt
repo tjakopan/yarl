@@ -282,7 +282,11 @@ class AsyncRetryHandleResultTest {
       .handleResult(TestResult.FAULT)
       .retry { _, _, ctx -> contextValue = ctx.contextData["key"].toString() }
 
-    policy.raiseResults(Context(contextData = mutableMapOf("key" to "original_value")), TestResult.FAULT, TestResult.GOOD)
+    policy.raiseResults(
+      Context(contextData = mutableMapOf("key" to "original_value")),
+      TestResult.FAULT,
+      TestResult.GOOD
+    )
 
     assertThat(contextValue).isEqualTo("original_value")
 
