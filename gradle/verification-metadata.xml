@@ -10,6 +10,11 @@
          <trusted-key id="e7dc75fc24fb3c8dfe8086ad3d5839a2262cbbfb" group="org.jetbrains.kotlinx"/>
          <trusted-key id="fa7929f83ad44c4590f6cc6815c71c0a4e0b8edd" group="net.java.dev.jna"/>
       </trusted-keys>
+     <trusted-artifacts>
+       <trust file=".*-javadoc[.]jar" regex="true"/>
+       <trust file=".*-sources[.]jar" regex="true"/>
+       <trust file="gradle-7.0-src.zip"/>
+     </trusted-artifacts>
    </configuration>
    <components>
       <component group="com.github.gundy" name="semver4j" version="0.16.4">
