@@ -7,7 +7,7 @@ import java.time.Duration
 @JvmSuppressWildcards
 class RetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, RetryPolicyBuilder<R>>() {
   @JvmSynthetic
-  internal var onRetry: (DelegateResult<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> Unit }
+  internal var onRetry: (DelegateResult<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> }
 
   fun retry(retryCount: Int, onRetry: (DelegateResult<R>, Int, Context) -> Unit): RetryPolicy<R> {
     if (retryCount < 0) throw IllegalArgumentException("Retry count must be greater than or equal to zero.")
@@ -17,7 +17,7 @@ class RetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, RetryPolicyBuilder<R>>()
   }
 
   fun retry(retryCount: Int): RetryPolicy<R> {
-    val doNothing: (DelegateResult<R>, Int, Context) -> Unit = { _, _, _ -> Unit }
+    val doNothing: (DelegateResult<R>, Int, Context) -> Unit = { _, _, _ -> }
     return retry(retryCount, doNothing)
   }
 
@@ -31,7 +31,7 @@ class RetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, RetryPolicyBuilder<R>>()
   }
 
   fun retryForever(): RetryPolicy<R> {
-    val doNothing: (DelegateResult<R>, Int, Context) -> Unit = { _, _, _ -> Unit }
+    val doNothing: (DelegateResult<R>, Int, Context) -> Unit = { _, _, _ -> }
     return retryForever(doNothing)
   }
 
@@ -47,8 +47,11 @@ class RetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, RetryPolicyBuilder<R>>()
     return RetryPolicy(this)
   }
 
-  fun waitAndRetry(retryCount: Int, sleepDurationProvider: (Int, DelegateResult<R>, Context) -> Duration): RetryPolicy<R> {
-    val doNothing: (DelegateResult<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> Unit }
+  fun waitAndRetry(
+    retryCount: Int,
+    sleepDurationProvider: (Int, DelegateResult<R>, Context) -> Duration
+  ): RetryPolicy<R> {
+    val doNothing: (DelegateResult<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> }
     return waitAndRetry(retryCount, sleepDurationProvider, doNothing)
   }
 
@@ -62,7 +65,7 @@ class RetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, RetryPolicyBuilder<R>>()
   }
 
   fun waitAndRetry(sleepDurations: Iterable<Duration>): RetryPolicy<R> {
-    val doNothing: (DelegateResult<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> Unit }
+    val doNothing: (DelegateResult<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> }
     return waitAndRetry(sleepDurations, doNothing)
   }
 
@@ -76,7 +79,7 @@ class RetryPolicyBuilder<R> : RetryPolicyBuilderBase<R, RetryPolicyBuilder<R>>()
   }
 
   fun waitAndRetryForever(sleepDurationProvider: (Int, DelegateResult<R>, Context) -> Duration): RetryPolicy<R> {
-    val doNothing: (DelegateResult<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> Unit }
+    val doNothing: (DelegateResult<R>, Duration, Int, Context) -> Unit = { _, _, _, _ -> }
     return waitAndRetryForever(sleepDurationProvider, doNothing)
   }
 

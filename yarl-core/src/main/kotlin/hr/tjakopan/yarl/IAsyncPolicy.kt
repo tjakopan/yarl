@@ -28,7 +28,10 @@ interface IAsyncPolicy<R> : IPolicy {
   fun executeAsync(action: () -> CompletableFuture<R>): CompletableFuture<R> = executeAsync(Context()) { action() }
 
   @JvmDefault
-  fun executeAsync(contextData: MutableMap<String, Any>, action: (Context) -> CompletableFuture<R>): CompletableFuture<R> =
+  fun executeAsync(
+    contextData: MutableMap<String, Any>,
+    action: (Context) -> CompletableFuture<R>
+  ): CompletableFuture<R> =
     executeAsync(Context(contextData = contextData)) { action(it) }
 
   @JvmDefault
