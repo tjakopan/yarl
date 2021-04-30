@@ -68,7 +68,7 @@
       <dependency>
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
-        <version>3.15.0</version>
+        <version>3.19.0</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -109,9 +109,6 @@
             <jvmTarget>${maven.compiler.release}</jvmTarget>
             <args>
               <arg>-Xjvm-default=enable</arg>
-<!--              <arg>-Xinline-classes</arg>-->
-<!--              <arg>-Xopt-in=kotlin.time.ExperimentalTime</arg>-->
-<!--              <arg>-Xallow-result-return-type</arg>-->
             </args>
           </configuration>
         </plugin>
