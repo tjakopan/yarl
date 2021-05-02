@@ -2,22 +2,24 @@ package hr.tjakopan.yarl
 
 import java.util.*
 
-data class Context(
+data class Context internal constructor(
   val policyWrapKey: String? = null,
   val policyKey: String? = null,
   val operationKey: String? = null,
-  val contextData: MutableMap<String, Any> = mutableMapOf()
+  val contextData: MutableMap<String, Any> = mutableMapOf(),
+  private val _correlationId: Lazy<UUID>
 ) {
-  companion object {
-    @JvmSynthetic
-    internal val NONE = Context()
-      @JvmSynthetic get
+  constructor(
+    policyWrapKey: String? = null,
+    policyKey: String? = null,
+    operationKey: String? = null,
+    contextData: MutableMap<String, Any> = mutableMapOf()
+  ) : this(policyWrapKey, policyKey, operationKey, contextData, lazy { UUID.randomUUID() })
 
-    @JvmStatic
-    fun builder(): Builder = Builder()
-  }
+  constructor() : this(null, null, null)
 
-  val correlationId: UUID by lazy { UUID.randomUUID() }
+  val correlationId: UUID
+    get() = _correlationId.value
 
   class Builder {
     var policyWrapKey: String? = null
@@ -46,5 +48,14 @@ data class Context(
     }
 
     fun build(): Context = Context(policyWrapKey, policyKey, operationKey, contextData)
+  }
+
+  companion object {
+    @JvmSynthetic
+    internal val NONE = Context()
+      @JvmSynthetic get
+
+    @JvmStatic
+    fun builder(): Builder = Builder()
   }
 }

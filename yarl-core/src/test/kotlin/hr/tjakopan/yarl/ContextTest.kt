@@ -53,4 +53,15 @@ class ContextTest {
 
     assertThat(uuid1).isSameAs(uuid2)
   }
+
+  @Test
+  fun shouldReturnConsistentCorrelationIdForCopiedContext() {
+    val context1 = Context(operationKey = "SomeKey1")
+    val context2 = context1.copy(operationKey = "SomeKey2")
+
+    val uuid1 = context1.correlationId
+    val uuid2 = context2.correlationId
+
+    assertThat(uuid1).isSameAs(uuid2)
+  }
 }
