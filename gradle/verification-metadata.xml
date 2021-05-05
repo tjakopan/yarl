@@ -27,8 +27,8 @@
             <pgp value="afcc4c7594d09e2182c60e0f7a01b0f236e5430f"/>
          </artifact>
       </component>
-      <component group="de.undercouch" name="gradle-download-task" version="4.0.2">
-         <artifact name="gradle-download-task-4.0.2.jar">
+      <component group="de.undercouch" name="gradle-download-task" version="4.1.1">
+         <artifact name="gradle-download-task-4.1.1.jar">
             <pgp value="1fa37fbe4453c1073e7ef61d6449005f96bc97a3"/>
          </artifact>
       </component>

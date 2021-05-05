@@ -7,7 +7,6 @@ interface IWrapPolicy : IPolicy {
   val outer: IPolicy
   val inner: IPolicy
 
-  @JvmDefault
   fun getPolicies(): Iterable<IPolicy> {
     val policies = mutableListOf<IPolicy>()
     for (childPolicy in listOf(outer, inner)) {
@@ -22,7 +21,6 @@ interface IWrapPolicy : IPolicy {
     return policies
   }
 
-  @JvmDefault
   fun <P : IPolicy> getPolicies(policyClass: Class<P>): Iterable<P> =
     getPolicies().filterIsInstance(policyClass)
 
@@ -30,7 +28,6 @@ interface IWrapPolicy : IPolicy {
   fun <P : IPolicy> getPolicies(policyClass: KClass<P>): Iterable<P> =
     getPolicies().filterIsInstance(policyClass.java)
 
-  @JvmDefault
   fun <P : IPolicy> getPolicies(policyClass: Class<P>, filter: (P) -> Boolean): Iterable<P> =
     getPolicies().filterIsInstance(policyClass)
       .filter(filter)
@@ -40,7 +37,6 @@ interface IWrapPolicy : IPolicy {
     getPolicies().filterIsInstance(policyClass.java)
       .filter(filter)
 
-  @JvmDefault
   fun <P : IPolicy> getPolicy(policyClass: Class<P>): P? =
     getPolicies().filterIsInstance(policyClass)
       .firstOrNull()
@@ -50,7 +46,6 @@ interface IWrapPolicy : IPolicy {
     getPolicies().filterIsInstance(policyClass.java)
       .firstOrNull()
 
-  @JvmDefault
   fun <P : IPolicy> getPolicy(policyClass: Class<P>, filter: (P) -> Boolean): P? =
     getPolicies().filterIsInstance(policyClass)
       .firstOrNull(filter)
