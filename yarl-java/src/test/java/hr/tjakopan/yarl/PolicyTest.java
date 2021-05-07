@@ -164,9 +164,7 @@ public class PolicyTest {
   @Test
   public void executingThePolicyFunctionShouldPassContextToExecutedDelegate() {
     final var operationKey = "SomeKey";
-    final var executionContext = Context.builder()
-      .operationKey(operationKey)
-      .build();
+    final var executionContext = Context.of(operationKey);
     final var capturedContext = new AtomicReference<Context>();
 
     new NoOpPolicy<>()
@@ -181,9 +179,7 @@ public class PolicyTest {
   @Test
   public void executingAndCapturingThePolicyFunctionShouldPassContextToExecutedDelegate() {
     final var operationKey = "SomeKey";
-    final var executionContext = Context.builder()
-      .operationKey(operationKey)
-      .build();
+    final var executionContext = Context.of(operationKey);
     final var capturedContext = new AtomicReference<Context>();
 
     new NoOpPolicy<>()
@@ -198,9 +194,7 @@ public class PolicyTest {
   @Test
   public void executingAndCapturingThePolicyFunctionShouldPassContextToPolicyResult() {
     final var operationKey = "SomeKey";
-    final var executionContext = Context.builder()
-      .operationKey(operationKey)
-      .build();
+    final var executionContext = Context.of(operationKey);
 
     final var result = new NoOpPolicy<>()
       .executeAndCapture(executionContext, context -> null);

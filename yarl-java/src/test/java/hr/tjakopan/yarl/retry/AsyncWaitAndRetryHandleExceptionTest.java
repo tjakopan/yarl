@@ -268,24 +268,22 @@ public class AsyncWaitAndRetryHandleExceptionTest {
 
     AsyncPolicyUtils.raiseExceptions(
       policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key1", "value1");
-          put("key2", "value2");
-        }})
-        .build(),
+      Context.of(new HashMap<>() {{
+        put("key1", "value1");
+        put("key2", "value2");
+      }}),
       1,
       i -> new ArithmeticException()
     )
       .join();
 
     assertThat(context.get()).isNotNull();
-    assertThat(context.get().getContextData()).containsKeys("key1", "key2")
+    assertThat(context.get()).containsKeys("key1", "key2")
       .containsValues("value1", "value2");
   }
 
   @Test
-  public void contextShouldBeEmptyIfExecuteNotCalledWithContext() {
+  public void contextShouldBeEmptyIfExecuteNotCalledWithAnyData() {
     final var capturedContext = new AtomicReference<Context>();
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
@@ -295,26 +293,22 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     AsyncPolicyUtils.raiseExceptions(policy, 1, i -> new ArithmeticException())
       .join();
 
-    assertThat(capturedContext.get()).isNotNull();
-    assertThat(capturedContext.get().getPolicyWrapKey()).isNull();
-    assertThat(capturedContext.get().getPolicyKey()).isNotNull();
-    assertThat(capturedContext.get().getOperationKey()).isNull();
-    assertThat(capturedContext.get().getContextData()).isEmpty();
+    assertThat(capturedContext.get()).isEmpty();
   }
 
   @Test
   public void shouldCreateNewContextForEachCallToExecute() {
     final var contextValue = new AtomicReference<String>();
+    //noinspection ConstantConditions
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
       .waitAndRetry(List.of(Duration.ofMillis(1)),
-        fromConsumer4Async(r -> d -> (i, ctx) -> contextValue.set(ctx.getContextData().get("key").toString())));
+        fromConsumer4Async(r -> d -> (i, ctx) -> contextValue.set(ctx.get("key").toString())));
 
     AsyncPolicyUtils.raiseExceptions(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "original_value");
-        }}).build(),
+      Context.of(new HashMap<>() {{
+        put("key", "original_value");
+      }}),
       1,
       i -> new ArithmeticException())
       .join();
@@ -322,10 +316,9 @@ public class AsyncWaitAndRetryHandleExceptionTest {
     assertThat(contextValue.get()).isEqualTo("original_value");
 
     AsyncPolicyUtils.raiseExceptions(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "new_value");
-        }}).build(),
+      Context.of(new HashMap<>() {{
+        put("key", "new_value");
+      }}),
       1,
       i -> new ArithmeticException())
       .join();
@@ -436,8 +429,8 @@ public class AsyncWaitAndRetryHandleExceptionTest {
       .handle(ArithmeticException.class)
       .waitAndRetry(1,
         (Integer i, DelegateResult<Void> dr, Context context) -> {
-          if (context.getContextData().containsKey("RetryAfter")) {
-            return (Duration) context.getContextData().get("RetryAfter");
+          if (context.containsKey("RetryAfter")) {
+            return (Duration) context.get("RetryAfter");
           } else {
             return defaultRetryAfter;
           }
@@ -450,7 +443,7 @@ public class AsyncWaitAndRetryHandleExceptionTest {
         put("RetryAfter", defaultRetryAfter);
       }},
       (Context context) -> {
-        context.getContextData().put("RetryAfter", expectedRetryDuration);
+        context.put("RetryAfter", expectedRetryDuration);
         if (!failedOnce.get()) {
           failedOnce.set(true);
           throw new ArithmeticException();

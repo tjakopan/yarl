@@ -8,7 +8,7 @@ import kotlin.test.Test
 
 class WaitAndRetryForeverHandleResultTest {
   @Test
-  fun shouldBeAbleToCalculateRetryDurationsBasedOnTheHandledFault() {
+  fun `should be able to calculate retry durations based on the handled fault`() {
     val expectedRetryWaits =
       mapOf(TestResult.FAULT to Duration.ofMillis(2), TestResult.FAULT_AGAIN to Duration.ofMillis(4))
     val actualRetryWaits = mutableListOf<Duration>()

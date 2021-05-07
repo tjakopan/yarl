@@ -1,5 +1,8 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.annotations.Immutable
+
+@Immutable
 sealed class DelegateResult<out R> {
   companion object {
     @JvmStatic
@@ -48,11 +51,13 @@ sealed class DelegateResult<out R> {
     }
   }
 
+  @Immutable
   class Success<out R> internal constructor(val value: R) : DelegateResult<R>() {
     override val isSuccess: Boolean = true
     override val isFailure: Boolean = false
   }
 
+  @Immutable
   class Failure internal constructor(val exception: Throwable) : DelegateResult<Nothing>() {
     override val isSuccess = false
     override val isFailure = true

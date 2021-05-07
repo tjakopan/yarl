@@ -1,5 +1,8 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.annotations.Immutable
+
+@Immutable
 sealed class PolicyResult<out R>(val context: Context) {
   companion object {
     @JvmStatic
@@ -59,6 +62,7 @@ sealed class PolicyResult<out R>(val context: Context) {
     return this
   }
 
+  @Immutable
   class Success<out R> internal constructor(val result: R, context: Context) : PolicyResult<R>(context) {
     override val isSuccess: Boolean = true
     override val isFailure: Boolean = false
@@ -66,10 +70,12 @@ sealed class PolicyResult<out R>(val context: Context) {
     override val isFailureWithResult: Boolean = false
   }
 
+  @Immutable
   sealed class Failure<out R>(val faultType: FaultType, context: Context) : PolicyResult<R>(context) {
     override val isSuccess: Boolean = false
     override val isFailure: Boolean = true
 
+    @Immutable
     class FailureWithException internal constructor(
       val finalException: Throwable,
       val exceptionType: ExceptionType,
@@ -85,6 +91,7 @@ sealed class PolicyResult<out R>(val context: Context) {
       override val isFailureWithResult: Boolean = false
     }
 
+    @Immutable
     class FailureWithResult<out R> internal constructor(val finalHandledResult: R, context: Context) :
       Failure<R>(FaultType.RESULT_HANDLED_BY_THIS_POLICY, context) {
       override val isFailureWithException: Boolean = false

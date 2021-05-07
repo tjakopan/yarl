@@ -233,15 +233,13 @@ public class WaitAndRetryHandleExceptionTest {
     final var policy = RetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
       .waitAndRetry(List.of(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)),
-        fromConsumer4(r -> d -> (i, context) -> contextData.set(context.getContextData())));
+        fromConsumer4(r -> d -> (i, context) -> contextData.set(context)));
 
     PolicyUtils.raiseExceptions(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key1", "value1");
-          put("key2", "value2");
-        }})
-        .build(),
+      Context.of(new HashMap<>() {{
+        put("key1", "value1");
+        put("key2", "value2");
+      }}),
       1,
       i -> new ArithmeticException());
 
@@ -252,28 +250,25 @@ public class WaitAndRetryHandleExceptionTest {
   @Test
   public void shouldCreateNewContextForEachCallToExecute() {
     final var contextValue = new AtomicReference<String>();
+    //noinspection ConstantConditions
     final var policy = RetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
       .waitAndRetry(List.of(Duration.ofMillis(1)),
-        fromConsumer4(r -> d -> (i, context) -> contextValue.set(context.getContextData().get("key").toString())));
+        fromConsumer4(r -> d -> (i, context) -> contextValue.set(context.get("key").toString())));
 
     PolicyUtils.raiseExceptions(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "original_value");
-        }})
-        .build(),
+      Context.of(new HashMap<>() {{
+        put("key", "original_value");
+      }}),
       1,
       i -> new ArithmeticException());
 
     assertThat(contextValue.get()).isEqualTo("original_value");
 
     PolicyUtils.raiseExceptions(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "new_value");
-        }})
-        .build(),
+      Context.of(new HashMap<>() {{
+        put("key", "new_value");
+      }}),
       1,
       i -> new ArithmeticException());
 
@@ -379,8 +374,8 @@ public class WaitAndRetryHandleExceptionTest {
     final var policy = RetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
       .waitAndRetry(1,
-        (i, r, context) -> context.getContextData().containsKey("RetryAfter")
-          ? (Duration) context.getContextData().get("RetryAfter")
+        (i, r, context) -> context.containsKey("RetryAfter")
+          ? (Duration) context.get("RetryAfter")
           : defaultRetryAfter,
         fromConsumer4(r -> duration -> (i, c) -> actualRetryDuration.set(duration)));
 
@@ -389,7 +384,7 @@ public class WaitAndRetryHandleExceptionTest {
                      put("RetryAfter", defaultRetryAfter);
                    }},
       (Context context) -> {
-        context.getContextData().put("RetryAfter", expectedRetryDuration);
+        context.put("RetryAfter", expectedRetryDuration);
         if (!failedOnce.get()) {
           failedOnce.set(true);
           throw new ArithmeticException();

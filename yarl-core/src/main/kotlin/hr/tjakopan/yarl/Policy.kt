@@ -5,8 +5,13 @@ abstract class Policy<R, out B : PolicyBuilder<R, B>> protected constructor(poli
   companion object Policy
 
   override fun execute(context: Context, action: (Context) -> R): R {
-    val executionContext: Context = context.copy(policyKey = policyKey)
-    return implementation(executionContext, action)
+    val priorPolicyKey = context.policyKey
+    context.policyKey = policyKey
+    try {
+      return implementation(context, action)
+    } finally {
+      context.policyKey = priorPolicyKey
+    }
   }
 
   override fun executeAndCapture(context: Context, action: (Context) -> R): PolicyResult<R> {

@@ -19,7 +19,7 @@ class PolicyAsyncTest {
 
   //<editor-fold desc="execute tests">
   @Test
-  fun executingThePolicyFunctionShouldExecuteTheSpecifiedFunctionAndReturnTheResult() = runBlockingTest {
+  fun `executing the policy function should execute the specified function and return the result`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry()
@@ -32,7 +32,7 @@ class PolicyAsyncTest {
 
   //<editor-fold desc="executeAndCapture tests">
   @Test
-  fun executingThePolicyFunctionSuccessfullyShouldReturnSuccessResult() = runBlockingTest {
+  fun `executing the policy function successfully should return success result`() = runBlockingTest {
     val result = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry()
@@ -43,7 +43,7 @@ class PolicyAsyncTest {
   }
 
   @Test
-  fun executingThePolicyFunctionAndFailingWithAHandledExceptionTypeShouldReturnFailureResultIndicatingThatExceptionTypeIsOneHandledByThisPolicy() =
+  fun `executing the policy function and failing with a handled exception type should return failure result indicating that exception type is one handled by this policy`() =
     runBlockingTest {
       val handledException = ArithmeticException()
 
@@ -62,7 +62,7 @@ class PolicyAsyncTest {
     }
 
   @Test
-  fun executingThePolicyFunctionAndFailingWithAnUnhandledExceptionTypeShouldReturnFailureResultIndicatingThatExceptionTypeIsUnhandledByThisPolicy() =
+  fun `executing the policy function and failing with an unhandled exception type should return failure result indicating that exception type is unhandled by this policy`() =
     runBlockingTest {
       val unhandledException = Exception()
 
@@ -81,7 +81,7 @@ class PolicyAsyncTest {
     }
 
   @Test
-  fun executingThePolicyFunctionAndFailingWithAHandledResultShouldReturnFailureResultIndicatingThatResultIsOneHandledByThisPolicy() =
+  fun `executing the policy function and failing with a handled result should return failure result indicating that result is one handled by this policy`() =
     runBlockingTest {
       val handledResult = TestResult.FAULT
 
@@ -99,7 +99,7 @@ class PolicyAsyncTest {
     }
 
   @Test
-  fun executingThePolicyFunctionAndReturningAnUnhandledResultShouldReturnResultNotIndicatingAnyFailure() =
+  fun `executing the policy function and returning an unhandled result should return result not indicating any failure`() =
     runBlockingTest {
       val handledResult = TestResult.FAULT
       val unhandledResult = TestResult.GOOD
@@ -117,9 +117,9 @@ class PolicyAsyncTest {
 
   //<editor-fold desc="context tests">
   @Test
-  fun executingThePolicyFunctionShouldPassContextToExecutedDelegate() = runBlockingTest {
+  fun `executing the policy function should pass context to executed delegate`() = runBlockingTest {
     val operationKey = "SomeKey"
-    val executionContext = Context(operationKey = operationKey)
+    val executionContext = Context(operationKey)
     var capturedContext: Context? = null
 
     Policy.asyncNoOp<Unit>()
@@ -129,9 +129,9 @@ class PolicyAsyncTest {
   }
 
   @Test
-  fun executingAndCapturingThePolicyFunctionShouldPassContextToExecutedDelegate() = runBlockingTest {
+  fun `executing and capturing the policy function should pass context to executed delegate`() = runBlockingTest {
     val operationKey = "SomeKey"
-    val executionContext = Context(operationKey = operationKey)
+    val executionContext = Context(operationKey)
     var capturedContext: Context? = null
 
     Policy.asyncNoOp<Unit>()
@@ -141,9 +141,9 @@ class PolicyAsyncTest {
   }
 
   @Test
-  fun executingAndCapturingThePolicyFunctionShouldPassContextToPolicyResult() = runBlockingTest {
+  fun `executing and capturing the policy function should pass context to policy result`() = runBlockingTest {
     val operationKey = "SomeKey";
-    val executionContext = Context(operationKey = operationKey)
+    val executionContext = Context(operationKey)
 
     val result = Policy.asyncNoOp<Unit>()
       .executeAndCapture(executionContext) { _ -> }

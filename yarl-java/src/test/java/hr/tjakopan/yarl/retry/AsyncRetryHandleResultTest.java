@@ -271,12 +271,10 @@ public class AsyncRetryHandleResultTest {
 
     final var result = AsyncPolicyUtils.raiseResults(
       policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key1", "value1");
-          put("key2", "value2");
-        }})
-        .build(),
+      Context.of(new HashMap<>() {{
+        put("key1", "value1");
+        put("key2", "value2");
+      }}),
       TestResult.FAULT,
       TestResult.GOOD
     )
@@ -284,7 +282,7 @@ public class AsyncRetryHandleResultTest {
 
     assertThat(result).isEqualTo(TestResult.GOOD);
     assertThat(context.get()).isNotNull();
-    assertThat(context.get().getContextData()).containsKeys("key1", "key2")
+    assertThat(context.get()).containsKeys("key1", "key2")
       .containsValues("value1", "value2");
   }
 
@@ -297,12 +295,10 @@ public class AsyncRetryHandleResultTest {
 
     final var result = AsyncPolicyUtils.raiseResultsOnExecuteAndCapture(
       policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key1", "value1");
-          put("key2", "value2");
-        }})
-        .build(),
+      Context.of(new HashMap<>() {{
+        put("key1", "value1");
+        put("key2", "value2");
+      }}),
       TestResult.FAULT,
       TestResult.GOOD
     )
@@ -312,12 +308,12 @@ public class AsyncRetryHandleResultTest {
     //noinspection rawtypes
     assertThat(((PolicyResult.Success) result).getResult()).isEqualTo(TestResult.GOOD);
     assertThat(context.get()).isNotNull();
-    assertThat(context.get().getContextData()).containsKeys("key1", "key2")
+    assertThat(context.get()).containsKeys("key1", "key2")
       .containsValues("value1", "value2");
   }
 
   @Test
-  public void contextShouldBeEmptyIfExecuteNotCalledWithContext() {
+  public void contextShouldBeEmptyIfExecuteNotCalledWithAnyData() {
     final var capturedContext = new AtomicReference<Context>();
     final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
@@ -326,25 +322,21 @@ public class AsyncRetryHandleResultTest {
     AsyncPolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD)
       .join();
 
-    assertThat(capturedContext.get()).isNotNull();
-    assertThat(capturedContext.get().getPolicyWrapKey()).isNull();
-    assertThat(capturedContext.get().getPolicyKey()).isNotNull();
-    assertThat(capturedContext.get().getOperationKey()).isNull();
-    assertThat(capturedContext.get().getContextData()).isEmpty();
+    assertThat(capturedContext.get()).isEmpty();
   }
 
   @Test
   public void shouldCreateNewContextForEachCallToExecute() {
     final var contextValue = new AtomicReference<String>();
+    //noinspection ConstantConditions
     final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
-      .retry(fromConsumer3Async(r -> (i, ctx) -> contextValue.set(ctx.getContextData().get("key").toString())));
+      .retry(fromConsumer3Async(r -> (i, ctx) -> contextValue.set(ctx.get("key").toString())));
 
     AsyncPolicyUtils.raiseResults(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "original_value");
-        }}).build(),
+      Context.of(new HashMap<>() {{
+        put("key", "original_value");
+      }}),
       TestResult.FAULT,
       TestResult.GOOD)
       .join();
@@ -352,10 +344,9 @@ public class AsyncRetryHandleResultTest {
     assertThat(contextValue.get()).isEqualTo("original_value");
 
     AsyncPolicyUtils.raiseResults(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "new_value");
-        }}).build(),
+      Context.of(new HashMap<>() {{
+        put("key", "new_value");
+      }}),
       TestResult.FAULT,
       TestResult.GOOD)
       .join();
@@ -366,15 +357,15 @@ public class AsyncRetryHandleResultTest {
   @Test
   public void shouldCreateNewContextForEachCallToExecuteAndCapture() {
     final var contextValue = new AtomicReference<String>();
+    //noinspection ConstantConditions
     final var policy = AsyncRetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
-      .retry(fromConsumer3Async(r -> (i, ctx) -> contextValue.set(ctx.getContextData().get("key").toString())));
+      .retry(fromConsumer3Async(r -> (i, ctx) -> contextValue.set(ctx.get("key").toString())));
 
     AsyncPolicyUtils.raiseResultsOnExecuteAndCapture(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "original_value");
-        }}).build(),
+      Context.of(new HashMap<>() {{
+        put("key", "original_value");
+      }}),
       TestResult.FAULT,
       TestResult.GOOD)
       .join();
@@ -382,10 +373,9 @@ public class AsyncRetryHandleResultTest {
     assertThat(contextValue.get()).isEqualTo("original_value");
 
     AsyncPolicyUtils.raiseResultsOnExecuteAndCapture(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "new_value");
-        }}).build(),
+      Context.of(new HashMap<>() {{
+        put("key", "new_value");
+      }}),
       TestResult.FAULT,
       TestResult.GOOD)
       .join();

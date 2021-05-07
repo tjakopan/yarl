@@ -9,7 +9,7 @@ import kotlin.test.assertFailsWith
 
 class RetryForeverTest {
   @Test
-  fun shouldNotThrowRegardlessOfHowManyTimesTheSpecifiedExceptionIsRaised() {
+  fun `should not throw regardless of how many times the specified exception is raised`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .retryForever()
@@ -18,7 +18,7 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldNotThrowRegardlessOfHowManyTimesOneOfTheSpecifiedExceptionIsRaised() {
+  fun `should not throw regardless of how many times one of the specified exception is raised`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .handle(IllegalArgumentException::class)
@@ -28,7 +28,7 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldThrowWhenExceptionThrownIsNotTheSpecifiedExceptionType() {
+  fun `should throw when exception thrown is not the specified exception type`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .retryForever()
@@ -39,7 +39,7 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldThrowWhenExceptionThrownIsNotOneOfTheSpecifiedExceptionTypes() {
+  fun `should throw when exception thrown is not one of the specified exception types`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .handle(IllegalArgumentException::class)
@@ -51,7 +51,7 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldThrowWhenSpecifiedExceptionPredicateIsNotSatisfied() {
+  fun `should throw when specified exception predicate is not satisfied`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class) { false }
       .retryForever()
@@ -62,7 +62,7 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldThrowWhenNoneOfTheSpecifiedExceptionPredicatesAreSatisfied() {
+  fun `should throw when none of the specified exception predicates are satisfied`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class) { false }
       .handle(IllegalArgumentException::class) { false }
@@ -74,7 +74,7 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldNotThrowWhenSpecifiedExceptionPredicateIsSatisfied() {
+  fun `should not throw when specified exception predicate is satisfied`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class) { true }
       .retryForever()
@@ -83,7 +83,7 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldNotThrowWhenOneOfTheSpecifiedExceptionPredicatesAreSatisfied() {
+  fun `should not throw when one of the specified exception predicates are satisfied`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class) { true }
       .handle(IllegalArgumentException::class) { true }
@@ -93,7 +93,7 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentException() {
+  fun `should call on retry on each retry with the current exception`() {
     val expectedExceptions = listOf("Exception #1", "Exception #2", "Exception #3")
     val retryExceptions = mutableListOf<Throwable>()
     val policy = Policy.retry<Unit>()
@@ -108,25 +108,25 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldCallOnRetryWithThePassedContext() {
+  fun `should call on retry with the passed context`() {
     var context: Context? = null
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .retryForever { _, _, ctx -> context = ctx }
 
     policy.raiseExceptions(
-      Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2")),
+      Context(mapOf("key1" to "value1", "key2" to "value2")),
       1
     ) { ArithmeticException() }
 
     @Suppress("UsePropertyAccessSyntax")
     assertThat(context).isNotNull()
-    assertThat(context?.contextData).containsKeys("key1", "key2")
+    assertThat(context).containsKeys("key1", "key2")
       .containsValues("value1", "value2")
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentRetryCount() {
+  fun `should call on retry on each retry with the current retry count`() {
     val expectedRetryCounts = listOf(1, 2, 3)
     val retryCounts = mutableListOf<Int>()
     val policy = Policy.retry<Unit>()
@@ -139,7 +139,7 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldNotCallOnRetryWhenNoRetriesArePerformed() {
+  fun `should not call on retry when no retries are performed`() {
     var retryCount = 0
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
@@ -152,17 +152,17 @@ class RetryForeverTest {
   }
 
   @Test
-  fun shouldCreateNewContextForEachCallToExecute() {
+  fun `should create new context for each call to execute`() {
     var contextValue: String? = null
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
-      .retryForever { _, _, context -> contextValue = context.contextData["key"].toString() }
+      .retryForever { _, _, context -> contextValue = context["key"].toString() }
 
-    policy.raiseExceptions(Context(contextData = mutableMapOf("key" to "original_value")), 1) { ArithmeticException() }
+    policy.raiseExceptions(Context(mapOf("key" to "original_value")), 1) { ArithmeticException() }
 
     assertThat(contextValue).isEqualTo("original_value")
 
-    policy.raiseExceptions(Context(contextData = mutableMapOf("key" to "new_value")), 1) { ArithmeticException() }
+    policy.raiseExceptions(Context(mapOf("key" to "new_value")), 1) { ArithmeticException() }
 
     assertThat(contextValue).isEqualTo("new_value")
   }

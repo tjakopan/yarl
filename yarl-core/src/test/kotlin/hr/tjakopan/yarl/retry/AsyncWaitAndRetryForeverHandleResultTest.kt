@@ -11,7 +11,7 @@ import kotlin.test.Test
 @ExperimentalCoroutinesApi
 class AsyncWaitAndRetryForeverHandleResultTest {
   @Test
-  fun shouldBeAbleToCalculateRetryDurationsBasedOnTheHandledFault() = runBlockingTest {
+  fun `should be able to calculate retry durations based on the handled fault`() = runBlockingTest {
     val expectedRetryWaits =
       mapOf(TestResult.FAULT to Duration.ofSeconds(2), TestResult.FAULT_AGAIN to Duration.ofSeconds(4))
     val actualRetryWaits = mutableListOf<Duration>()

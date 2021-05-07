@@ -234,17 +234,15 @@ public class RetryHandleResultTest {
     final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry(fromConsumer3(r -> (i, context) -> capturedContext.set(context)));
-    final var context = Context.builder()
-      .contextData(new HashMap<>() {{
-        put("key1", "value1");
-        put("key2", "value2");
-      }})
-      .build();
+    final var context = Context.of(new HashMap<>() {{
+      put("key1", "value1");
+      put("key2", "value2");
+    }});
 
     final var result = PolicyUtils.raiseResults(policy, context, TestResult.FAULT, TestResult.GOOD);
 
     assertThat(result).isEqualTo(TestResult.GOOD);
-    assertThat(capturedContext.get().getContextData()).containsKeys("key1", "key2")
+    assertThat(capturedContext.get()).containsKeys("key1", "key2")
       .containsValues("value1", "value2");
   }
 
@@ -254,24 +252,22 @@ public class RetryHandleResultTest {
     final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
       .retry(fromConsumer3(r -> (i, context) -> capturedContext.set(context)));
-    final var context = Context.builder()
-      .contextData(new HashMap<>() {{
-        put("key1", "value1");
-        put("key2", "value2");
-      }})
-      .build();
+    final var context = Context.of(new HashMap<>() {{
+      put("key1", "value1");
+      put("key2", "value2");
+    }});
 
     final var result = PolicyUtils.raiseResultsOnExecuteAndCapture(policy, context, TestResult.FAULT, TestResult.GOOD);
 
     assertThat(result.isSuccess()).isTrue();
     //noinspection rawtypes
     assertThat(((PolicyResult.Success) result).getResult()).isEqualTo(TestResult.GOOD);
-    assertThat(capturedContext.get().getContextData()).containsKeys("key1", "key2")
+    assertThat(capturedContext.get()).containsKeys("key1", "key2")
       .containsValues("value1", "value2");
   }
 
   @Test
-  public void contextShouldBeEmptyIfExecuteNotCalledWithContext() {
+  public void contextShouldBeEmptyIfExecuteNotCalledWithAnyData() {
     final var capturedContext = new AtomicReference<Context>();
     final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
@@ -279,29 +275,22 @@ public class RetryHandleResultTest {
 
     PolicyUtils.raiseResults(policy, TestResult.FAULT, TestResult.GOOD);
 
-    assertThat(capturedContext.get()).isNotNull();
-    assertThat(capturedContext.get().getPolicyWrapKey()).isNull();
-    assertThat(capturedContext.get().getPolicyKey()).isNotNull();
-    assertThat(capturedContext.get().getOperationKey()).isNull();
-    assertThat(capturedContext.get().getContextData()).isEmpty();
+    assertThat(capturedContext.get()).isEmpty();
   }
 
   @Test
   public void shouldCreateNewContextForEachCallToExecute() {
     final var contextValue = new AtomicReference<String>();
+    //noinspection ConstantConditions
     final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
-      .retry(fromConsumer3(r -> (i, context) -> contextValue.set(context.getContextData().get("key").toString())));
-    var context1 = Context.builder()
-      .contextData(new HashMap<>() {{
-        put("key", "original_value");
-      }})
-      .build();
-    var context2 = Context.builder()
-      .contextData(new HashMap<>() {{
-        put("key", "new_value");
-      }})
-      .build();
+      .retry(fromConsumer3(r -> (i, context) -> contextValue.set(context.get("key").toString())));
+    var context1 = Context.of(new HashMap<>() {{
+      put("key", "original_value");
+    }});
+    var context2 = Context.of(new HashMap<>() {{
+      put("key", "new_value");
+    }});
 
     PolicyUtils.raiseResults(policy, context1, TestResult.FAULT, TestResult.GOOD);
 
@@ -315,19 +304,16 @@ public class RetryHandleResultTest {
   @Test
   public void shouldCreateNewContextForEachCallToExecuteAndCapture() {
     final var contextValue = new AtomicReference<String>();
+    //noinspection ConstantConditions
     final var policy = RetryPolicy.<TestResult>builder()
       .handleResult(TestResult.FAULT)
-      .retry(fromConsumer3(r -> (i, context) -> contextValue.set(context.getContextData().get("key").toString())));
-    var context1 = Context.builder()
-      .contextData(new HashMap<>() {{
-        put("key", "original_value");
-      }})
-      .build();
-    var context2 = Context.builder()
-      .contextData(new HashMap<>() {{
-        put("key", "new_value");
-      }})
-      .build();
+      .retry(fromConsumer3(r -> (i, context) -> contextValue.set(context.get("key").toString())));
+    var context1 = Context.of(new HashMap<>() {{
+      put("key", "original_value");
+    }});
+    var context2 = Context.of(new HashMap<>() {{
+      put("key", "new_value");
+    }});
 
     PolicyUtils.raiseResultsOnExecuteAndCapture(policy, context1, TestResult.FAULT, TestResult.GOOD);
 

@@ -9,7 +9,7 @@ import kotlin.test.fail
 class PolicyTest {
   //<editor-fold desc="execute tests">
   @Test
-  fun executingThePolicyFunctionShouldExecuteTheSpecifiedFunctionAndReturnTheResult() {
+  fun `executing the policy function should execute the specified function and return the result`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry()
@@ -22,7 +22,7 @@ class PolicyTest {
 
   //<editor-fold desc="executeAndCapture tests">
   @Test
-  fun executingThePolicyFunctionSuccessfullyShouldReturnSuccessResult() {
+  fun `executing the policy function successfully should return success result`() {
     val result = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry()
@@ -33,7 +33,7 @@ class PolicyTest {
   }
 
   @Test
-  fun executingThePolicyFunctionAndFailingWithAHandledExceptionTypeShouldReturnFailureResultIndicatingThatExceptionTypeIsOneHandledByThisPolicy() {
+  fun `executing the policy function and failing with a handled exception type should return failure result indicating that exception type is one handled by this policy`() {
     val handledException = ArithmeticException()
 
     val result = Policy.retry<Unit>()
@@ -51,7 +51,7 @@ class PolicyTest {
   }
 
   @Test
-  fun executingThePolicyFunctionAndFailingWithAnUnhandledExceptionTypeShouldReturnFailureResultIndicatingThatExceptionTypeIsUnhandledByThisPolicy() {
+  fun `executing the policy function and failing with an unhandled exception type should return failure result indicating that exception type is unhandled by this policy`() {
     val unhandledException = Exception()
 
     val result = Policy.retry<Unit>()
@@ -69,7 +69,7 @@ class PolicyTest {
   }
 
   @Test
-  fun executingThePolicyFunctionAndFailingWithAHandledResultShouldReturnFailureResultIndicatingThatResultIsOneHandledByThisPolicy() {
+  fun `executing the policy function and failing with a handled result should return failure result indicating that result is one handled by this policy`() {
     val handledResult = TestResult.FAULT
 
     val result = Policy.retry<TestResult>()
@@ -86,7 +86,7 @@ class PolicyTest {
   }
 
   @Test
-  fun executingThePolicyFunctionAndReturningAnUnhandledResultShouldReturnResultNotIndicatingAnyFailure() {
+  fun `executing the policy function and returning an unhandled result should return result not indicating any failure`() {
     val handledResult = TestResult.FAULT
     val unhandledResult = TestResult.GOOD
 

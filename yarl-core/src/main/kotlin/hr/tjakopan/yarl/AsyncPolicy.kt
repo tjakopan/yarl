@@ -4,8 +4,13 @@ abstract class AsyncPolicy<R, out B : PolicyBuilder<R, B>> protected constructor
   PolicyBase<R, B>(policyBuilder), IAsyncPolicy<R> {
   @JvmSynthetic
   override suspend fun execute(context: Context, action: suspend (Context) -> R): R {
-    val executionContext = context.copy(policyKey = policyKey)
-    return implementation(executionContext, action)
+    val priorPolicyKey = context.policyKey
+    context.policyKey = policyKey
+    try {
+      return implementation(context, action)
+    } finally {
+      context.policyKey = priorPolicyKey
+    }
   }
 
   @JvmSynthetic

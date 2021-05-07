@@ -13,7 +13,7 @@ import kotlin.test.Test
 class PolicyContextAndKeyAsyncTest {
   //<editor-fold desc="configuration">
   @Test
-  fun shouldBeAbleFluentlyToConfigurePolicyKey() {
+  fun `should be able fluently to configure policy key`() {
     val policy = Policy.asyncRetry<Int>()
       .handleResult(0)
       .policyKey(UUID.randomUUID().toString())
@@ -23,7 +23,7 @@ class PolicyContextAndKeyAsyncTest {
   }
 
   @Test
-  fun policyKeyPropertyShouldBeTheFluentlyConfiguredPolicyKey() {
+  fun `policy key property should be the fluently configured policy key`() {
     val key = "SomePolicyKey"
     val policy = Policy.asyncRetry<Int>()
       .handleResult(0)
@@ -35,7 +35,7 @@ class PolicyContextAndKeyAsyncTest {
 
   @Suppress("UsePropertyAccessSyntax")
   @Test
-  fun policyKeyPropertyShouldBeNonNullOrEmptyIfNotExplicitlyConfigured() {
+  fun `policy key property should be non null or empty if not explicitly configured`() {
     val policy = Policy.asyncRetry<Int>()
       .handleResult(0)
       .retry()
@@ -45,7 +45,7 @@ class PolicyContextAndKeyAsyncTest {
   }
 
   @Test
-  fun policyKeyPropertyShouldStartWithPolicyTypeIfNotExplicitlyConfigured() {
+  fun `policy key property should start with policy type if not explicitly configured`() {
     val policy = Policy.asyncRetry<Int>()
       .handleResult(0)
       .retry()
@@ -54,7 +54,7 @@ class PolicyContextAndKeyAsyncTest {
   }
 
   @Test
-  fun policyKeyPropertyShouldBeUniqueForDifferentInstancesIfNotExplicitlyConfigured() {
+  fun `policy key property should be unique for different instances if not explicitly configured`() {
     val policy1 = Policy.asyncRetry<Int>()
       .handleResult(0)
       .retry()
@@ -66,7 +66,7 @@ class PolicyContextAndKeyAsyncTest {
   }
 
   @Test
-  fun policyKeyPropertyShouldReturnConsistentValueForSamePolicyInstanceIfNotExplicitlyConfigured() {
+  fun `policy key property should return consistent value for same policy instance if not explicitly configured`() {
     val policy = Policy.asyncRetry<Int>()
       .handleResult(0)
       .retry()
@@ -80,7 +80,7 @@ class PolicyContextAndKeyAsyncTest {
 
   //<editor-fold desc="policyKey and execution contexts tests">
   @Test
-  fun shouldPassPolicyKeyToExecutionContext() = runBlockingTest {
+  fun `should pass policy key to execution context`() = runBlockingTest {
     val policyKey = UUID.randomUUID().toString()
     var policyKeySetOnExecutionContext: String? = null
     val onRetry: suspend (DelegateResult<TestResult>, Int, Context) -> Unit =
@@ -96,7 +96,7 @@ class PolicyContextAndKeyAsyncTest {
   }
 
   @Test
-  fun shouldPassOperationKeyToExecutionContext() = runBlockingTest {
+  fun `should pass operation key to execution context`() = runBlockingTest {
     val operationKey = "SomeKey"
     var operationKeySetOnContext: String? = null
     val onRetry: suspend (DelegateResult<TestResult>, Int, Context) -> Unit =
@@ -106,7 +106,7 @@ class PolicyContextAndKeyAsyncTest {
       .retry(1, onRetry)
 
     var firstExecution: Boolean = true
-    policy.execute(Context(operationKey = operationKey)) {
+    policy.execute(Context(operationKey)) {
       if (firstExecution) {
         firstExecution = false
         return@execute TestResult.FAULT

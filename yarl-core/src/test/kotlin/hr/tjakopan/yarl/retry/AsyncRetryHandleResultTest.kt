@@ -15,10 +15,11 @@ import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
+@Suppress("UsePropertyAccessSyntax")
 @ExperimentalCoroutinesApi
 class AsyncRetryHandleResultTest {
   @Test
-  fun shouldThrowWhenRetryCountIsLessThanZero() {
+  fun `should throw when retry count is less than zero`() {
     val shouldThrow = {
       Policy.asyncRetry<TestResult>()
         .handleResult(TestResult.FAULT)
@@ -32,53 +33,57 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotReturnHandledResultWhenHandledResultRaisedSameNumberOfTimesAsRetryCount() = runBlockingTest {
-    val policy = Policy.asyncRetry<TestResult>()
-      .handleResult(TestResult.FAULT)
-      .retry(3)
+  fun `should not return handled result when handled result raised same number of times as retry count`() =
+    runBlockingTest {
+      val policy = Policy.asyncRetry<TestResult>()
+        .handleResult(TestResult.FAULT)
+        .retry(3)
 
-    val result = policy.raiseResults(TestResult.FAULT, TestResult.FAULT, TestResult.FAULT, TestResult.GOOD)
+      val result = policy.raiseResults(TestResult.FAULT, TestResult.FAULT, TestResult.FAULT, TestResult.GOOD)
 
-    assertThat(result).isEqualTo(TestResult.GOOD)
-  }
-
-  @Test
-  fun shouldNotReturnHandledResultWhenOneOfTheHandledResultsRaisedSameNumberOfTimesAsRetryCount() = runBlockingTest {
-    val policy = Policy.asyncRetry<TestResult>()
-      .handleResult(TestResult.FAULT)
-      .handleResult(TestResult.FAULT_AGAIN)
-      .retry(3)
-
-    val result = policy.raiseResults(TestResult.FAULT, TestResult.FAULT_AGAIN, TestResult.FAULT, TestResult.GOOD)
-
-    assertThat(result).isEqualTo(TestResult.GOOD)
-  }
+      assertThat(result).isEqualTo(TestResult.GOOD)
+    }
 
   @Test
-  fun shouldNotReturnHandledResultWhenHandledResultRaisedLessNumberOfTimesThanRetryCount() = runBlockingTest {
-    val policy = Policy.asyncRetry<TestResult>()
-      .handleResult(TestResult.FAULT)
-      .retry(3)
+  fun `should not return handled result when one of the handled results raised same number of times as retry count`() =
+    runBlockingTest {
+      val policy = Policy.asyncRetry<TestResult>()
+        .handleResult(TestResult.FAULT)
+        .handleResult(TestResult.FAULT_AGAIN)
+        .retry(3)
 
-    val result = policy.raiseResults(TestResult.FAULT, TestResult.GOOD)
+      val result = policy.raiseResults(TestResult.FAULT, TestResult.FAULT_AGAIN, TestResult.FAULT, TestResult.GOOD)
 
-    assertThat(result).isEqualTo(TestResult.GOOD)
-  }
-
-  @Test
-  fun shouldNotReturnHandledResultWhenAllOfTheHandledResultsRaisedLessNumberOfTimesThanRetryCount() = runBlockingTest {
-    val policy = Policy.asyncRetry<TestResult>()
-      .handleResult(TestResult.FAULT)
-      .handleResult(TestResult.FAULT_AGAIN)
-      .retry(3)
-
-    val result = policy.raiseResults(TestResult.FAULT, TestResult.FAULT_AGAIN, TestResult.GOOD)
-
-    assertThat(result).isEqualTo(TestResult.GOOD)
-  }
+      assertThat(result).isEqualTo(TestResult.GOOD)
+    }
 
   @Test
-  fun shouldReturnHandledResultWhenHandledResultRaisedMoreTimesThanRetryCount() = runBlockingTest {
+  fun `should not return handled result when handled result raised less number of times than retry count`() =
+    runBlockingTest {
+      val policy = Policy.asyncRetry<TestResult>()
+        .handleResult(TestResult.FAULT)
+        .retry(3)
+
+      val result = policy.raiseResults(TestResult.FAULT, TestResult.GOOD)
+
+      assertThat(result).isEqualTo(TestResult.GOOD)
+    }
+
+  @Test
+  fun `should not return handled result when all of the handled results raised less number of times than retry count`() =
+    runBlockingTest {
+      val policy = Policy.asyncRetry<TestResult>()
+        .handleResult(TestResult.FAULT)
+        .handleResult(TestResult.FAULT_AGAIN)
+        .retry(3)
+
+      val result = policy.raiseResults(TestResult.FAULT, TestResult.FAULT_AGAIN, TestResult.GOOD)
+
+      assertThat(result).isEqualTo(TestResult.GOOD)
+    }
+
+  @Test
+  fun `should return handled result when handled result raised more times than retry count`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry(3)
@@ -90,21 +95,22 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldReturnHandledResultWhenOneOfTheHandledResultsIsRaisedMoreTimesThanRetryCount() = runBlockingTest {
-    val policy = Policy.asyncRetry<TestResult>()
-      .handleResult(TestResult.FAULT)
-      .handleResult(TestResult.FAULT_AGAIN)
-      .retry(3)
+  fun `should return handled result when one of the handled results is raised more times than retry count`() =
+    runBlockingTest {
+      val policy = Policy.asyncRetry<TestResult>()
+        .handleResult(TestResult.FAULT)
+        .handleResult(TestResult.FAULT_AGAIN)
+        .retry(3)
 
-    val result = policy.raiseResults(
-      TestResult.FAULT_AGAIN, TestResult.FAULT_AGAIN, TestResult.FAULT_AGAIN, TestResult.FAULT_AGAIN, TestResult.GOOD
-    )
+      val result = policy.raiseResults(
+        TestResult.FAULT_AGAIN, TestResult.FAULT_AGAIN, TestResult.FAULT_AGAIN, TestResult.FAULT_AGAIN, TestResult.GOOD
+      )
 
-    assertThat(result).isEqualTo(TestResult.FAULT_AGAIN)
-  }
+      assertThat(result).isEqualTo(TestResult.FAULT_AGAIN)
+    }
 
   @Test
-  fun shouldReturnResultWhenResultIsNotTheSpecifiedHandledResult() = runBlockingTest {
+  fun `should return result when result is not the specified handled result`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry()
@@ -115,7 +121,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldReturnResultWhenResultIsNotOneOfTheSpecifiedHandledResults() = runBlockingTest {
+  fun `should return result when result is not one of the specified handled results`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
       .handleResult(TestResult.FAULT_AGAIN)
@@ -127,7 +133,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldReturnResultWhenSpecifiedResultPredicateIsNotSatisfied() = runBlockingTest {
+  fun `should return result when specified result predicate is not satisfied`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResultClass>()
       .handleResult { r -> r.resultCode == TestResult.FAULT }
       .retry()
@@ -138,7 +144,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldReturnResultWhenNoneOfTheSpecifiedResultPredicatesAreSatisfied() = runBlockingTest {
+  fun `should return result when none of the specified result predicates are satisfied`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResultClass>()
       .handleResult { r -> r.resultCode == TestResult.FAULT }
       .handleResult { r -> r.resultCode == TestResult.FAULT_AGAIN }
@@ -150,7 +156,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotReturnHandledResultWhenSpecifiedResultPredicateIsSatisfied() = runBlockingTest {
+  fun `should not return handled result when specified result predicate is satisfied`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResultClass>()
       .handleResult { r -> r.resultCode == TestResult.FAULT }
       .retry()
@@ -161,7 +167,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotReturnHandledResultWhenOneOfTheSpecifiedResultPredicatesIsSatisfied() = runBlockingTest {
+  fun `should not return handled result when one of the specified result predicates is satisfied`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResultClass>()
       .handleResult { r -> r.resultCode == TestResult.FAULT }
       .handleResult { r -> r.resultCode == TestResult.FAULT_AGAIN }
@@ -173,7 +179,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentRetryCount() = runBlockingTest {
+  fun `should call on retry on each retry with the current retry count`() = runBlockingTest {
     val expectedRetryCounts = listOf(1, 2, 3)
     val retryCounts = mutableListOf<Int>()
     val policy = Policy.asyncRetry<TestResult>()
@@ -187,7 +193,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentHandledResult() = runBlockingTest {
+  fun `should call on retry on each retry with the current handled result`() = runBlockingTest {
     val expectedFaults = listOf("Fault #1", "Fault #2", "Fault #3")
     val retryFaults = mutableListOf<String?>()
     val policy = Policy.asyncRetry<TestResultClass>()
@@ -206,7 +212,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotCallOnRetryWhenNoRetriesArePerformed() = runBlockingTest {
+  fun `should not call on retry when no retries are performed`() = runBlockingTest {
     var retryCalled = false
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
@@ -219,48 +225,46 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldCallOnRetryWithThePassedContext() = runBlockingTest {
+  fun `should call on retry with the passed context`() = runBlockingTest {
     var context: Context? = null
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry { _, _, ctx -> context = ctx }
 
     val result = policy.raiseResults(
-      Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2")),
+      Context(mapOf("key1" to "value1", "key2" to "value2")),
       TestResult.FAULT,
       TestResult.GOOD
     )
 
     assertThat(result).isEqualTo(TestResult.GOOD)
-    @Suppress("UsePropertyAccessSyntax")
     assertThat(context).isNotNull()
-    assertThat(context?.contextData).containsKeys("key1", "key2")
+    assertThat(context).containsKeys("key1", "key2")
       .containsValues("value1", "value2")
   }
 
   @Test
-  fun shouldCallOnRetryWithThePassedContextWhenExecuteAndCapture() = runBlockingTest {
+  fun `should call on retry with the passed context when execute and capture`() = runBlockingTest {
     var context: Context? = null
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry { _, _, ctx -> context = ctx }
 
     val result = policy.raiseResultsOnExecuteAndCapture(
-      Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2")),
+      Context(mapOf("key1" to "value1", "key2" to "value2")),
       TestResult.FAULT,
       TestResult.GOOD
     )
 
     assertThat(result.isSuccess).isTrue()
     assertThat((result as PolicyResult.Success).result).isEqualTo(TestResult.GOOD)
-    @Suppress("UsePropertyAccessSyntax")
     assertThat(context).isNotNull()
-    assertThat(context?.contextData).containsKeys("key1", "key2")
+    assertThat(context).containsKeys("key1", "key2")
       .containsValues("value1", "value2")
   }
 
   @Test
-  fun contextShouldBeEmptyIfExecuteNotCalledWithContext() = runBlockingTest {
+  fun `context should be empty if execute not called with any data`() = runBlockingTest {
     var capturedContext: Context? = null
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
@@ -268,42 +272,38 @@ class AsyncRetryHandleResultTest {
 
     policy.raiseResults(TestResult.FAULT, TestResult.GOOD)
 
-    assertThat(capturedContext).isNotNull
-    assertThat(capturedContext?.policyWrapKey).isNull()
-    assertThat(capturedContext?.policyKey).isNotNull()
-    assertThat(capturedContext?.operationKey).isNull()
-    assertThat(capturedContext?.contextData).isEmpty()
+    assertThat(capturedContext).isEmpty()
   }
 
   @Test
-  fun shouldCreateNewContextForEachCallToExecute() = runBlockingTest {
+  fun `should create new context for each call to execute`() = runBlockingTest {
     var contextValue: String? = null
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
-      .retry { _, _, ctx -> contextValue = ctx.contextData["key"].toString() }
+      .retry { _, _, ctx -> contextValue = ctx["key"].toString() }
 
     policy.raiseResults(
-      Context(contextData = mutableMapOf("key" to "original_value")),
+      Context(mapOf("key" to "original_value")),
       TestResult.FAULT,
       TestResult.GOOD
     )
 
     assertThat(contextValue).isEqualTo("original_value")
 
-    policy.raiseResults(Context(contextData = mutableMapOf("key" to "new_value")), TestResult.FAULT, TestResult.GOOD)
+    policy.raiseResults(Context(mapOf("key" to "new_value")), TestResult.FAULT, TestResult.GOOD)
 
     assertThat(contextValue).isEqualTo("new_value")
   }
 
   @Test
-  fun shouldCreateNewContextForEachCallToExecuteAndCapture() = runBlockingTest {
+  fun `should create new context for each call to execute and capture`() = runBlockingTest {
     var contextValue: String? = null
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
-      .retry { _, _, ctx -> contextValue = ctx.contextData["key"].toString() }
+      .retry { _, _, ctx -> contextValue = ctx["key"].toString() }
 
     policy.raiseResultsOnExecuteAndCapture(
-      Context(contextData = mutableMapOf("key" to "original_value")),
+      Context(mapOf("key" to "original_value")),
       TestResult.FAULT,
       TestResult.GOOD
     )
@@ -311,7 +311,7 @@ class AsyncRetryHandleResultTest {
     assertThat(contextValue).isEqualTo("original_value")
 
     policy.raiseResultsOnExecuteAndCapture(
-      Context(contextData = mutableMapOf("key" to "new_value")),
+      Context(mapOf("key" to "new_value")),
       TestResult.FAULT,
       TestResult.GOOD
     )
@@ -320,7 +320,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldCreateNewStateForEachCallToPolicy() = runBlockingTest {
+  fun `should create new state for each call to policy`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry(1)
@@ -335,7 +335,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotCallOnRetryWhenRetryCountIsZero() = runBlockingTest {
+  fun `should not call on retry when retry count is zero`() = runBlockingTest {
     var retryInvoked = false
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
@@ -348,7 +348,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldWaitAsynchronouslyForAsyncOnRetryDelegate() = runBlockingTest {
+  fun `should wait asynchronously for async on retry delegate`() = runBlockingTest {
     val duration = Duration.ofMillis(200)
     var executeDelegateInvocations = 0
     var executeDelegateInvocationsWhenOnRetryExits = 0
@@ -371,7 +371,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldExecuteAllTriesWhenFaultingAndNotCancelled() = runBlockingTest {
+  fun `should execute all tries when faulting and not cancelled`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry(3)
@@ -391,7 +391,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotExecuteActionWhenCancelledBeforeExecute() {
+  fun `should not execute action when cancelled before execute`() {
     assertFailsWith(CancellationException::class) {
       runBlockingTest {
         val policy = Policy.asyncRetry<TestResult>()
@@ -417,7 +417,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldReportCancellationDuringOtherwiseNonFaultingActionExecutionAndCancelFurtherRetries() =
+  fun `should report cancellation during otherwise non faulting action execution and cancel further retries`() =
     runBlockingTest {
       val policy = Policy.asyncRetry<TestResult>()
         .handleResult(TestResult.FAULT)
@@ -439,7 +439,7 @@ class AsyncRetryHandleResultTest {
     }
 
   @Test
-  fun shouldReportCancellationDuringFaultingInitialActionExecutionAndCancelFurtherRetries() =
+  fun `should report cancellation during faulting initial action execution and cancel further retries`() =
     runBlockingTest {
       val policy = Policy.asyncRetry<TestResult>()
         .handleResult(TestResult.FAULT)
@@ -461,28 +461,29 @@ class AsyncRetryHandleResultTest {
     }
 
   @Test
-  fun shouldReportCancellationDuringFaultingRetriedActionExecutionAndCancelFurtherRetries() = runBlockingTest {
-    val policy = Policy.asyncRetry<TestResult>()
-      .handleResult(TestResult.FAULT)
-      .retry(3)
-    var attemptsInvoked = 0
-    val onExecute: () -> Unit = { attemptsInvoked++ }
+  fun `should report cancellation during faulting retried action execution and cancel further retries`() =
+    runBlockingTest {
+      val policy = Policy.asyncRetry<TestResult>()
+        .handleResult(TestResult.FAULT)
+        .retry(3)
+      var attemptsInvoked = 0
+      val onExecute: () -> Unit = { attemptsInvoked++ }
 
-    assertFailsWith(CancellationException::class) {
-      policy.raiseResultsAndOrCancellation(
-        2,
-        onExecute,
-        TestResult.FAULT,
-        TestResult.FAULT,
-        TestResult.FAULT,
-        TestResult.GOOD
-      )
+      assertFailsWith(CancellationException::class) {
+        policy.raiseResultsAndOrCancellation(
+          2,
+          onExecute,
+          TestResult.FAULT,
+          TestResult.FAULT,
+          TestResult.FAULT,
+          TestResult.GOOD
+        )
+      }
+      assertThat(attemptsInvoked).isEqualTo(2)
     }
-    assertThat(attemptsInvoked).isEqualTo(2)
-  }
 
   @Test
-  fun shouldReportCancellationDuringFaultingLastRetryExecution() = runBlockingTest {
+  fun `should report cancellation during faulting last retry execution`() = runBlockingTest {
     val policy = Policy.asyncRetry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry(3)
@@ -503,7 +504,7 @@ class AsyncRetryHandleResultTest {
   }
 
   @Test
-  fun shouldReportCancellationAfterFaultingActionExecutionAndCancelFurtherRetriesIfOnRetryInvokesCancellation() {
+  fun `should report cancellation after faulting action execution and cancel further retries if on retry invokes cancellation`() {
     assertFailsWith(CancellationException::class) {
       runBlockingTest {
         val policy = Policy.asyncRetry<TestResult>()
