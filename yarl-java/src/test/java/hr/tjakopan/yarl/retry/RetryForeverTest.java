@@ -130,17 +130,15 @@ public class RetryForeverTest {
 
     PolicyUtils.raiseExceptions(
       policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key1", "value1");
-          put("key2", "value2");
-        }})
-        .build(),
+      Context.of(new HashMap<>() {{
+        put("key1", "value1");
+        put("key2", "value2");
+      }}),
       1,
       i -> new ArithmeticException());
 
     assertThat(context.get()).isNotNull();
-    assertThat(context.get().getContextData()).containsKeys("key1", "key2")
+    assertThat(context.get()).containsKeys("key1", "key2")
       .containsValues("value1", "value2");
   }
 
@@ -172,17 +170,16 @@ public class RetryForeverTest {
   @Test
   public void shouldCreateNewContextForEachCallToExecute() {
     final var contextValue = new AtomicReference<String>();
+    //noinspection ConstantConditions
     final var policy = RetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
-      .retryForever(fromConsumer3(d -> (i, context) -> contextValue.set(context.getContextData().get("key").toString())));
+      .retryForever(fromConsumer3(d -> (i, context) -> contextValue.set(context.get("key").toString())));
 
     PolicyUtils.raiseExceptions(
       policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "original_value");
-        }})
-        .build(),
+      Context.of(new HashMap<>() {{
+        put("key", "original_value");
+      }}),
       1,
       i -> new ArithmeticException()
     );
@@ -191,11 +188,9 @@ public class RetryForeverTest {
 
     PolicyUtils.raiseExceptions(
       policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "new_value");
-        }})
-        .build(),
+      Context.of(new HashMap<>() {{
+        put("key", "new_value");
+      }}),
       1,
       i -> new ArithmeticException()
     );

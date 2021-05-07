@@ -11,7 +11,7 @@ import kotlin.test.assertFailsWith
 
 class RetryHandleMixedTest {
   @Test
-  fun shouldHandleExceptionWhenHandlingExceptionsOnly() {
+  fun `should handle exception when handling exceptions only`() {
     val policy = Policy.retry<TestResult>()
       .handle(ArithmeticException::class)
       .retry(1)
@@ -22,7 +22,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldThrowUnhandledExceptionWhenHandlingExceptionsOnly() {
+  fun `should throw unhandled exception when handling exceptions only`() {
     val policy = Policy.retry<TestResult>()
       .handle(ArithmeticException::class)
       .retry(1)
@@ -33,7 +33,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldHandleBothExceptionAndSpecifiedResultIfRaisedSameNumberOfTimesAsRetryCountWhenConfiguringResultsBeforeExceptions() {
+  fun `should handle both exception and specified result if raised same number of times as retry count when configuring results before exceptions`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .handle(ArithmeticException::class)
@@ -45,7 +45,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldHandleBothExceptionAndSpecifiedResultIfRaisedSameNumberOfTimesAsRetryCountWhenConfiguringExceptionBeforeResult() {
+  fun `should handle both exception and specified result if raised same number of times as retry count when configuring exception before result`() {
     val policy = Policy.retry<TestResult>()
       .handle(ArithmeticException::class)
       .handleResult(TestResult.FAULT)
@@ -57,7 +57,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldHandleBothExceptionsAndSpecifiedResultsIfRaisedSameNumberOfTimesAsRetryCountMixingExceptionsAndResultsSpecifyingExceptionsFirst() {
+  fun `should handle both exceptions and specified results if raised same number of times as retry count mixing exceptions and results specifying exceptions first`() {
     val policy = Policy.retry<TestResult>()
       .handle(ArithmeticException::class)
       .handleResult(TestResult.FAULT)
@@ -77,7 +77,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldHandleBothExceptionsAndSpecifiedResultsIfRaisedSameNumberOfTimesAsRetryCountMixingExceptionsAndResultsSpecifyingResultsFirst() {
+  fun `should handle both exceptions and specified results if raised same number of times as retry count mixing exceptions and results specifying results first`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .handle(ArithmeticException::class)
@@ -97,7 +97,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldReturnHandledResultWhenHandledResultReturnedNextAfterRetriesExhaustHandlingBothExceptionsAndSpecifiedResultsMixingExceptionsAndResultsSpecifyingResultsFirst() {
+  fun `should return handled result when handled result returned next after retries exhaust handling both exceptions and specified results mixing exceptions and results specifying results first`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .handle(ArithmeticException::class)
@@ -117,7 +117,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldThrowWhenExceptionThrownNextAfterRetriesExhaustHandlingBothExceptionsAndSpecifiedResultsMixingExceptionsAndResultsSpecifyingResultsFirst() {
+  fun `should throw when exception thrown next after retries exhaust handling both exceptions and specified results mixing exceptions and results specifying results first`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .handle(ArithmeticException::class)
@@ -137,7 +137,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldReturnHandledResultWhenHandledResultReturnedNextAfterRetriesExhaustHandlingBothExceptionsAndSpecifiedResultsMixingExceptionsAndResultsSpecifyingExceptionsFirst() {
+  fun `should return handled result when handled result returned next after retries exhaust handling both exceptions and specified results mixing exceptions and results specifying exceptions first`() {
     val policy = Policy.retry<TestResult>()
       .handle(ArithmeticException::class)
       .handleResult(TestResult.FAULT)
@@ -157,7 +157,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldThrowWhenExceptionThrownNextAfterRetriesExhaustHandlingBothExceptionsAndSpecifiedResultsMixingExceptionsAndResultsSpecifyingExceptionsFirst() {
+  fun `should throw when exception thrown next after retries exhaust handling both exceptions and specified results mixing exceptions and results specifying exceptions first`() {
     val policy = Policy.retry<TestResult>()
       .handle(ArithmeticException::class)
       .handleResult(TestResult.FAULT)
@@ -177,7 +177,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldReturnUnhandledResultIfNotOneOfResultsOrExceptionsSpecified() {
+  fun `should return unhandled result if not one of results or exceptions specified`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .handle(ArithmeticException::class)
@@ -189,7 +189,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldThrowIfNotOneOfResultsOrExceptionsHandled() {
+  fun `should throw if not one of results or exceptions handled`() {
     val policy = Policy.retry<TestResult>()
       .handle(ArithmeticException::class)
       .handleResult(TestResult.FAULT)
@@ -204,7 +204,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldHandleBothExceptionsAndSpecifiedResultsWithPredicates() {
+  fun `should handle both exceptions and specified results with predicates`() {
     val policy = Policy.retry<TestResultClass>()
       .handle(IllegalArgumentException::class) { it.message == "key" }
       .handleResult { it.resultCode == TestResult.FAULT }
@@ -220,7 +220,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldThrowIfExceptionPredicateNotMatched() {
+  fun `should throw if exception predicate not matched`() {
     val policy = Policy.retry<TestResultClass>()
       .handle(IllegalArgumentException::class) { it.message == "key" }
       .handleResult { it.resultCode == TestResult.FAULT }
@@ -236,7 +236,7 @@ class RetryHandleMixedTest {
   }
 
   @Test
-  fun shouldReturnUnhandledResultIfResultPredicateNotMatched() {
+  fun `should return unhandled result if result predicate not matched`() {
     val policy = Policy.retry<TestResultClass>()
       .handle(IllegalArgumentException::class) { it.message == "key" }
       .handleResult { it.resultCode == TestResult.FAULT }

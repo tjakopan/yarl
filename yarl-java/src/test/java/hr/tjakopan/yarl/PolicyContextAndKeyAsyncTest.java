@@ -111,9 +111,7 @@ public class PolicyContextAndKeyAsyncTest {
       .retry(1, onRetry);
 
     final AtomicBoolean firstExecution = new AtomicBoolean(true);
-    final var context = Context.builder()
-      .operationKey(operationKey)
-      .build();
+    final var context = Context.of(operationKey);
     policy.executeAsync(context, ctx -> {
       if (firstExecution.get()) {
         firstExecution.set(false);

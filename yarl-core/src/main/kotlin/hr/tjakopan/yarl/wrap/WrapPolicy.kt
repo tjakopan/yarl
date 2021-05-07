@@ -15,8 +15,13 @@ class WrapPolicy<R> internal constructor(policyBuilder: WrapPolicyBuilder<R>) :
   override val inner: ISyncPolicy<R> = policyBuilder.inner
 
   override fun execute(context: Context, action: (Context) -> R): R {
-    val executionContext = context.copy(policyWrapKey = policyKey)
-    return super.execute(executionContext, action)
+    val priorPolicyWrapKey = context.policyWrapKey
+    context.policyWrapKey = policyKey
+    try {
+      return super.execute(context, action)
+    } finally {
+      context.policyWrapKey = priorPolicyWrapKey
+    }
   }
 
   override fun implementation(context: Context, action: (Context) -> R): R =

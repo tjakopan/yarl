@@ -1,13 +1,11 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.annotations.Immutable
+
 typealias ExceptionPredicate = (e: Throwable) -> Throwable?
 
+@Immutable
 class ExceptionPredicates private constructor(private val predicates: List<ExceptionPredicate>) {
-  companion object {
-    @JvmField
-    val NONE = ExceptionPredicates()
-  }
-
   constructor() : this(listOf())
 
   @JvmSynthetic
@@ -19,5 +17,10 @@ class ExceptionPredicates private constructor(private val predicates: List<Excep
   fun firstMatchOrNull(e: Throwable): Throwable? {
     return predicates.mapNotNull { it(e) }
       .firstOrNull()
+  }
+
+  companion object {
+    @JvmField
+    val NONE = ExceptionPredicates()
   }
 }

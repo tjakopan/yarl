@@ -143,7 +143,7 @@ public class PolicyAsyncTest {
       .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
-        .executeAsync((Context) null, context -> CompletableFuture.completedFuture(2)))
+        .executeAsync(null, context -> CompletableFuture.completedFuture(2)))
       .withMessageContaining(NULL_PARAMETER);
   }
 
@@ -165,16 +165,14 @@ public class PolicyAsyncTest {
       .isThrownBy(() -> AsyncRetryPolicy.builder()
         .handle(ArithmeticException.class)
         .retry()
-        .executeAndCaptureAsync((Context) null, context -> CompletableFuture.completedFuture(2)))
+        .executeAndCaptureAsync(null, context -> CompletableFuture.completedFuture(2)))
       .withMessageContaining(NULL_PARAMETER);
   }
 
   @Test
   public void executingThePolicyFunctionShouldPassContextToExecutedDelegate() {
     final var operationKey = "SomeKey";
-    final var executionContext = Context.builder()
-      .operationKey(operationKey)
-      .build();
+    final var executionContext = Context.of(operationKey);
     final var capturedContext = new AtomicReference<Context>();
 
     new AsyncNoOpPolicy<>()
@@ -190,9 +188,7 @@ public class PolicyAsyncTest {
   @Test
   public void executingAndCapturingThePolicyFunctionShouldPassContextToExecutedDelegate() {
     final var operationKey = "SomeKey";
-    final var executionContext = Context.builder()
-      .operationKey(operationKey)
-      .build();
+    final var executionContext = Context.of(operationKey);
     final var capturedContext = new AtomicReference<Context>();
 
     new AsyncNoOpPolicy<>()
@@ -208,9 +204,7 @@ public class PolicyAsyncTest {
   @Test
   public void executingAndCapturingThePolicyFunctionShouldPassContextToPolicyResult() {
     final var operationKey = "SomeKey";
-    final var executionContext = Context.builder()
-      .operationKey(operationKey)
-      .build();
+    final var executionContext = Context.of(operationKey);
     final var future = new AsyncNoOpPolicy<>()
       .executeAndCaptureAsync(executionContext, context -> null);
 

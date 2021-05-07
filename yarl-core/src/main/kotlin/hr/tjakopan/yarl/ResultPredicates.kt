@@ -1,13 +1,11 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.annotations.Immutable
+
 typealias ResultPredicate<R> = (result: R) -> Boolean
 
+@Immutable
 class ResultPredicates<R> private constructor(private val predicates: List<ResultPredicate<R>>) {
-  companion object {
-    @JvmField
-    val NONE = ResultPredicates<Any>()
-  }
-
   constructor() : this(listOf())
 
   @JvmSynthetic
@@ -17,4 +15,9 @@ class ResultPredicates<R> private constructor(private val predicates: List<Resul
   }
 
   fun anyMatch(result: R): Boolean = this.predicates.any { it(result) }
+
+  companion object {
+    @JvmField
+    val NONE = ResultPredicates<Any>()
+  }
 }

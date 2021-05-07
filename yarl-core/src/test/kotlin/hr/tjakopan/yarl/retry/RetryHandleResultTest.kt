@@ -11,9 +11,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import kotlin.test.Test
 
+@Suppress("UsePropertyAccessSyntax")
 class RetryHandleResultTest {
   @Test
-  fun shouldThrowWhenRetryCountIsLessThanZero() {
+  fun `should throw when retry count is less than zero`() {
     assertThatThrownBy {
       Policy.retry<TestResult>()
         .handleResult(TestResult.FAULT)
@@ -24,7 +25,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotReturnHandledResultWhenHandledResultRaisedSameNumberOfTimesAsRetryCount() {
+  fun `should not return handled result when handled result raised same number of times as retry count`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry(3)
@@ -35,7 +36,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotReturnHandledResultWhenOneOfTheHandledResultsRaisedSameNumberOfTimesAsRetryCount() {
+  fun `should not return handled result when one of the handled results raised same number of times as retry count`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .handleResult(TestResult.FAULT_AGAIN)
@@ -47,7 +48,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotReturnHandledResultWhenHandledResultRaisedLessNumberOfTimesThanRetryCount() {
+  fun `should not return handled result when handled result raised less number of times than retry count`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry(3)
@@ -58,7 +59,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotReturnHandledResultWhenAllOfTheHandledResultsRaisedLessNumberOfTimesThanRetryCount() {
+  fun `should not return handled result when all of the handled results raised less number of times than retry count`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .handleResult(TestResult.FAULT_AGAIN)
@@ -70,7 +71,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldReturnHandledResultWhenHandledResultRaisedMoreTimesThenRetryCount() {
+  fun `should return handled result when handled result raised more times then retry count`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry(3)
@@ -82,7 +83,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldReturnHandledResultWhenOneOfTheHandledResultsIsRaisedMoreTimesThenRetryCount() {
+  fun `should return handled result when one of the handled results is raised more times then retry count`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .handleResult(TestResult.FAULT_AGAIN)
@@ -100,7 +101,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldReturnResultWhenResultIsNotTheSpecifiedHandledResult() {
+  fun `should return result when result is not the specified handled result`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry()
@@ -111,7 +112,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldReturnResultWhenResultIsNotOneOfTheSpecifiedHandledResults() {
+  fun `should return result when result is not one of the specified handled results`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .handleResult(TestResult.FAULT_AGAIN)
@@ -123,7 +124,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldReturnResultWhenSpecifiedResultPredicateIsNotSatisfied() {
+  fun `should return result when specified result predicate is not satisfied`() {
     val policy = Policy.retry<TestResultClass>()
       .handleResult { it.resultCode == TestResult.FAULT }
       .retry()
@@ -137,7 +138,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldReturnResultWhenNoneOfTheSpecifiedResultPredicatesAreSatisfied() {
+  fun `should return result when none of the specified result predicates are satisfied`() {
     val policy = Policy.retry<TestResultClass>()
       .handleResult { it.resultCode == TestResult.FAULT_AGAIN }
       .retry()
@@ -151,7 +152,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotReturnHandledResultWhenSpecifiedResultPredicateIsSatisfied() {
+  fun `should not return handled result when specified result predicate is satisfied`() {
     val policy = Policy.retry<TestResultClass>()
       .handleResult { it.resultCode == TestResult.FAULT }
       .retry()
@@ -165,7 +166,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotReturnHandledResultWhenOneOfTheSpecifiedResultPredicatesIsSatisfied() {
+  fun `should not return handled result when one of the specified result predicates is satisfied`() {
     val policy = Policy.retry<TestResultClass>()
       .handleResult { it.resultCode == TestResult.FAULT }
       .handleResult { it.resultCode == TestResult.FAULT_AGAIN }
@@ -180,7 +181,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentRetryCount() {
+  fun `should call on retry on each retry with the current retry count`() {
     val expectedRetryCounts = listOf(1, 2, 3)
     val retryCounts = mutableListOf<Int>()
     val policy = Policy.retry<TestResult>()
@@ -193,7 +194,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentHandledResult() {
+  fun `should call on retry on each retry with the current handled result`() {
     val expectedFaults = listOf("Fault #1", "Fault #2", "Fault #3")
     val retryFaults = mutableListOf<String?>()
     val policy = Policy.retry<TestResultClass>()
@@ -211,7 +212,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotCallOnRetryWhenNoRetriesArePerformed() {
+  fun `should not call on retry when no retries are performed`() {
     var retryCalled = false
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
@@ -223,38 +224,38 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldCallOnRetryWithThePassedContext() {
+  fun `should call on retry with the passed context`() {
     var capturedContext: Context? = null
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry { _, _, context -> capturedContext = context }
-    val context = Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2"))
+    val context = Context(mapOf("key1" to "value1", "key2" to "value2"))
 
     val result = policy.raiseResults(context, TestResult.FAULT, TestResult.GOOD)
 
     assertThat(result).isEqualTo(TestResult.GOOD)
-    assertThat(capturedContext?.contextData).containsKeys("key1", "key2")
+    assertThat(capturedContext).containsKeys("key1", "key2")
       .containsValues("value1", "value2")
   }
 
   @Test
-  fun shouldCallOnRetryWithThePassedContextWhenExecuteAndCapture() {
+  fun `should call on retry with the passed context when execute and capture`() {
     var capturedContext: Context? = null
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry { _, _, context -> capturedContext = context }
-    val context = Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2"))
+    val context = Context(mapOf("key1" to "value1", "key2" to "value2"))
 
     val result = policy.raiseResultsOnExecuteAndCapture(context, TestResult.FAULT, TestResult.GOOD)
 
     assertThat(result.isSuccess).isTrue()
     assertThat((result as PolicyResult.Success).result).isEqualTo(TestResult.GOOD)
-    assertThat(capturedContext?.contextData).containsKeys("key1", "key2")
+    assertThat(capturedContext).containsKeys("key1", "key2")
       .containsValues("value1", "value2")
   }
 
   @Test
-  fun contextShouldBeEmptyIfExecuteNotCalledWithContext() {
+  fun `context should be empty if execute not called with any data`() {
     var capturedContext: Context? = null
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
@@ -262,21 +263,17 @@ class RetryHandleResultTest {
 
     policy.raiseResults(TestResult.FAULT, TestResult.GOOD)
 
-    assertThat(capturedContext).isNotNull
-    assertThat(capturedContext?.policyWrapKey).isNull()
-    assertThat(capturedContext?.policyKey).isNotNull()
-    assertThat(capturedContext?.operationKey).isNull()
-    assertThat(capturedContext?.contextData).isEmpty()
+    assertThat(capturedContext).isEmpty()
   }
 
   @Test
-  fun shouldCreateNewContextForEachCallToExecute() {
+  fun `should create new context for each call to execute`() {
     var contextValue: String? = null
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
-      .retry { _, _, context -> contextValue = context.contextData["key"].toString() }
-    val context1 = Context(contextData = mutableMapOf("key" to "original_value"))
-    val context2 = Context(contextData = mutableMapOf("key" to "new_value"))
+      .retry { _, _, context -> contextValue = context["key"].toString() }
+    val context1 = Context(mapOf("key" to "original_value"))
+    val context2 = Context(mapOf("key" to "new_value"))
 
     policy.raiseResults(context1, TestResult.FAULT, TestResult.GOOD)
 
@@ -288,13 +285,13 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldCreateNewContextForEachCallToExecuteAndCapture() {
+  fun `should create new context for each call to execute and capture`() {
     var contextValue: String? = null
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
-      .retry { _, _, context -> contextValue = context.contextData["key"].toString() }
-    val context1 = Context(contextData = mutableMapOf("key" to "original_value"))
-    val context2 = Context(contextData = mutableMapOf("key" to "new_value"))
+      .retry { _, _, context -> contextValue = context["key"].toString() }
+    val context1 = Context(mapOf("key" to "original_value"))
+    val context2 = Context(mapOf("key" to "new_value"))
 
     policy.raiseResultsOnExecuteAndCapture(context1, TestResult.FAULT, TestResult.GOOD)
 
@@ -306,7 +303,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldCreateNewStateForEachCallToPolicy() {
+  fun `should create new state for each call to policy`() {
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)
       .retry(1)
@@ -319,7 +316,7 @@ class RetryHandleResultTest {
   }
 
   @Test
-  fun shouldNotCallOnRetryWhenRetryCountIsZero() {
+  fun `should not call on retry when retry count is zero`() {
     var retryInvoked = false
     val policy = Policy.retry<TestResult>()
       .handleResult(TestResult.FAULT)

@@ -15,8 +15,13 @@ class AsyncWrapPolicy<R> internal constructor(policyBuilder: AsyncWrapPolicyBuil
   override val inner: IAsyncPolicy<R> = policyBuilder.inner
 
   override suspend fun execute(context: Context, action: suspend (Context) -> R): R {
-    val executionContext = context.copy(policyWrapKey = policyKey)
-    return super.execute(executionContext, action)
+    val priorPolicyWrapKey = context.policyWrapKey
+    context.policyWrapKey = policyKey
+    try {
+      return super.execute(context, action)
+    } finally {
+      context.policyWrapKey = priorPolicyWrapKey
+    }
   }
 
   override suspend fun implementation(context: Context, action: suspend (Context) -> R): R =

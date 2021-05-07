@@ -9,9 +9,10 @@ import kotlin.math.pow
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
+@Suppress("UsePropertyAccessSyntax")
 class WaitAndRetryForeverHandleExceptionTest {
   @Test
-  fun shouldNotThrowRegardlessOfHowManyTimesTheSpecifiedExceptionIsRaised() {
+  fun `should not throw regardless of how many times the specified exception is raised`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .waitAndRetryForever { _, _, _ -> Duration.ZERO }
@@ -20,7 +21,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotThrowRegardlessOfHowManyTimesOneOfTheSpecifiedExceptionIsRaised() {
+  fun `should not throw regardless of how many times one of the specified exception is raised`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .handle(IllegalArgumentException::class)
@@ -30,7 +31,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldThrowWhenExceptionThrownIsNotTheSpecifiedExceptionType() {
+  fun `should throw when exception thrown is not the specified exception type`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .waitAndRetryForever { _, _, _ -> Duration.ZERO }
@@ -41,7 +42,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldThrowWhenExceptionThrownIsNotOneOfTheSpecifiedExceptionTypes() {
+  fun `should throw when exception thrown is not one of the specified exception types`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .handle(IllegalArgumentException::class)
@@ -53,7 +54,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldThrowWhenSpecifiedExceptionPredicateIsNotSatisfied() {
+  fun `should throw when specified exception predicate is not satisfied`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class) { false }
       .waitAndRetryForever { _, _, _ -> Duration.ZERO }
@@ -64,7 +65,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldThrowWhenNoneOfTheSpecifiedExceptionPredicatesAreSatisfied() {
+  fun `should throw when none of the specified exception predicates are satisfied`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class) { false }
       .handle(IllegalArgumentException::class) { false }
@@ -76,7 +77,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotThrowWhenSpecifiedExceptionPredicateIsSatisfied() {
+  fun `should not throw when specified exception predicate is satisfied`() {
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class) { true }
       .waitAndRetryForever { _, _, _ -> Duration.ofMillis(1) }
@@ -85,7 +86,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotThrowWhenOneOfTheSpecifiedExceptionPredicatesAreSatisfied() {
+  fun `should not throw when one of the specified exception predicates are satisfied`() {
     val policy = Policy.retry<Unit>()
       .handle(IllegalArgumentException::class) { true }
       .waitAndRetryForever { _, _, _ -> Duration.ofMillis(1) }
@@ -94,7 +95,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentException() {
+  fun `should call on retry on each retry with the current exception`() {
     val expectedExceptions = listOf("Exception #1", "Exception #2", "Exception #3")
     val retryExceptions = mutableListOf<Throwable>()
     val policy = Policy.retry<Unit>()
@@ -108,7 +109,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentRetryCount() {
+  fun `should call on retry on each retry with the current retry count`() {
     val expectedRetryCounts = listOf(1, 2, 3)
     val retryCounts = mutableListOf<Int>()
     val policy = Policy.retry<Unit>()
@@ -122,7 +123,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotCallOnRetryWhenNoRetriesArePerformed() {
+  fun `should not call on retry when no retries are performed`() {
     var onRetryCalled = false
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
@@ -136,20 +137,20 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldCreateNewContextForEachCallToExecute() {
+  fun `should create new context for each call to execute`() {
     var contextValue: String? = null
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .waitAndRetryForever({ _, _, _ -> Duration.ofMillis(1) })
-      { _, _, _, context -> contextValue = context.contextData["key"].toString() }
+      { _, _, _, context -> contextValue = context["key"].toString() }
 
-    policy.raiseExceptions(Context(contextData = mutableMapOf("key" to "original_value")), 1) {
+    policy.raiseExceptions(Context(mapOf("key" to "original_value")), 1) {
       ArithmeticException()
     }
 
     assertThat(contextValue).isEqualTo("original_value")
 
-    policy.raiseExceptions(Context(contextData = mutableMapOf("key" to "new_value")), 1) {
+    policy.raiseExceptions(Context(mapOf("key" to "new_value")), 1) {
       ArithmeticException()
     }
 
@@ -157,7 +158,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldCalculateRetryDurationsFromCurrentRetryAttemptAndDurationProvider() {
+  fun `should calculate retry durations from current retry attempt and duration provider`() {
     val expectedRetryWaits = listOf(
       Duration.ofMillis(2),
       Duration.ofMillis(4),
@@ -179,7 +180,7 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldBeAbleToCalculateRetryDurationsBasedOnTheHandledFault() {
+  fun `should be able to calculate retry durations based on the handled fault`() {
     val expectedRetryWaits = mapOf<RuntimeException, Duration>(
       ArithmeticException() to Duration.ofMillis(2),
       IllegalArgumentException() to Duration.ofMillis(4)
@@ -204,22 +205,22 @@ class WaitAndRetryForeverHandleExceptionTest {
   }
 
   @Test
-  fun shouldBeAbleToPassRetryDurationFromExecutionToSleepDurationProviderViaContext() {
+  fun `should be able to pass retry duration from execution to sleep duration provider via context`() {
     val expectedRetryDuration = Duration.ofMillis(1)
     var actualRetryDuration: Duration? = null
     val defaultRetryAfter = Duration.ofMillis(30)
     val policy = Policy.retry<Unit>()
       .handle(ArithmeticException::class)
       .waitAndRetryForever({ _, _, context ->
-        when (context.contextData.containsKey("RetryAfter")) {
-          true -> context.contextData["RetryAfter"] as Duration
+        when (context.containsKey("RetryAfter")) {
+          true -> context["RetryAfter"] as Duration
           else -> defaultRetryAfter
         }
       }) { _, duration, _, _ -> actualRetryDuration = duration }
 
     var failedOnce = false
-    policy.execute(mutableMapOf<String, Any>("RetryAfter" to defaultRetryAfter)) { context: Context ->
-      context.contextData["RetryAfter"] = expectedRetryDuration
+    policy.execute(mapOf<String, Any>("RetryAfter" to defaultRetryAfter)) { context: Context ->
+      context["RetryAfter"] = expectedRetryDuration
       if (!failedOnce) {
         failedOnce = true
         throw ArithmeticException()

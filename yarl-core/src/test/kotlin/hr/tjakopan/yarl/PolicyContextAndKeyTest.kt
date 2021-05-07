@@ -10,7 +10,7 @@ import kotlin.test.Test
 class PolicyContextAndKeyTest {
   //<editor-fold desc="configuration">
   @Test
-  fun shouldBeAbleFluentlyToConfigureThePolicyKey() {
+  fun `should be able fluently to configure the policy key`() {
     val policy = Policy.retry<Int>()
       .policyKey(UUID.randomUUID().toString())
       .handleResult(0)
@@ -20,7 +20,7 @@ class PolicyContextAndKeyTest {
   }
 
   @Test
-  fun policyKeyPropertyShouldBeTheFluentlyConfiguredPolicyKey() {
+  fun `policy key property should be the fluently configured policy key`() {
     val key = "SomePolicyKey"
     val policy = Policy.retry<Int>()
       .handleResult(0)
@@ -32,7 +32,7 @@ class PolicyContextAndKeyTest {
 
   @Suppress("UsePropertyAccessSyntax")
   @Test
-  fun policyKeyPropertyShouldBeNonNullOrEmptyIfNotExplicitlyConfigured() {
+  fun `policy key property should be non null or empty if not explicitly configured`() {
     val policy = Policy.retry<Int>()
       .handleResult(0)
       .retry()
@@ -42,7 +42,7 @@ class PolicyContextAndKeyTest {
   }
 
   @Test
-  fun policyKeyPropertyShouldStartWithPolicyTypeIfNotExplicitlyConfigured() {
+  fun `policy key property should start with policy type if not explicitly configured`() {
     val policy = Policy.retry<Int>()
       .handleResult(0)
       .retry()
@@ -51,7 +51,7 @@ class PolicyContextAndKeyTest {
   }
 
   @Test
-  fun policyKeyPropertyShouldBeUniqueForDifferentInstancesIfNotExplicitlyConfigured() {
+  fun `policy key property should be unique for different instances if not explicitly configured`() {
     val policy1 = Policy.retry<Int>()
       .handleResult(0)
       .retry()
@@ -63,7 +63,7 @@ class PolicyContextAndKeyTest {
   }
 
   @Test
-  fun policyKeyPropertyShouldReturnConsistentValueForSamePolicyInstanceIfNotExplicitlyConfigured() {
+  fun `policy key property should return consistent value for same policy instance if not explicitly configured`() {
     val policy = Policy.retry<Int>()
       .handleResult(0)
       .retry()
@@ -76,7 +76,7 @@ class PolicyContextAndKeyTest {
   //</editor-fold>
 
   @Test
-  fun shouldPassPolicyKeyToExecutionContext() {
+  fun `should pass policy key to execution context`() {
     val policyKey = UUID.randomUUID().toString()
     var policyKeySetOnExecutionContext: String? = null
     val onRetry: (DelegateResult<TestResult>, Int, Context) -> Unit =
@@ -92,7 +92,7 @@ class PolicyContextAndKeyTest {
   }
 
   @Test
-  fun shouldPassOperationKeyToExecutionContext() {
+  fun `should pass operation key to execution context`() {
     val operationKey = "SomeKey"
     var operationKeySetOnContext: String? = null
     val onRetry: (DelegateResult<TestResult>, Int, Context) -> Unit =
@@ -102,7 +102,7 @@ class PolicyContextAndKeyTest {
       .retry(1, onRetry)
 
     var firstExecution: Boolean = true
-    policy.execute(Context(operationKey = operationKey)) {
+    policy.execute(Context(operationKey)) {
       if (firstExecution) {
         firstExecution = false
         return@execute TestResult.FAULT

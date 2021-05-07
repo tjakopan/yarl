@@ -1,61 +1,54 @@
 package hr.tjakopan.yarl
 
+import hr.tjakopan.yarl.annotations.GuardedBy
+import hr.tjakopan.yarl.annotations.ThreadSafe
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
-data class Context internal constructor(
-  val policyWrapKey: String? = null,
-  val policyKey: String? = null,
-  val operationKey: String? = null,
-  val contextData: MutableMap<String, Any> = mutableMapOf(),
-  private val _correlationId: Lazy<UUID>
-) {
-  constructor(
-    policyWrapKey: String? = null,
-    policyKey: String? = null,
-    operationKey: String? = null,
-    contextData: MutableMap<String, Any> = mutableMapOf()
-  ) : this(policyWrapKey, policyKey, operationKey, contextData, lazy { UUID.randomUUID() })
+@ThreadSafe
+class Context private constructor(
+  val operationKey: String?,
+  contextData: MutableMap<String, Any>
+) : MutableMap<String, Any> by contextData {
+  @Volatile
+  @GuardedBy("this")
+  var policyWrapKey: String? = null
+    internal set
 
-  constructor() : this(null, null, null)
+  @Volatile
+  @GuardedBy("this")
+  var policyKey: String? = null
+    internal set
 
-  val correlationId: UUID
-    get() = _correlationId.value
-
-  class Builder {
-    var policyWrapKey: String? = null
-    var policyKey: String? = null
-    var operationKey: String? = null
-    var contextData: MutableMap<String, Any> = mutableMapOf()
-
-    fun policyWrapKey(policyWrapKey: String): Builder {
-      this.policyWrapKey = policyWrapKey
-      return this
-    }
-
-    fun policyKey(policyKey: String): Builder {
-      this.policyKey = policyKey
-      return this
-    }
-
-    fun operationKey(operationKey: String): Builder {
-      this.operationKey = operationKey
-      return this
-    }
-
-    fun contextData(contextData: MutableMap<String, Any>): Builder {
-      this.contextData = contextData
-      return this;
-    }
-
-    fun build(): Context = Context(policyWrapKey, policyKey, operationKey, contextData)
-  }
+  val correlationId: UUID by lazy { UUID.randomUUID() }
 
   companion object {
     @JvmSynthetic
-    internal val NONE = Context()
-      @JvmSynthetic get
+    internal fun none() = invoke()
+
+    @JvmSynthetic
+    operator fun invoke(operationKey: String, contextData: Map<String, Any>) =
+      Context(operationKey, ConcurrentHashMap(contextData))
 
     @JvmStatic
-    fun builder(): Builder = Builder()
+    fun of(operationKey: String, contextData: Map<String, Any>) = invoke(operationKey, contextData)
+
+    @JvmSynthetic
+    operator fun invoke(operationKey: String) = Context(operationKey, ConcurrentHashMap())
+
+    @JvmStatic
+    fun of(operationKey: String) = invoke(operationKey)
+
+    @JvmSynthetic
+    operator fun invoke(contextData: Map<String, Any>) = Context(null, ConcurrentHashMap(contextData))
+
+    @JvmStatic
+    fun of(contextData: Map<String, Any>) = invoke(contextData)
+
+    @JvmSynthetic
+    operator fun invoke() = Context(null, ConcurrentHashMap())
+
+    @JvmStatic
+    fun of() = invoke()
   }
 }

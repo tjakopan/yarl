@@ -188,16 +188,16 @@ public class AsyncWaitAndRetryForeverHandleExceptionTest {
   @Test
   public void shouldCreateNewContextForEachCallToExecute() {
     final var contextValue = new AtomicReference<String>();
+    //noinspection ConstantConditions
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
       .waitAndRetryForever((i, r, c) -> Duration.ofMillis(1),
-        fromConsumer4Async(r -> d -> (i, ctx) -> contextValue.set(ctx.getContextData().get("key").toString())));
+        fromConsumer4Async(r -> d -> (i, ctx) -> contextValue.set(ctx.get("key").toString())));
 
     AsyncPolicyUtils.raiseExceptions(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "original_value");
-        }}).build(),
+      Context.of(new HashMap<>() {{
+        put("key", "original_value");
+      }}),
       1,
       i -> new ArithmeticException())
       .join();
@@ -205,10 +205,9 @@ public class AsyncWaitAndRetryForeverHandleExceptionTest {
     assertThat(contextValue.get()).isEqualTo("original_value");
 
     AsyncPolicyUtils.raiseExceptions(policy,
-      Context.builder()
-        .contextData(new HashMap<>() {{
-          put("key", "new_value");
-        }}).build(),
+      Context.of(new HashMap<>() {{
+        put("key", "new_value");
+      }}),
       1,
       i -> new ArithmeticException())
       .join();
@@ -262,8 +261,8 @@ public class AsyncWaitAndRetryForeverHandleExceptionTest {
     final var policy = AsyncRetryPolicy.<Void>builder()
       .handle(ArithmeticException.class)
       .waitAndRetryForever((Integer i, DelegateResult<Void> dr, Context context) -> {
-          if (context.getContextData().containsKey("RetryAfter")) {
-            return (Duration) context.getContextData().get("RetryAfter");
+          if (context.containsKey("RetryAfter")) {
+            return (Duration) context.get("RetryAfter");
           } else {
             return defaultRetryAfter;
           }
@@ -276,7 +275,7 @@ public class AsyncWaitAndRetryForeverHandleExceptionTest {
         put("RetryAfter", defaultRetryAfter);
       }},
       (Context context) -> {
-        context.getContextData().put("RetryAfter", expectedRetryDuration);
+        context.put("RetryAfter", expectedRetryDuration);
         if (!failedOnce.get()) {
           failedOnce.set(true);
           throw new ArithmeticException();

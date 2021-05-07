@@ -17,10 +17,11 @@ import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
+@Suppress("UsePropertyAccessSyntax")
 @ExperimentalCoroutinesApi
 class AsyncRetryHandleExceptionTest {
   @Test
-  fun shouldThrowWhenRetryCountIsLessThanZero() {
+  fun `should throw when retry count is less than zero`() {
     val shouldThrow = {
       Policy.asyncRetry<TestResult>()
         .handle(ArithmeticException::class)
@@ -34,7 +35,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotThrowWhenSpecifiedExceptionThrownSameNumberOfTimesAsRetryCount() = runBlockingTest {
+  fun `should not throw when specified exception thrown same number of times as retry count`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .retry(3)
@@ -43,17 +44,18 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotThrowWhenOneOfTheSpecifiedExceptionsThrownSameNumberOfTriesAsRetryCount() = runBlockingTest {
-    val policy = Policy.asyncRetry<Unit>()
-      .handle(ArithmeticException::class)
-      .handle(IllegalArgumentException::class)
-      .retry(3)
+  fun `should not throw when one of the specified exceptions thrown same number of tries as retry count`() =
+    runBlockingTest {
+      val policy = Policy.asyncRetry<Unit>()
+        .handle(ArithmeticException::class)
+        .handle(IllegalArgumentException::class)
+        .retry(3)
 
-    policy.raiseExceptions(3) { IllegalArgumentException() }
-  }
+      policy.raiseExceptions(3) { IllegalArgumentException() }
+    }
 
   @Test
-  fun shouldNotThrowWhenSpecifiedExceptionThrownLessNumberOfTimesThanRetryCount() = runBlockingTest {
+  fun `should not throw when specified exception thrown less number of times than retry count`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .retry(3)
@@ -62,17 +64,18 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotThrowWhenOneOfTheSpecifiedExceptionsThrownLessNumberOfTimesThanRetryCount() = runBlockingTest {
-    val policy = Policy.asyncRetry<Unit>()
-      .handle(ArithmeticException::class)
-      .handle(IllegalArgumentException::class)
-      .retry(3)
+  fun `should not throw when one of the specified exceptions thrown less number of times than retry count`() =
+    runBlockingTest {
+      val policy = Policy.asyncRetry<Unit>()
+        .handle(ArithmeticException::class)
+        .handle(IllegalArgumentException::class)
+        .retry(3)
 
-    policy.raiseExceptions(1) { IllegalArgumentException() }
-  }
+      policy.raiseExceptions(1) { IllegalArgumentException() }
+    }
 
   @Test
-  fun shouldThrowWhenSpecifiedExceptionThrownMoreTimesThanRetryCount() = runBlockingTest {
+  fun `should throw when specified exception thrown more times than retry count`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .retry(3)
@@ -83,7 +86,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldThrowWhenOneOfTheSpecifiedExceptionsThrownMoreTimesThanRetryCount() = runBlockingTest {
+  fun `should throw when one of the specified exceptions thrown more times than retry count`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .handle(IllegalArgumentException::class)
@@ -95,7 +98,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldThrowWhenExceptionThrownIsNotTheSpecifiedExceptionType() = runBlockingTest {
+  fun `should throw when exception thrown is not the specified exception type`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .retry(3)
@@ -106,7 +109,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldThrowWhenExceptionThrownIsNotOneOfTheSpecifiedExceptionTypes() = runBlockingTest {
+  fun `should throw when exception thrown is not one of the specified exception types`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .handle(IllegalArgumentException::class)
@@ -118,7 +121,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldThrowWhenSpecifiedExceptionPredicateIsNotSatisfied() = runBlockingTest {
+  fun `should throw when specified exception predicate is not satisfied`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class) { false }
       .retry()
@@ -129,7 +132,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldThrowWhenNoneOfTheSpecifiedExceptionPredicatesAreSatisfied() = runBlockingTest {
+  fun `should throw when none of the specified exception predicates are satisfied`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class) { false }
       .handle(IllegalArgumentException::class) { false }
@@ -141,7 +144,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotThrowWhenSpecifiedExceptionPredicateIsSatisfied() = runBlockingTest {
+  fun `should not throw when specified exception predicate is satisfied`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class) { true }
       .retry()
@@ -150,7 +153,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotThrowWhenOneOfTheSpecifiedExceptionPredicatesIsSatisfied() = runBlockingTest {
+  fun `should not throw when one of the specified exception predicates is satisfied`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class) { true }
       .handle(IllegalArgumentException::class) { true }
@@ -160,7 +163,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentRetryCount() = runBlockingTest {
+  fun `should call on retry on each retry with the current retry count`() = runBlockingTest {
     val expectedRetryCounts = listOf(1, 2, 3)
     val retryCounts = mutableListOf<Int>()
     val policy = Policy.asyncRetry<Unit>()
@@ -173,7 +176,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldCallOnRetryOnEachRetryWithTheCurrentException() = runBlockingTest {
+  fun `should call on retry on each retry with the current exception`() = runBlockingTest {
     val expectedExceptions = listOf("Exception #1", "Exception #2", "Exception #3")
     val retryExceptions = mutableListOf<Throwable>()
     val policy = Policy.asyncRetry<Unit>()
@@ -188,7 +191,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldCallOnRetryWithAHandledCauseException() = runBlockingTest {
+  fun `should call on retry with a handled cause exception`() = runBlockingTest {
     var exceptionPassedToOnRetry: Throwable? = null
     val policy = Policy.asyncRetry<Unit>()
       .handleCause(ArithmeticException::class)
@@ -204,7 +207,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotCallOnRetryWhenNoRetriesArePerformed() = runBlockingTest {
+  fun `should not call on retry when no retries are performed`() = runBlockingTest {
     var retryCalled = false
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
@@ -217,7 +220,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldCreateNewStateForEachCallToPolicy() = runBlockingTest {
+  fun `should create new state for each call to policy`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .retry()
@@ -227,42 +230,42 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldCallOnRetryWithThePassedContext() = runBlockingTest {
+  fun `should call on retry with the passed context`() = runBlockingTest {
     var context: Context? = null
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .retry { _, _, ctx -> context = ctx }
 
     policy.raiseExceptions(
-      Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2")),
+      Context(mapOf("key1" to "value1", "key2" to "value2")),
       1
     ) { ArithmeticException() }
 
     assertThat(context).isNotNull
-    assertThat(context?.contextData).containsKeys("key1", "key2")
+    assertThat(context).containsKeys("key1", "key2")
       .containsValues("value1", "value2")
   }
 
   @Test
-  fun shouldCallOnRetryWithThePassedContextWhenExecuteAndCapture() = runBlockingTest {
+  fun `should call on retry with the passed context when execute and capture`() = runBlockingTest {
     var context: Context? = null
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .retry { _, _, ctx -> context = ctx }
 
     policy.raiseExceptionsOnExecuteAndCapture(
-      Context(contextData = mutableMapOf("key1" to "value1", "key2" to "value2")),
+      Context(mapOf("key1" to "value1", "key2" to "value2")),
       1
     ) { ArithmeticException() }
 
     @Suppress("UsePropertyAccessSyntax")
     assertThat(context).isNotNull()
-    assertThat(context?.contextData).containsKeys("key1", "key2")
+    assertThat(context).containsKeys("key1", "key2")
       .containsValues("value1", "value2")
   }
 
   @Test
-  fun contextShouldBeEmptyIfExecuteNotCalledWithContext() = runBlockingTest {
+  fun `context should be empty if execute not called with any data`() = runBlockingTest {
     var capturedContext: Context? = null
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
@@ -270,45 +273,41 @@ class AsyncRetryHandleExceptionTest {
 
     policy.raiseExceptions(1) { ArithmeticException() }
 
-    assertThat(capturedContext).isNotNull
-    assertThat(capturedContext?.policyWrapKey).isNull()
-    assertThat(capturedContext?.policyKey).isNotNull()
-    assertThat(capturedContext?.operationKey).isNull()
-    assertThat(capturedContext?.contextData).isEmpty()
+    assertThat(capturedContext).isEmpty()
   }
 
   @Test
-  fun shouldCreateNewContextForEachCallToExecute() = runBlockingTest {
+  fun `should create new context for each call to execute`() = runBlockingTest {
     var contextValue: String? = null
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
-      .retry { _, _, ctx -> contextValue = ctx.contextData["key"].toString() }
+      .retry { _, _, ctx -> contextValue = ctx["key"].toString() }
 
-    policy.raiseExceptions(Context(contextData = mutableMapOf("key" to "original_value")), 1) { ArithmeticException() }
+    policy.raiseExceptions(Context(mapOf("key" to "original_value")), 1) { ArithmeticException() }
 
     assertThat(contextValue).isEqualTo("original_value")
 
-    policy.raiseExceptions(Context(contextData = mutableMapOf("key" to "new_value")), 1) { ArithmeticException() }
+    policy.raiseExceptions(Context(mapOf("key" to "new_value")), 1) { ArithmeticException() }
 
     assertThat(contextValue).isEqualTo("new_value")
   }
 
   @Test
-  fun shouldCreateNewContextForEachCallToExecuteAndCapture() = runBlockingTest {
+  fun `should create new context for each call to execute and capture`() = runBlockingTest {
     var contextValue: String? = null
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
-      .retry { _, _, ctx -> contextValue = ctx.contextData["key"].toString() }
+      .retry { _, _, ctx -> contextValue = ctx["key"].toString() }
 
     policy.raiseExceptionsOnExecuteAndCapture(
-      Context(contextData = mutableMapOf("key" to "original_value")),
+      Context(mapOf("key" to "original_value")),
       1
     ) { ArithmeticException() }
 
     assertThat(contextValue).isEqualTo("original_value")
 
     policy.raiseExceptionsOnExecuteAndCapture(
-      Context(contextData = mutableMapOf("key" to "new_value")),
+      Context(mapOf("key" to "new_value")),
       1
     ) { ArithmeticException() }
 
@@ -316,7 +315,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotCallOnRetryWhenRetryCountIsZero() = runBlockingTest {
+  fun `should not call on retry when retry count is zero`() = runBlockingTest {
     var retryInvoked = false
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
@@ -329,7 +328,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldWaitAsynchronouslyForAsyncOnRetryDelegate() = runBlockingTest {
+  fun `should wait asynchronously for async on retry delegate`() = runBlockingTest {
     val duration = Duration.ofMillis(200)
     var executeDelegateInvocations = 0
     var executeDelegateInvocationsWhenOnRetryExits = 0
@@ -351,7 +350,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldExecuteActionWhenNonFaultingAndNotCancelled() = runBlockingTest {
+  fun `should execute action when non faulting and not cancelled`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .retry(3)
@@ -364,7 +363,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldExecuteAllTriesWhenFaultingAndNotCancelled() = runBlockingTest {
+  fun `should execute all tries when faulting and not cancelled`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .retry(3)
@@ -378,7 +377,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldNotExecuteActionWhenCancelledBeforeExecute() {
+  fun `should not execute action when cancelled before execute`() {
     assertFailsWith(CancellationException::class) {
       runBlockingTest {
         val policy = Policy.asyncRetry<Unit>()
@@ -398,7 +397,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldReportCancellationDuringOtherwiseNonFaultingActionExecutionAndCancelFurtherRetries() =
+  fun `should report cancellation during otherwise non faulting action execution and cancel further retries`() =
     runBlockingTest {
       val policy = Policy.asyncRetry<Unit>()
         .handle(ArithmeticException::class)
@@ -415,7 +414,7 @@ class AsyncRetryHandleExceptionTest {
     }
 
   @Test
-  fun shouldReportCancellationDuringFaultingInitialActionExecutionAndCancelFurtherRetries() =
+  fun `should report cancellation during faulting initial action execution and cancel further retries`() =
     runBlockingTest {
       val policy = Policy.asyncRetry<Unit>()
         .handle(ArithmeticException::class)
@@ -432,23 +431,24 @@ class AsyncRetryHandleExceptionTest {
     }
 
   @Test
-  fun shouldReportCancellationDuringFaultingRetriedActionExecutionAndCancelFurtherRetries() = runBlockingTest {
-    val policy = Policy.asyncRetry<Unit>()
-      .handle(ArithmeticException::class)
-      .retry(3)
-    var attemptsInvoked = 0
-    val onExecute: () -> Unit = { attemptsInvoked++ }
+  fun `should report cancellation during faulting retried action execution and cancel further retries`() =
+    runBlockingTest {
+      val policy = Policy.asyncRetry<Unit>()
+        .handle(ArithmeticException::class)
+        .retry(3)
+      var attemptsInvoked = 0
+      val onExecute: () -> Unit = { attemptsInvoked++ }
 
-    assertFailsWith(CancellationException::class) {
-      policy.raiseExceptionsAndOrCancellation(1 + 3, 2, onExecute) {
-        ArithmeticException()
+      assertFailsWith(CancellationException::class) {
+        policy.raiseExceptionsAndOrCancellation(1 + 3, 2, onExecute) {
+          ArithmeticException()
+        }
       }
+      assertThat(attemptsInvoked).isEqualTo(2)
     }
-    assertThat(attemptsInvoked).isEqualTo(2)
-  }
 
   @Test
-  fun shouldReportCancellationDuringFaultingLastRetryExecution() = runBlockingTest {
+  fun `should report cancellation during faulting last retry execution`() = runBlockingTest {
     val policy = Policy.asyncRetry<Unit>()
       .handle(ArithmeticException::class)
       .retry(3)
@@ -464,7 +464,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldReportCancellationAfterFaultingActionExecutionAndCancelFurtherRetriesIfOnRetryInvokesCancellation() {
+  fun `should report cancellation after faulting action execution and cancel further retries if on retry invokes cancellation`() {
     assertFailsWith(CancellationException::class) {
       runBlockingTest {
         val policy = Policy.asyncRetry<Unit>()
@@ -482,7 +482,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldExecuteFunctionReturningValueWhenNotCancelled() = runBlockingTest {
+  fun `should execute function returning value when not cancelled`() = runBlockingTest {
     val policy = Policy.asyncRetry<Boolean>()
       .handle(ArithmeticException::class)
       .retry(3)
@@ -498,7 +498,7 @@ class AsyncRetryHandleExceptionTest {
   }
 
   @Test
-  fun shouldHonourAndReportCancellationDuringFunctionExecution() = runBlockingTest {
+  fun `should honour and report cancellation during function execution`() = runBlockingTest {
     val policy = Policy.asyncRetry<Boolean>()
       .handle(ArithmeticException::class)
       .retry(3)

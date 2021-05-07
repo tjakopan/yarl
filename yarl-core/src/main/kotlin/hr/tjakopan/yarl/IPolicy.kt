@@ -1,4 +1,3 @@
 package hr.tjakopan.yarl
 
-interface IPolicy {
-}
+interface IPolicy
